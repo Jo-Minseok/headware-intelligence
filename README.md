@@ -9,7 +9,8 @@
                 <h1> ⛑️ 스마트 안전 헬멧 HeadWare-Intelligence (HI) </h1>
                     <section align="center">
                         <h3>프로젝트 진행 및 실천 상황</h3>
-                        <a href="https://headware-intelligence.notion.site/5d05bd39b6f94036b9247e35d3040202?pvs=4"><img width = "30%" src = "https://img.shields.io/badge/Notion-000000?style=plastic&logo=notion&logoColor=ffffff"/></a>
+                        <a href="https://headware-intelligence.notion.site/5d05bd39b6f94036b9247e35d3040202?pvs=4"><img width = "30%" src = "https://img.shields.io/badge/Notion-000000?style=plastic&logo=notion&logoColor=ffffff"/></a><br>
+                        <a href="https://hits.seeyoufarm.com"><img width = "10%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FJo-Minseok%2Fheadware-intelligence&count_bg=%23FFC500&title_bg=%23555555&icon=&icon_color=%23FFFFFF&title=hits&edge_flat=false"/></a>
                     </section>
             </div>
         </header>
@@ -70,14 +71,17 @@
                     <h3>개발 툴</h3>
                     <ul>
                         <li>Android Studio</li>
+                        <li>Visual Studio Code</li>
                         <li>DBeaver</li>
                     </ul>
                 </div>
                 <div>
                     <h3>사용 언어</h3>
                     <ul>
-                        <li>Java</li>
-                        <li>C++ Arduino</li>
+                        <li>Kotlin (Android)</li>
+                        <li>Python (FastAPI)</li>
+                        <li>Java-Spring (BackEnd)</li>
+                        <li>C++ Arduino (Hardware)</li>
                     </ul>
                 </div>  
             </div>

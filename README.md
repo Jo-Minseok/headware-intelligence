@@ -18,7 +18,10 @@
 - [STACKS](#STACKS)
   - [Collaboration](#collaboration)
   - [Development](#Development)
+  - [Database](#Database)
+  - [API](#API)
   - [Language](#Language)
+  - [Framework](#Framework)
   - [Distribution](#distribution)
   - [Function](#Function)
 - [SOURCE](#source)
@@ -83,7 +86,15 @@
 
 ### Development
 
-<img src="https://img.shields.io/badge/android%20studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white"> <img src="https://img.shields.io/badge/visual%20studio%20code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"> <img src="https://img.shields.io/badge/dbeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"> <img src="https://img.shields.io/badge/oracle DB-F80000?style=for-the-badge&logo=oracle&logoColor=white">
+<img src="https://img.shields.io/badge/android%20studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white"> <img src="https://img.shields.io/badge/visual%20studio%20code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"> <img src="https://img.shields.io/badge/dbeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white">
+
+### Database
+
+<img src="https://img.shields.io/badge/oracle%20DB-F80000?style=for-the-badge&logo=oracle&logoColor=white">
+
+### API
+
+<img src="https://img.shields.io/badge/NAVER MAP SDK-03C75A?style=for-the-badge&logo=Naver&logoColor=white"> <img src="https://img.shields.io/badge/기상청%20API-246FDB?style=for-the-badge&logo=Avira&logoColor=white">
 
 ### Language
 

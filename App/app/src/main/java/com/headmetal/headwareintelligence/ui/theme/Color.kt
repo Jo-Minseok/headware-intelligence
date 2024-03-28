@@ -1,4 +1,4 @@
-package com.example.headwareintelligence.ui.theme
+package com.headmetal.headwareintelligence.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

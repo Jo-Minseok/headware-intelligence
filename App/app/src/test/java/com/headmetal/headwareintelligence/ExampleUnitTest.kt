@@ -1,4 +1,4 @@
-package com.example.headwareintelligence
+package com.headmetal.headwareintelligence
 
 import org.junit.Test
 

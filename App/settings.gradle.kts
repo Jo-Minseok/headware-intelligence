@@ -19,6 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "headwareintelligence"
+rootProject.name = "HeadwareIntelligence"
 include(":app")
- 

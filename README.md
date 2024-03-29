@@ -3,7 +3,7 @@
 <div align="center">
     <h3> Project Progress</h3>
     <a href="https://headware-intelligence.notion.site/5d05bd39b6f94036b9247e35d3040202?pvs=4"><img width = "30%" src = "https://img.shields.io/badge/Notion-000000?style=plastic&logo=notion&logoColor=ffffff"/></a><br>
-    <a href="https://hits.seeyoufarm.com"><img width = "13%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgjbae1212%2Fhit-counter"/></a>                        
+    <a href="https://hits.seeyoufarm.com"><img width="13%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FJo-Minseok%2Fheadware-intelligence&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>                        
 </div>
 
 ## CONTENTS

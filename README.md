@@ -3,7 +3,7 @@
 <div align="center">
     <h3> Project Progress</h3>
     <a href="https://headware-intelligence.notion.site/5d05bd39b6f94036b9247e35d3040202?pvs=4"><img width = "30%" src = "https://img.shields.io/badge/Notion-000000?style=plastic&logo=notion&logoColor=ffffff"/></a><br>
-    <a href="https://hits.seeyoufarm.com"><img width = "13%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FJo-Minseok%2Fheadware-intelligence&count_bg=%23FFC500&title_bg=%23555555&icon=&icon_color=%23FFFFFF&title=hits&edge_flat=false"/></a>
+    <a href="https://hits.seeyoufarm.com"><img width = "13%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fgjbae1212%2Fhit-counter"/></a>                        
 </div>
 
 ## CONTENTS
@@ -99,7 +99,6 @@
 ### Language
 
 <img src="https://img.shields.io/badge/arduino%20C++-00878F?style=for-the-badge&logo=arduino&logoColor=white"> <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white">
-
 
 ### Framework
 

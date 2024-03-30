@@ -37,6 +37,7 @@ fun Login(modifier: Modifier = Modifier) {
         mutableStateOf("")
     }
     Surface(
+        modifier = modifier,
         color = Color(0xFFF9C94C)
     ) {
         Column(

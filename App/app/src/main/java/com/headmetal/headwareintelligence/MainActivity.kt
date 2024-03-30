@@ -25,7 +25,10 @@ class MainActivity : ComponentActivity() {
                             Loading(navController)
                         }
                         composable("loginScreen") {
-                            Login()
+                            Login(navController)
+                        }
+                        composable("signupScreen") {
+                            Signup(navController)
                         }
                     }
                 }

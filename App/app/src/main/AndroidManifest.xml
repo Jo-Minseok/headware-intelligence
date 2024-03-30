@@ -13,6 +13,35 @@
         android:theme="@style/Theme.HeadwareIntelligence"
         tools:targetApi="31">
         <activity
+<<<<<<< HEAD
+=======
+            android:name=".Test"
+            android:exported="false"
+            android:label="@string/title_activity_test"
+            android:theme="@style/Theme.HeadwareIntelligence" />
+        <activity
+            android:name=".ui.theme.Test"
+            android:exported="false"
+            android:label="@string/title_activity_test"
+            android:theme="@style/Theme.HeadwareIntelligence" />
+        <activity
+            android:name=".Login"
+            android:exported="false"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.HeadwareIntelligence" />
+        <activity
+            android:name=".Menu"
+            android:exported="true"
+            android:label="@string/title_activity_menu"
+            android:theme="@style/Theme.HeadwareIntelligence">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+>>>>>>> 8cdd76ccc95ba9155dd155f1510737d641e2f259
             android:name=".MainActivity"
             android:exported="false"
             android:label="@string/title_activity_main"

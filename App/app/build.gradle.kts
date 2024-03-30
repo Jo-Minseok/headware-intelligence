@@ -59,8 +59,12 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+<<<<<<< HEAD
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material)
+=======
+    implementation(libs.androidx.navigation.compose)
+>>>>>>> 8cdd76ccc95ba9155dd155f1510737d641e2f259
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

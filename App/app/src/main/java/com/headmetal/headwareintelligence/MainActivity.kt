@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.headmetal.headwareintelligence.ui.theme.HeadwareIntelligenceTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,7 +19,15 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Loading()
+                    val navController = rememberNavController()
+                    NavHost(navController, startDestination = "loadingScreen") {
+                        composable("loadingScreen") {
+                            Loading(navController)
+                        }
+                        composable("loginScreen") {
+                            Login()
+                        }
+                    }
                 }
             }
         }

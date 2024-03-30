@@ -1,4 +1,4 @@
-package com.headmetal.headwareintelligence.ui.theme
+package com.headmetal.headwareintelligence
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

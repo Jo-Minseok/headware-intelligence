@@ -119,6 +119,11 @@ fun Login(modifier: Modifier = Modifier) {
                     )
                 }
             }
+            Text(
+                text = "HeadWear - Intelligence",
+                modifier = Modifier.padding(top = 20.dp),
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

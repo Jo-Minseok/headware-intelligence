@@ -13,6 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.headmetal.headwareintelligence.ui.theme.HeadwareIntelligenceTheme
 
+@Preview(showBackground = true)
 @Composable
 fun Loading() {
     Surface(
@@ -32,13 +33,5 @@ fun Loading() {
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoadingPreview() {
-    HeadwareIntelligenceTheme {
-        Loading()
     }
 }

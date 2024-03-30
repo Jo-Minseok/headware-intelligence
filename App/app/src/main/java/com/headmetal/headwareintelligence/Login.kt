@@ -24,12 +24,11 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
-@Preview(showBackground = true)
 @Composable
-fun Login(modifier: Modifier = Modifier) {
+fun Login(navController: NavController, modifier: Modifier = Modifier) {
     var id by remember {
         mutableStateOf("")
     }
@@ -97,7 +96,7 @@ fun Login(modifier: Modifier = Modifier) {
                     )
                 }
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { navController.navigate("signupScreen") },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

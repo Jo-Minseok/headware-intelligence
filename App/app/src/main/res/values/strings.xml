@@ -1,11 +1,8 @@
 <resources>
     <string name="app_name">HeadwareIntelligence</string>
     <string name="title_activity_main">MainActivity</string>
-<<<<<<< HEAD
-=======
     <string name="title_activity_menu">Menu</string>
     <string name="title_activity_login">Login</string>
     <string name="title_activity_loading">Loading</string>
     <string name="title_activity_test">Test</string>
->>>>>>> 8cdd76ccc95ba9155dd155f1510737d641e2f259
 </resources>

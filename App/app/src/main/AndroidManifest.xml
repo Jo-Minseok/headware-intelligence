@@ -13,7 +13,22 @@
         android:theme="@style/Theme.HeadwareIntelligence"
         tools:targetApi="31">
         <activity
-            android:name="com.headmetal.headwareintelligence.Menu"
+            android:name=".Test"
+            android:exported="false"
+            android:label="@string/title_activity_test"
+            android:theme="@style/Theme.HeadwareIntelligence" />
+        <activity
+            android:name=".ui.theme.Test"
+            android:exported="false"
+            android:label="@string/title_activity_test"
+            android:theme="@style/Theme.HeadwareIntelligence" />
+        <activity
+            android:name=".Login"
+            android:exported="false"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.HeadwareIntelligence" />
+        <activity
+            android:name=".Menu"
             android:exported="true"
             android:label="@string/title_activity_menu"
             android:theme="@style/Theme.HeadwareIntelligence">

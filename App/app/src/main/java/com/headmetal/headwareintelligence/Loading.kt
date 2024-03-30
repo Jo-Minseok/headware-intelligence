@@ -16,8 +16,7 @@ import com.headmetal.headwareintelligence.ui.theme.HeadwareIntelligenceTheme
 @Composable
 fun Loading() {
     Surface(
-        color = Color(0xFFF9C94C
-        )
+        color = Color(0xFFF9C94C)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,

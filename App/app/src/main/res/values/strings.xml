@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">HeadwareIntelligence</string>
-<<<<<<< Updated upstream
     <string name="title_activity_main">MainActivity</string>
-=======
     <string name="title_activity_menu">Menu</string>
->>>>>>> Stashed changes
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_loading">Loading</string>
+    <string name="title_activity_test">Test</string>
 </resources>

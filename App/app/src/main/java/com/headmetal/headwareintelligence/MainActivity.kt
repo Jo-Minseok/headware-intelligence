@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Loading()
+                    Login()
                 }
             }
         }

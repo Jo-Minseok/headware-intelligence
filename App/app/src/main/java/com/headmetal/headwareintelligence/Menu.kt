@@ -1,12 +1,15 @@
 package com.headmetal.headwareintelligence
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.icons.Icons
@@ -18,11 +21,14 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -34,11 +40,12 @@ fun Menu() {
         Column() {
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    text = "메뉴"
+                    text = "메뉴",
+                    fontWeight = FontWeight.Bold
                 )
-                Button(
+                FloatingActionButton(
                     onClick = {},
-                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                    backgroundColor = Color.Transparent
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Settings,
@@ -49,20 +56,18 @@ fun Menu() {
 
             Column() {
                 Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(Color.Transparent),
-                    shape = RoundedCornerShape(8.dp)
+                    onClick = {}
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "개인 정보", color = Color.Black)
+                    Text(text = "개인 정보", color=Color.Black)
                 }
                 Button(
                     onClick = {},
-                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                    colors = ButtonDefaults.buttonColors(Color.LightGray)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Description,

@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
-
 @Preview(showBackground = true)
 @Composable
 fun Etc(){
@@ -37,6 +36,5 @@ fun Etc(){
             Text(text = "dddd")
             Text(text = "AAAA")
         }
-
     }
 }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.icons.Icons
@@ -21,11 +20,9 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -43,9 +40,9 @@ fun Menu() {
                     text = "메뉴",
                     fontWeight = FontWeight.Bold
                 )
-                FloatingActionButton(
+                Button(
                     onClick = {},
-                    backgroundColor = Color.Transparent
+                    colors = ButtonDefaults.buttonColors(Color.Transparent)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Settings,
@@ -55,6 +52,21 @@ fun Menu() {
             }
 
             Column() {
+                Button(
+                    onClick={},
+                    colors = ButtonDefaults.buttonColors(Color.White),
+                    shape = RoundedCornerShape(10.dp)
+                ){
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column() {
+                        Text(text = "계급", color=Color.Gray)
+                        Text(text = "이름", color= Color.Black)
+                    }
+                }
                 Button(
                     onClick = {}
                 ) {

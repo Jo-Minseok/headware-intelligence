@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,7 +48,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
         mutableStateOf("None")
     }
     Surface(
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
     ) {
         Column(

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.FloatingActionButton
@@ -23,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +34,7 @@ import androidx.compose.ui.unit.dp
 @Preview(showBackground = true)
 @Composable
 fun Menu() {
-    Surface()
+    Surface(modifier = Modifier.fillMaxSize(),color=Color( 0xFFF9F9F9))
     {
         Column() {
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
@@ -53,18 +55,18 @@ fun Menu() {
 
             Column() {
                 Button(
-                    onClick={},
+                    onClick = {},
                     colors = ButtonDefaults.buttonColors(Color.White),
                     shape = RoundedCornerShape(10.dp)
-                ){
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column() {
-                        Text(text = "계급", color=Color.Gray)
-                        Text(text = "이름", color= Color.Black)
+                        Text(text = "계급", color = Color.Gray)
+                        Text(text = "이름", color = Color.Black)
                     }
                 }
                 Button(
@@ -75,7 +77,7 @@ fun Menu() {
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "개인 정보", color=Color.Black)
+                    Text(text = "개인 정보", color = Color.Black)
                 }
                 Button(
                     onClick = {},
@@ -90,25 +92,27 @@ fun Menu() {
                 }
                 Button(
                     onClick = {},
-                    colors = ButtonDefaults.buttonColors(Color.Transparent)
+                    colors = ButtonDefaults.buttonColors(Color.Gray)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Notifications,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("알림 설정", color = Color.Black)
-                    Switch(
-                        checked = true,
-                        onCheckedChange = {
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF2FA94E),
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color(0xFF1D2024)
+                    Row() {
+                        Icon(
+                            imageVector = Icons.Outlined.Notifications,
+                            contentDescription = null,
                         )
-                    )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("알림 설정", color = Color.Black)
+                        Switch(
+                            checked = true,
+                            onCheckedChange = {
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = Color(0xFF2FA94E),
+                                uncheckedThumbColor = Color.White,
+                                uncheckedTrackColor = Color(0xFF1D2024)
+                            )
+                        )
+                    }
                 }
                 Button(onClick = {}, colors = ButtonDefaults.buttonColors(Color.Transparent)) {
                     Icon(

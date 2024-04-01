@@ -11,6 +11,7 @@ import androidx.compose.material.Tab
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -37,55 +38,56 @@ fun Processing(modifier: Modifier = Modifier) {
     var selectedTabIndex by remember {
         mutableIntStateOf(0)
     }
-
-    Column {
-        Text(
-            text = "처리 내역",
-            fontWeight = FontWeight.Bold
-        )
-        Box(
-            modifier = modifier.height(50.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            TextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
-                    )
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                shape = RoundedCornerShape(8.dp),
-                modifier = modifier
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-                    .fillMaxSize()
+    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
+        Column {
+            Text(
+                text = "처리 내역",
+                fontWeight = FontWeight.Bold
             )
-        }
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            modifier = modifier.background(Color(0xFFFFFFFF)),
-        ) {
-            Tab(
-                selected = selectedTabIndex == 0,
-                onClick = { selectedTabIndex = 0 },
-                text = { Text("처리 내역") }
-            )
-            Tab(
-                selected = selectedTabIndex == 1,
-                onClick = {selectedTabIndex = 1},
-                text = { Text("오작동 처리") }
-            )
-        }
-        Box(modifier = Modifier.weight(1f)) {
-            when (selectedTabIndex) {
-                0 -> ProcessingHistoryScreen()
-                1 -> MalfunctionHistoryScreen()
+            Box(
+                modifier = modifier.height(50.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                TextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = modifier
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        .fillMaxSize()
+                )
+            }
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = modifier.background(Color(0xFFFFFFFF)),
+            ) {
+                Tab(
+                    selected = selectedTabIndex == 0,
+                    onClick = { selectedTabIndex = 0 },
+                    text = { Text("처리 내역") }
+                )
+                Tab(
+                    selected = selectedTabIndex == 1,
+                    onClick = { selectedTabIndex = 1 },
+                    text = { Text("오작동 처리") }
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                when (selectedTabIndex) {
+                    0 -> ProcessingHistoryScreen()
+                    1 -> MalfunctionHistoryScreen()
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ package com.headmetal.headwareintelligence
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +23,7 @@ fun Loading(navController: NavController, modifier: Modifier = Modifier) {
         navController.navigate("loginScreen")
     }
     Surface(
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
     ) {
         Column(

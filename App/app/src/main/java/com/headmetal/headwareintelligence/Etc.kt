@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,7 +32,7 @@ import androidx.navigation.NavController
 @Preview(showBackground = true)
 @Composable
 fun Etc(){
-    Surface() {
+    Surface(modifier = Modifier.fillMaxSize(),color=Color( 0xFFF9F9F9)) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "dddd")
             Text(text = "AAAA")

@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,8 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -72,26 +77,37 @@ fun Trend(interest: Int = 10) {
     Column {
         Box(
             modifier = Modifier.padding(8.dp)
+                .offset(y = 5.dp)
+                .background(color = Color.White)
+                .border(width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
+                .size(width = 400.dp, height = 60.dp)
+
         ) {
             Column {
                 Row {
                     Text(
-                        text = "일일 안전 알림"
+                        text = "일일 안전 알림",
+                        modifier = Modifier.padding(start = 10.dp)
                     )
                     Text(
                         text = SimpleDateFormat("EEEE, yyyy년 MM월 dd일", Locale.getDefault()).format(current),
                         style = TextStyle(textAlign = TextAlign.End),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth().offset(x = -10.dp)
                     )
                 }
                 Row {
                     Icon(
                         imageVector = Icons.Default.AccessTime,
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                            .offset(x = 8.dp)
+                            .offset(y = 5.dp)
                     )
                     Text(
                         text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(current),
                         modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically)
+                            .offset(x= 10.dp)
+                            .offset(y = 5.dp)
                     )
                 }
 
@@ -99,25 +115,35 @@ fun Trend(interest: Int = 10) {
         }
         Box(
             modifier = Modifier.padding(8.dp)
+                .offset(y = -10.dp)
+                .background(color = Color.White)
+                .border(width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
+                .size(width = 400.dp, height = 70.dp)
+
         ) {
             Column {
                 Text(
-                    text = "안전 관심도"
+                    text = "안전 관심도",
+                    modifier = Modifier.padding(start = 10.dp)
                 )
                 Row {
                     Icon(
                         imageVector = Icons.Default.Circle,
                         contentDescription = null,
-                        tint = interestColor
+                        tint = interestColor,
+                        modifier = Modifier.align(Alignment.CenterVertically)
+                            .offset(x = 8.dp)
                     )
                     Text(
                         text = interestText,
                         modifier = Modifier.align(Alignment.CenterVertically)
+                            .offset(x = 10.dp)
                     )
                 }
                 Text(
                     text = interestTextDetail,
                     modifier = Modifier.padding(start = 24.dp)
+                        .offset(x = 10.dp)
                 )
             }
         } //여기까지 메인 화면에서 공통으로 사용되는 부분

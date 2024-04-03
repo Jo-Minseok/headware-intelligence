@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Surface
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -46,7 +48,7 @@ import java.util.Locale
 fun Trend(interest: Int = 10) {
     val interestColor = when {
         interest < 10 -> Color.Red
-        interest < 20 -> Color.Yellow
+        interest < 20 -> Color(0xFFFF6600)
         else -> Color.Green
     }
     val interestText = when {
@@ -55,9 +57,9 @@ fun Trend(interest: Int = 10) {
         else -> "보통"
     }
     val interestTextDetail = when {
-        interest < 10 -> "낙상, 낙하 사고 주의가 필요해요1"
-        interest < 20 -> "낙상, 낙하 사고 주의가 필요해요2"
-        else -> "낙상, 낙하 사고 주의가 필요해요3"
+        interest < 10 -> "각별한 안전 사고 주의가 필요해요"
+        interest < 20 -> "안전 사고 주의가 필요해요"
+        else -> "안전 관심은 항상 필요해요"
     }
     var current by remember {
         mutableStateOf(Calendar.getInstance().time)
@@ -77,7 +79,12 @@ fun Trend(interest: Int = 10) {
             }
         }
 
-        Column {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Icon(
+                imageVector = Icons.Default.ArrowBackIosNew,
+                contentDescription = null,
+                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
+            )
             Box(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp, top = 8.dp)
@@ -94,7 +101,8 @@ fun Trend(interest: Int = 10) {
                     Row {
                         Text(
                             text = "일일 안전 알림",
-                            modifier = Modifier.padding(start = 10.dp)
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(start = 10.dp, top = 2.dp)
                         )
                         Text(
                             text = SimpleDateFormat(
@@ -104,7 +112,7 @@ fun Trend(interest: Int = 10) {
                             style = TextStyle(textAlign = TextAlign.End),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(end = 4.dp)
+                                .padding(end = 10.dp, top = 2.dp)
                         )
                     }
                     Row {
@@ -113,14 +121,14 @@ fun Trend(interest: Int = 10) {
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, bottom = 3.dp)
+                                .padding(start = 10.dp, bottom = 5.dp)
                         )
                         Text(
                             text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(current),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.CenterVertically)
-                                .padding(bottom = 3.dp)
+                                .padding(start = 5.dp, bottom = 5.dp)
                         )
                     }
 
@@ -135,12 +143,13 @@ fun Trend(interest: Int = 10) {
                         color = Color(0xFFE0E0E0),
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .size(width = 400.dp, height = 70.dp)
+                    .fillMaxWidth()
 
             ) {
                 Column {
                     Text(
                         text = "안전 관심도",
+                        fontSize = 16.sp,
                         modifier = Modifier.padding(start = 10.dp)
                     )
                     Row {
@@ -150,25 +159,25 @@ fun Trend(interest: Int = 10) {
                             tint = interestColor,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
-                                .offset(x = 8.dp)
+                                .padding(start = 10.dp, top = 5.dp)
                         )
                         Text(
                             text = interestText,
+                            fontSize = 16.sp,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
-                                .offset(x = 10.dp)
+                                .padding(start = 5.dp, top = 5.dp)
                         )
                     }
                     Text(
                         text = interestTextDetail,
                         modifier = Modifier
-                            .padding(start = 24.dp)
-                            .offset(x = 10.dp)
+                            .padding(start = 40.dp, bottom = 5.dp)
                     )
                 }
             } //여기까지 메인 화면에서 공통으로 사용되는 부분
             Spacer(
-                modifier = Modifier.height(20.dp)
+                modifier = Modifier.height(50.dp)
             )
             Box(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -178,24 +187,35 @@ fun Trend(interest: Int = 10) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "안전 추세선"
+                        text = "안전 추세선",
+                        fontSize = 20.sp
                     )
                     Row {
                         Text(
-                            text = "기간 "
+                            text = "기간 ",
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .padding(end = 0.dp, top = 20.dp)
                         )
                         Icon(
                             imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = null
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 300.dp, top = 20.dp)
                         )
                         //DatePicker 구현
                     }
                     Box {
                         Text(
-                            text = "추세선 그래프 임시"
+                            text = "추세선 그래프 임시",
+                            modifier = Modifier
+                                .padding(top = 30.dp)
                         )
                     }
-                    Row {
+                    Row (
+                        modifier = Modifier
+                        .padding(top = 30.dp)
+                    ){
                         Checkbox(
                             checked = interestChecked,
                             onCheckedChange = { checked ->

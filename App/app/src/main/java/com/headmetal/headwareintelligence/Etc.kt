@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,12 +8,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +36,9 @@ import androidx.compose.ui.unit.sp
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.compose.material.AlertDialog
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material.TextButton
 
 @Preview(showBackground = true)
 @Composable
@@ -67,16 +74,113 @@ fun Etc() {
                 ) {
                     Column(
                     ) {
-                        Text(
-                            text = "버전 정보",
-                            fontSize = 20.sp,
-                            modifier = Modifier.padding(top = 5.dp)
-                        )
                         Row {
                             Text(
-                                text = "버전 1.0.0",
+                                text = "버전 정보",
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(top = 5.dp)
+                            )
+                            Text(
+                                text = "1.0.0",
                                 fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 5.dp, top = 5.dp)
+                                style = TextStyle(textAlign = TextAlign.End),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding( top = 7.dp)
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        Row {
+
+                            Text(
+                                text = "업데이트 확인",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null
+                            )
+                        }
+
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        Row {
+
+                            Text(
+                                text = "백업 및 복원",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        Row {
+
+                            Text(
+                                text = "카메라 및 저장소 권한 관리",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+                        var showDialog by remember { mutableStateOf(false) }
+                        Row {
+
+                            Text(
+                                text = "개인정보 처리 방침",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null,
+                                modifier = Modifier.clickable {
+                                    // 아이콘이 클릭되었을 때 실행되는 코드
+                                    showDialog = true
+                                }
+                            )
+                        }
+                        if (showDialog) {
+                            Dialog(
+                                onDismissRequest = { showDialog = false },
+                                content = {
+                                    AlertDialog(
+                                        onDismissRequest = { showDialog = false },
+                                        title = { Text(text = "개인정보 처리 방침") },
+                                        text = { Text(text = "") },
+                                        confirmButton = {
+                                            TextButton(onClick = { showDialog = false }) {
+                                                Text("확인")
+                                            }
+                                        }
+                                    )
+                                }
                             )
                         }
                     }

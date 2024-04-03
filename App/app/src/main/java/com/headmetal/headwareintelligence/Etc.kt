@@ -91,7 +91,7 @@ fun Etc() {
                         }
 
                         Spacer(
-                            modifier = Modifier.height(20.dp)
+                            modifier = Modifier.height(30.dp)
                         )
 
                         Row {
@@ -110,7 +110,7 @@ fun Etc() {
 
 
                         Spacer(
-                            modifier = Modifier.height(20.dp)
+                            modifier = Modifier.height(30.dp)
                         )
 
                         Row {
@@ -128,7 +128,7 @@ fun Etc() {
                         }
 
                         Spacer(
-                            modifier = Modifier.height(20.dp)
+                            modifier = Modifier.height(30.dp)
                         )
 
                         Row {
@@ -146,7 +146,7 @@ fun Etc() {
                         }
 
                         Spacer(
-                            modifier = Modifier.height(20.dp)
+                            modifier = Modifier.height(30.dp)
                         )
                         var showDialog by remember { mutableStateOf(false) }
                         Row {

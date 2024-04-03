@@ -93,12 +93,14 @@ fun Processing(modifier: Modifier = Modifier) {
                 )
             ) {
                 Tab(
+                    modifier = modifier.background(color = Color.White),
                     selected = selectedTabIndex == 0,
                     onClick = { selectedTabIndex = 0 },
                     text = { Text("사고 처리",fontSize = 20.sp,
                         color = Color.Black) }
                 )
                 Tab(
+                    modifier = modifier.background(color = Color.White),
                     selected = selectedTabIndex == 1,
                     onClick = { selectedTabIndex = 1 },
                     text = { Text("오작동 처리",fontSize = 20.sp,

@@ -106,7 +106,7 @@
 
 ### Distribution
 
-<img src="https://img.shields.io/badge/uvicorn-A100FF?style=for-the-badge&logo=gunicorn&logoColor=white"><br>
+<img src="https://img.shields.io/badge/uvicorn-A100FF?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/raspberry%20pi-A22846?style=for-the-badge&logo=raspberrypi&logoColor=white"><br>
 
 ```md
 Develop Version :

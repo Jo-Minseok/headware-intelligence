@@ -80,15 +80,14 @@ fun Trend(interest: Int = 10) {
         Column {
             Box(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .offset(y = 5.dp)
+                    .padding(start = 8.dp, end = 8.dp, top = 8.dp)
                     .background(color = Color.White)
                     .border(
                         width = 1.dp,
                         color = Color(0xFFE0E0E0),
                         shape = RoundedCornerShape(8.dp)
                     )
-                    .size(width = 400.dp, height = 60.dp)
+                    .fillMaxWidth()
 
             ) {
                 Column {
@@ -105,7 +104,7 @@ fun Trend(interest: Int = 10) {
                             style = TextStyle(textAlign = TextAlign.End),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(x = -10.dp)
+                                .padding(end = 4.dp)
                         )
                     }
                     Row {
@@ -114,25 +113,22 @@ fun Trend(interest: Int = 10) {
                             contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
-                                .offset(x = 8.dp)
-                                .offset(y = 5.dp)
+                                .padding(start = 10.dp, bottom = 3.dp)
                         )
                         Text(
                             text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(current),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.CenterVertically)
-                                .offset(x = 10.dp)
-                                .offset(y = 5.dp)
+                                .padding(bottom = 3.dp)
                         )
                     }
 
                 }
-            }
+            } //여기서부터
             Box(
                 modifier = Modifier
-                    .padding(8.dp)
-                    .offset(y = -10.dp)
+                    .padding(start = 8.dp, end = 8.dp)
                     .background(color = Color.White)
                     .border(
                         width = 1.dp,

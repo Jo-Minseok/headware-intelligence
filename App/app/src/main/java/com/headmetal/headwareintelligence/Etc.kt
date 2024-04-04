@@ -43,6 +43,7 @@ import androidx.compose.material.TextButton
 @Preview(showBackground = true)
 @Composable
 fun Etc() {
+    var licenseDialog by remember { mutableStateOf(false) }
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -86,7 +87,7 @@ fun Etc() {
                                 style = TextStyle(textAlign = TextAlign.End),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding( top = 7.dp)
+                                    .padding(top = 7.dp)
                             )
                         }
 
@@ -97,62 +98,7 @@ fun Etc() {
                         Row {
 
                             Text(
-                                text = "업데이트 확인",
-                                color = Color.Black,
-                                fontSize = 20.sp
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null
-                            )
-                        }
-
-
-                        Spacer(
-                            modifier = Modifier.height(30.dp)
-                        )
-
-                        Row {
-
-                            Text(
-                                text = "백업 및 복원",
-                                color = Color.Black,
-                                fontSize = 20.sp
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null
-                            )
-                        }
-
-                        Spacer(
-                            modifier = Modifier.height(30.dp)
-                        )
-
-                        Row {
-
-                            Text(
-                                text = "카메라 및 저장소 권한 관리",
-                                color = Color.Black,
-                                fontSize = 20.sp
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null
-                            )
-                        }
-
-                        Spacer(
-                            modifier = Modifier.height(30.dp)
-                        )
-                        var showDialog by remember { mutableStateOf(false) }
-                        Row {
-
-                            Text(
-                                text = "개인정보 처리 방침",
+                                text = "라이센스",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
@@ -160,29 +106,72 @@ fun Etc() {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                                 contentDescription = null,
-                                modifier = Modifier.clickable {
-                                    // 아이콘이 클릭되었을 때 실행되는 코드
-                                    showDialog = true
+                                modifier = Modifier.clickable { licenseDialog = true }
+                            )
+                        }
+                        if (licenseDialog) {
+                            AlertDialog(
+                                onDismissRequest = { licenseDialog = false },
+                                title = {
+                                    Text(text = "라이센스 정보")
+                                },
+                                text = {
+                                    Column {
+                                        Text(text = "라이센스 1")
+                                        Text(text = "라이센스 2")
+                                        Text(text = "라이센스 3")
+                                        Text(text = "라이센스 4")
+                                    }
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = { licenseDialog= false }) {
+                                        Text(text = "확인")
+                                    }
                                 }
                             )
                         }
-                        if (showDialog) {
-                            Dialog(
-                                onDismissRequest = { showDialog = false },
-                                content = {
-                                    AlertDialog(
-                                        onDismissRequest = { showDialog = false },
-                                        title = { Text(text = "개인정보 처리 방침") },
-                                        text = { Text(text = "") },
-                                        confirmButton = {
-                                            TextButton(onClick = { showDialog = false }) {
-                                                Text("확인")
-                                            }
-                                        }
-                                    )
-                                }
+
+                        Spacer(
+                            modifier = Modifier.height(30.dp)
+                        )
+
+                        Row {
+
+                            Text(
+                                text = "App Info",
+                                color = Color.Black,
+                                fontSize = 12.sp
                             )
+                            Spacer(modifier = Modifier.weight(1f))
                         }
+
+                        Spacer(
+                            modifier = Modifier.height(10.dp)
+                        )
+
+                        Row {
+
+                            Text(
+                                text = "Team : Head-Metal",
+                                color = Color.Black,
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                        Row {
+
+                            Text(
+                                text = "Site : https://github.com/Jo-Minseok/headware-intelligence\n",
+                                color = Color.Black,
+                                fontSize = 12.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+
+                        Spacer(
+                            modifier = Modifier.height(30.dp)
+                        )
                     }
                 }
             }

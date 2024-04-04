@@ -14,14 +14,13 @@ for row in pre_sheet.iter_rows(min_row=2, values_only = True):
 
 processing_data = []
 for k, v in processing_dict.items():
-    k0, k1 = k.split()
-    processing_data.append([k0, k1, v[0], v[1]])
+    processing_data.append([k, v[0], v[1]])
 
 processing_file = openpyxl.Workbook()
 processing_sheet = processing_file.active
 
 for i in range(len(processing_data)):
-    for j, k in zip('ABCD', range(4)):
+    for j, k in zip('ABC', range(3)):
         processing_sheet[j + str(i + 1)] = processing_data[i][k]
 
 processing_file.save('processing data.xlsx')

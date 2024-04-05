@@ -1,39 +1,43 @@
 from fastapi import FastAPI, Response
-import requests
-import uvicorn
-import api_config
-import openpyxl
-import pytz
-from datetime import datetime
+import requests, uvicorn, api_config, openpyxl, pytz
+from datetime import datetime, timedelta
 
 data = openpyxl.load_workbook('processing data.xlsx')
 sheet = data.active
 
 data_dict = {}
-for row in sheet.iter_rows(values_only=True):
+for row in sheet.iter_rows(values_only = True):
     data_dict[row[0]] = [row[1], row[2]]
 
 app = FastAPI()
-
 
 @app.get("/weather/{city}/{district}")
 async def get_weather(city: str, district: str):
     now = datetime.now(pytz.timezone('Asia/Seoul'))
     h, m = now.hour, now.minute
-    base_time = ('%02d' % h) + '00' if m > 40 else ('%02d' %
-                                                    (h - 1 if h > 0 else 23)) + '00'
+    if m > 40:
+        base_time = ('%02d' % h) + '00'
+        date = datetime.today().strftime('%Y%m%d')
+    else:
+        if h == 0:
+            base_time = '2300'
+            date = (datetime.today() - timedelta(days=1)).strftime('%Y%m%d')
+        else:
+            base_time = ('%02d' % (h - 1)) + '00'
+            date = datetime.today().strftime('%Y%m%d')
     response = requests.get(api_config.api.api_endpoint + '/getUltraSrtNcst'
-                            '?serviceKey=' + api_config.api.api_key +
-                            '&dataType=JSON' +
-                            '&base_date=' + datetime.today().strftime('%Y%m%d') +
-                            '&base_time=' + base_time +
-                            '&nx=' + data_dict[city + ' ' + district][0] +
+                            '?serviceKey=' + api_config.api.api_key + 
+                            '&dataType=JSON' + 
+                            '&base_date=' + date + 
+                            '&base_time=' + base_time + 
+                            '&nx=' + data_dict[city + ' ' + district][0] + 
                             '&ny=' + data_dict[city + ' ' + district][1])
+    
     return response.json()
     # # 세부 결과 확인
     # weather_data = response.json()['response']['body']['items']['item']
-    # result = ('위치 : ' + city + ' ' + district + '\n' +
-    #           '날짜 : ' + weather_data[0]['baseDate'] + '\n' +
+    # result = ('위치 : ' + city + ' ' + district + '\n' + 
+    #           '날짜 : ' + weather_data[0]['baseDate'] + '\n' + 
     #           '기준 시간 : ' + weather_data[0]['baseTime'][:2] + '시\n')
     # for i in weather_data:
     #     if i['category'] == 'T1H':
@@ -51,7 +55,7 @@ async def get_weather(city: str, district: str):
     #     elif i['category'] == 'VEC':
     #         result += '풍향 : ' + i['obsrValue'] + ' deg\n'
     #     elif i['category'] == 'WSD':
-    #         result += '풍속 : ' + i['obsrValue'] + ' m/s\n'
+    #         result += '풍속 : ' + i['obsrValue'] + ' m/s\n'   
     # result = Response(result)
     # result.headers['Content-Type'] = 'text/plain; charset=utf-8'
     # return result

@@ -19,6 +19,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.EventNote
+import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Report
+import androidx.compose.material.icons.filled.TripOrigin
+import androidx.compose.material.icons.filled.Umbrella
+import androidx.compose.material.icons.filled.ViewHeadline
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.WbCloudy
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,7 +56,7 @@ import java.util.Locale
 
 @Preview(showBackground = true)
 @Composable
-fun Main(interest: Int = 10) {
+fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, dust:Int = 10) {
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)
@@ -62,6 +72,41 @@ fun Main(interest: Int = 10) {
         interest < 20 -> "안전 사고 주의가 필요해요"
         else -> "안전 관심은 항상 필요해요"
     }
+    val windyColor = when {
+        interest < 10 -> Color.Red
+        interest < 20 -> Color(0xFFFF6600)
+        else -> Color.Green
+    }
+    val windyText = when {
+        interest < 10 -> "강풍경보"
+        interest < 20 -> "강풍주의보"
+        else -> "보통"
+    }
+
+    val rainyColor = when {
+        interest < 10 -> Color.Red
+        interest < 20 -> Color(0xFFFF6600)
+        else -> Color.Green
+    }
+    val rainyText = when {
+        interest < 10 -> "호우경보"
+        interest < 20 -> "호우주의보"
+        else -> "보통"
+    }
+
+    val tempColor = when {
+        interest < 10 -> Color.Red
+        interest < 20 -> Color(0xFFFF6600)
+        else -> Color.Green
+    }
+
+    val dustText = when {
+        interest < 10 -> "나쁨"
+        interest < 20 -> "좋음"
+        else -> "보통"
+    }
+
+
     var current by remember {
         mutableStateOf(Calendar.getInstance().time)
     }
@@ -213,6 +258,23 @@ fun Main(interest: Int = 10) {
             Spacer(
                 modifier = Modifier.height(20.dp)
             )
+            Box(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+            ) {
+                Column(
+                ) {
+                    Text(
+                        text = "실시간 정보",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
 
             Box(
                 modifier = Modifier
@@ -226,12 +288,100 @@ fun Main(interest: Int = 10) {
                     .fillMaxWidth()
 
             ) {
-                Column {
-                    Row {
 
-                        Text(
-                            text = "기상정보"
+                Column {
+
+                    Row {
+                            //아이콘은 날시에 따라 바뀌게
+                        Icon(
+                            imageVector = Icons.Default.WaterDrop,
+                            contentDescription = null,
+                            tint = Color(0xFF00BFFF),
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp)
+                                .size(40.dp)
+
                         )
+                        Column {
+                            
+                            Text(
+                                text = "기상 정보 : 우천",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, top = 10.dp)
+                            )
+                            Row {
+                                Text(
+                                    text = "강수량 : ",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp)
+                                )
+                                Text(
+                                    text = "10mm",
+                                    color = rainyColor,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 2.dp)
+                                )
+                                Text(
+                                    text = rainyText,
+                                    color = rainyColor,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 5.dp)
+                                )
+
+                            }
+                            Row {
+                                Text(
+                                    text = "기온 : ",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                                )
+                                Text(
+                                    text = "10ºC",
+                                    color = tempColor,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 5.dp, bottom = 10.dp)
+                                )
+
+                            }
+                        }
+                        Column {
+
+                            Text(
+                                text = "풍속",
+                                fontSize = 16.sp,
+                                style = TextStyle(textAlign = TextAlign.End),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 10.dp, top = 10.dp)
+                            )
+                            Row {
+                                Text(
+                                    text = "16m/s",
+                                    fontSize = 16.sp,
+                                    color = windyColor,
+                                    style = TextStyle(textAlign = TextAlign.End),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 10.dp)
+                                )
+
+                            }
+                            Row {
+                                Text(
+                                    text = windyText,
+                                    fontSize = 16.sp,
+                                    color = windyColor,
+                                    style = TextStyle(textAlign = TextAlign.End),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 10.dp)
+                                )
+
+                            }
+                        }
+
+
                     }
 
                 }
@@ -254,12 +404,46 @@ fun Main(interest: Int = 10) {
 
             ) {
                 Column {
-                    Row {
 
-                        Text(
-                            text = "미세먼지"
+                    Row {
+                        Icon(
+                            imageVector = Icons.Default.ViewHeadline,
+                            contentDescription = null,
+                            tint = Color.DarkGray,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                                .size(40.dp)
+
                         )
+                        Column {
+
+                            Row {
+                                Text(
+                                    text = "미세먼지/초미세먼지",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, top = 30.dp)
+                                )
+
+
+                            }
+
+                        }
+                        Column {
+
+                            Text(
+                                text = dustText,
+                                fontSize = 16.sp,
+                                style = TextStyle(textAlign = TextAlign.End),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 10.dp, top = 30.dp)
+                            )
+                        }
+
                     }
+
+
 
                 }
             }
@@ -281,13 +465,32 @@ fun Main(interest: Int = 10) {
 
             ) {
                 Column {
+
                     Row {
+                        Icon(
+                            imageVector = Icons.Default.Report,
+                            contentDescription = null,
+                            tint = Color.DarkGray,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                                .size(40.dp)
 
-                        Text(
-                            text = "주의 행동 요령"
                         )
-                    }
+                        Column {
 
+                            Row {
+                                Text(
+                                    text = "주의 행동 요령",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, top = 30.dp)
+                                )
+
+                            }
+
+                        }
+
+                    }
                 }
             }
 
@@ -307,14 +510,34 @@ fun Main(interest: Int = 10) {
                     .fillMaxWidth()
 
             ) {
+
                 Column {
+
                     Row {
+                        Icon(
+                            imageVector = Icons.Default.Inventory,
+                            contentDescription = null,
+                            tint = Color.DarkGray,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                                .size(40.dp)
 
-                        Text(
-                            text = "사고처리내역"
                         )
-                    }
+                        Column {
 
+                            Row {
+                                Text(
+                                    text = "사고 처리 내역",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, top = 30.dp)
+                                )
+
+                            }
+
+                        }
+
+                    }
                 }
             }
         }

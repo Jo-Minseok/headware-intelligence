@@ -422,7 +422,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
 
                     Row {
                         Icon(
-                            imageVector = dustIcon,
+                            imageVector = Icons.Default.SentimentSatisfiedAlt,
                             contentDescription = null,
                             tint = dustColor,
                             modifier = Modifier

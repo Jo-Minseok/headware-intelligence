@@ -23,6 +23,9 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Report
+import androidx.compose.material.icons.filled.SentimentDissatisfied
+import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
+import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
 import androidx.compose.material.icons.filled.TripOrigin
 import androidx.compose.material.icons.filled.Umbrella
 import androidx.compose.material.icons.filled.ViewHeadline
@@ -101,9 +104,21 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
     }
 
     val dustText = when {
-        interest < 10 -> "나쁨"
-        interest < 20 -> "좋음"
-        else -> "보통"
+        interest < 10 -> "좋음"
+        interest < 20 -> "보통"
+        else -> "나쁨"
+    }
+
+    val dustIcon = when {
+        interest < 10 -> Icons.Default.SentimentVeryDissatisfied
+        interest < 20 -> Icons.Default.SentimentDissatisfied
+        else -> Icons.Default.SentimentSatisfiedAlt
+    }
+
+    val dustColor = when {
+        interest < 10 -> Color.Red
+        interest < 20 -> Color(0xFFFF6600)
+        else -> Color.Green
     }
 
 
@@ -273,7 +288,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
             }
 
             Spacer(
-                modifier = Modifier.height(20.dp)
+                modifier = Modifier.height(10.dp)
             )
 
             Box(
@@ -388,7 +403,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
             }
 
             Spacer(
-                modifier = Modifier.height(20.dp)
+                modifier = Modifier.height(10.dp)
             )
 
             Box(
@@ -407,9 +422,9 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
 
                     Row {
                         Icon(
-                            imageVector = Icons.Default.ViewHeadline,
+                            imageVector = dustIcon,
                             contentDescription = null,
-                            tint = Color.DarkGray,
+                            tint = dustColor,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
@@ -434,6 +449,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
                             Text(
                                 text = dustText,
                                 fontSize = 16.sp,
+                                color = dustColor,
                                 style = TextStyle(textAlign = TextAlign.End),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -449,7 +465,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
             }
 
             Spacer(
-                modifier = Modifier.height(20.dp)
+                modifier = Modifier.height(10.dp)
             )
 
             Box(
@@ -470,7 +486,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
                         Icon(
                             imageVector = Icons.Default.Report,
                             contentDescription = null,
-                            tint = Color.DarkGray,
+                            tint = Color(0xFFFFCC00),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
@@ -495,7 +511,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
             }
 
             Spacer(
-                modifier = Modifier.height(20.dp)
+                modifier = Modifier.height(10.dp)
             )
 
             Box(
@@ -517,7 +533,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
                         Icon(
                             imageVector = Icons.Default.Inventory,
                             contentDescription = null,
-                            tint = Color.DarkGray,
+                            tint = Color.Gray,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)

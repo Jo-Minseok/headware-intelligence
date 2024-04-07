@@ -12,6 +12,7 @@ material = "1.7.0-alpha05"
 materialIconsExtended = "1.7.0-alpha05"
 navigationCompose = "2.8.0-alpha05"
 core = "1.13.0-beta01"
+material3Android = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ androidx-material = { group = "androidx.compose.material", name = "material", ve
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core" }
+androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

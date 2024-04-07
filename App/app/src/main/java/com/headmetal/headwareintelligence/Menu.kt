@@ -183,7 +183,7 @@ fun Menu() {
                         colors= ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Notifications,

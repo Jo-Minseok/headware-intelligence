@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,6 +37,9 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
     }
     var pw by remember {
         mutableStateOf("")
+    }
+    var part by remember {
+        mutableStateOf("None")
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -84,7 +89,52 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     )
                 )
             }
+
+            Column(
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "Part",
+                    fontWeight = FontWeight.Bold
+                )
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Box(
+                        modifier = Modifier.padding(horizontal = 40.dp)
+                    ) {
+                        Row {
+                            RadioButton(
+                                selected = (part == "Normal"),
+                                onClick = { part = "Normal" }
+                            )
+                            Text(
+                                text = "일반직",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
+                    }
+                    Box(
+                        modifier = Modifier.padding(horizontal = 40.dp)
+                    ) {
+                        Row {
+                            RadioButton(
+                                selected = (part == "Manage"),
+                                onClick = { part = "Manage" }
+                            )
+                            Text(
+                                text = "관리직",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
+                    }
+                }
+            }
+
             Row {
+
                 Button(
                     onClick = { /*TODO*/ },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
@@ -119,6 +169,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     )
                 }
             }
+
             Text(
                 text = "HeadWear - Intelligence",
                 modifier = Modifier.padding(top = 20.dp),

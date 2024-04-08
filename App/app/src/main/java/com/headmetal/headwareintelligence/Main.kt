@@ -59,7 +59,7 @@ import java.util.Locale
 
 @Preview(showBackground = true)
 @Composable
-fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, dust:Int = 10) {
+fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)
@@ -76,50 +76,50 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
         else -> "안전 관심은 항상 필요해요"
     }
     val windyColor = when {
-        interest < 10 -> Color.Red
-        interest < 20 -> Color(0xFFFF6600)
+        windy < 10 -> Color.Red
+        windy < 20 -> Color(0xFFFF6600)
         else -> Color.Green
     }
     val windyText = when {
-        interest < 10 -> "강풍경보"
-        interest < 20 -> "강풍주의보"
+        windy < 10 -> "강풍경보"
+        windy < 20 -> "강풍주의보"
         else -> "보통"
     }
 
     val rainyColor = when {
-        interest < 10 -> Color.Red
-        interest < 20 -> Color(0xFFFF6600)
+        rainy < 10 -> Color.Red
+        rainy < 20 -> Color(0xFFFF6600)
         else -> Color.Green
     }
     val rainyText = when {
-        interest < 10 -> "호우경보"
-        interest < 20 -> "호우주의보"
+        rainy < 10 -> "호우경보"
+        rainy < 20 -> "호우주의보"
         else -> "보통"
     }
 
     val tempColor = when {
-        interest < 10 -> Color.Red
-        interest < 20 -> Color(0xFFFF6600)
+        temp < 10 -> Color.Red
+        temp < 20 -> Color(0xFFFF6600)
         else -> Color.Green
     }
-
-    val dustText = when {
-        interest < 10 -> "좋음"
-        interest < 20 -> "보통"
+/////미세먼지/////
+/*    val dustText = when {
+        dust < 10 -> "좋음"
+        dust < 20 -> "보통"
         else -> "나쁨"
     }
 
     val dustIcon = when {
-        interest < 10 -> Icons.Default.SentimentVeryDissatisfied
-        interest < 20 -> Icons.Default.SentimentDissatisfied
+        dust < 10 -> Icons.Default.SentimentVeryDissatisfied
+        dust < 20 -> Icons.Default.SentimentDissatisfied
         else -> Icons.Default.SentimentSatisfiedAlt
     }
 
     val dustColor = when {
-        interest < 10 -> Color.Red
-        interest < 20 -> Color(0xFFFF6600)
+        dust < 10 -> Color.Red
+        dust < 20 -> Color(0xFFFF6600)
         else -> Color.Green
-    }
+    }*/
 
 
     var current by remember {
@@ -405,8 +405,8 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
             Spacer(
                 modifier = Modifier.height(10.dp)
             )
-
-            Box(
+            ///////미세먼지//////
+            /*Box(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .background(color = Color.White)
@@ -422,7 +422,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
 
                     Row {
                         Icon(
-                            imageVector = Icons.Default.SentimentSatisfiedAlt,
+                            imageVector = dustIcon,
                             contentDescription = null,
                             tint = dustColor,
                             modifier = Modifier
@@ -462,7 +462,7 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, du
 
 
                 }
-            }
+            }*/
 
             Spacer(
                 modifier = Modifier.height(10.dp)

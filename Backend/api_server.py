@@ -34,6 +34,11 @@ async def get_weather(city: str, district: str):
                             '&ny=' + data_dict[city + ' ' + district][1])
     
     return response.json()
+    
+    @app.get("/login/{id}/{pw}")
+    async def get_login(id: str, pw: str):
+        
+    return 
     # # 세부 결과 확인
     # weather_data = response.json()['response']['body']['items']['item']
     # result = ('위치 : ' + city + ' ' + district + '\n' + 

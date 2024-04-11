@@ -6,6 +6,10 @@ from weather import api_config
 
 app = FastAPI()
 
+@app.get("/")
+async def main():
+    return 1
+
 app.include_router(weather_api.router)
 app.include_router(account.router)
 if __name__ == '__main__':

@@ -23,7 +23,7 @@
   - [Language](#Language)
   - [Framework](#Framework)
   - [Distribution](#distribution)
-  - [Function](#Function)
+- [Function](#Function)
 - [SOURCE](#source)
 
 ## TEAM
@@ -114,7 +114,7 @@ FrontEnd Server :
 BackEnd Server :
 ```
 
-### Function
+## Function
 
 <details>
     <summary><strong>💡 HARDWARE</strong></summary>

@@ -7,7 +7,7 @@ from weather import api_config
 
 router = APIRouter(prefix="/weather")
 
-data = openpyxl.load_workbook(r'C:\Users\MINSEOK\Desktop\Git Kraken\headware-intelligence\Backend\weather\processing data.xlsx')
+data = openpyxl.load_workbook(r'.\weather\processing data.xlsx')
 sheet = data.active
 
 data_dict = {}

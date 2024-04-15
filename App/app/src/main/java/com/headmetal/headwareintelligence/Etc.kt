@@ -75,6 +75,25 @@ fun Etc() {
                 ) {
                     Column(
                     ) {
+
+                        Row {
+
+                            Text(
+                                text = "작업자",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(30.dp)
+                        )
+
                         Row {
                             Text(
                                 text = "버전 정보",

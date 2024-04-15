@@ -1,65 +1,56 @@
+-- 직원 테이블
 CREATE TABLE user_employee (
-	'id' varchar2(100)	NOT NULL,
-	'password' varchar2(100)	NOT NULL,
-	'email'	varchar2(100)	NULL,
-	'manager'	varchar2(100)	NOT NULL,
-	'helmet_no'	varchar2(100)	NOT NULL,
-	'phone_no'	varchar2(100)	NOT NULL
+    id varchar(100) NOT NULL PRIMARY KEY,
+    password varchar(100) NOT NULL,
+    email varchar(100) NULL,
+    manager varchar(100) NOT NULL,
+    helmet_no varchar(100) NOT NULL,
+    phone_no varchar(100) NOT NULL
+);
+-- 관리자 테이블
+CREATE TABLE user_manager (
+    id varchar(100) NOT NULL PRIMARY KEY,
+    password varchar(100) NOT NULL,
+    email varchar(100) NULL,
+    company varchar(100) NOT NULL
 );
 
-CREATE TABLE 'user_manager' (
-	'id'	varchar2(100)	NOT NULL,
-	'password'	varchar2(100)	NOT NULL,
-	'email'	varchar2(100)	NULL,
-	'company'	varchar2(100)	NOT NULL
+
+-- 사고 테이블
+CREATE TABLE accident (
+    no bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    date date NOT NULL,
+    time time NOT NULL,
+    latitude float(6) NOT NULL DEFAULT 1,
+    longitude float(6) NOT NULL DEFAULT 1,
+    victim_id varchar(100) NOT NULL,
+    category varchar(100) NOT NULL,
+    CONSTRAINT ck_longitude CHECK (longitude >= -180.000000 AND longitude <= 180.000000),
+    CONSTRAINT ck_latitude CHECK (latitude >= -90.000000 AND latitude <= 90.000000)
 );
 
-CREATE TABLE 'accident' (
-	'no'	int	NOT NULL	DEFAULT 1,
-	'date'	date	NOT NULL,
-	'time'	time	NOT NULL,
-	'latitude'	float(3)	NOT NULL	DEFAULT 1,
-	'longitude'	float(3)	NOT NULL	DEFAULT 1,
-	'victim_id'	varchar2(100)	NOT NULL,
-	'category'	varchar2(100)	NOT NULL
+
+-- 사고 처리 테이블
+CREATE TABLE accident_processing (
+    no bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    situation varchar(100) NOT NULL,
+    date date NOT NULL,
+    time time NOT NULL,
+    detail varchar(100) NOT NULL,
+    FOREIGN KEY (no) REFERENCES accident(no)
+);
+-- 회사 목록 테이블
+CREATE TABLE company_list (
+    company varchar(100) NOT NULL PRIMARY KEY
 );
 
-CREATE TABLE 'accident_proccessing' (
-	'no'	int	NOT NULL	DEFAULT 1,
-	'situation'	varchar2(100)	NOT NULL,
-	'date'	date	NOT NULL,
-	'time'	time	NOT NULL,
-	'detail'	varchar2(100)	NOT NULL
-);
+-- 관리자 & 회사 이름 외래키
+ALTER TABLE user_manager ADD CONSTRAINT FK_company_list_TO_user_manager FOREIGN KEY(company) REFERENCES company_list (company);
 
-CREATE TABLE 'company_list' (
-	'company'	varchar2(100)	NOT NULL
-);
 
-ALTER TABLE 'user_employee' ADD CONSTRAINT 'PK_USER_EMPLOYEE' PRIMARY KEY (
-	'id'
-);
+-- 관리자 & 회원 관리자 외래키
+ALTER TABLE user_employee ADD CONSTRAINT FK_manager_TO_employee FOREIGN KEY (manager) REFERENCES user_manager (id);
 
-ALTER TABLE 'user_manager' ADD CONSTRAINT 'PK_USER_MANAGER' PRIMARY KEY (
-	'id'
-);
-
-ALTER TABLE 'accident' ADD CONSTRAINT 'PK_ACCIDENT' PRIMARY KEY (
-	'no'
-);
-
-ALTER TABLE 'accident_proccessing' ADD CONSTRAINT 'PK_ACCIDENT_PROCCESSING' PRIMARY KEY (
-	'no'
-);
-
-ALTER TABLE 'company_list' ADD CONSTRAINT 'PK_COMPANY_LIST' PRIMARY KEY (
-	'company'
-);
-
-ALTER TABLE 'accident_proccessing' ADD CONSTRAINT 'FK_accident_TO_accident_proccessing_1' FOREIGN KEY (
-	'no'
-)
-REFERENCES 'accident' (
-	'no'
-);
+-- 근로자 & 사고발생 외래키
+ALTER TABLE accident ADD CONSTRAINT FK_employee_TO_accident FOREIGN KEY(victim_id) REFERENCES user_employee (id);
 

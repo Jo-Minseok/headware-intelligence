@@ -272,6 +272,36 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*
             }
 
             Spacer(
+                modifier = Modifier.height(15.dp)
+            )
+
+            Button(
+                onClick = {},
+                modifier = Modifier.padding(horizontal = 16.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    )  {
+                        Text(
+                            text = "안전모 등록",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+
+            }
+
+            Spacer(
                 modifier = Modifier.height(20.dp)
             )
             Box(
@@ -414,11 +444,11 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*
                 }
             }
 
-            Spacer(
+            /*Spacer(
                 modifier = Modifier.height(10.dp)
             )
             ///////미세먼지//////
-            /*Box(
+            Box(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .background(color = Color.White)

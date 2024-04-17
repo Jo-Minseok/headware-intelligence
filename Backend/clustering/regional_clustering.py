@@ -1,28 +1,48 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from fastapi import APIRouter
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
-data = np.array([
-    [37.7749, -122.4194],  # 샌프란시스코
-    [34.0522, -118.2437],  # 로스앤젤레스
-    [40.7128, -74.0060],   # 뉴욕
-    [41.8781, -87.6298],   # 시카고
-    [29.7604, -95.3698],   # 휴스턴
-    [33.4484, -112.0740]   # 피닉스
-])
+router = APIRouter(prefix="/map")
 
-kmeans = KMeans(n_clusters=3)
-kmeans.fit(data)
+@router.get("/cluster")
+def cluster_data():
+    return {"result": "clustered data"}
 
-centroids = kmeans.cluster_centers_
-print("클러스터 중심:", centroids)
+# 지도 위도 값 설정(현재 테스트 데이터)
+latitude = [37.5585, 40.7128, 51.5074, 48.8566, 35.6895]
 
-labels = kmeans.labels_
-print("클러스터 할당:", labels)
+# 지도 경도 값 설정(현재 테스트 데이터)
+longitude = [126.9368, -74.0060, -0.1278, 2.3522, 139.6917]
 
-plt.scatter(data[:, 1], data[:, 0], c=labels, cmap='viridis')
-plt.scatter(centroids[:, 1], centroids[:, 0], marker='x', s=200, c='red')
-plt.xlabel('경도')
-plt.ylabel('위도')
-plt.title('K-Means 클러스터링 결과')
+# 데이터프레임 생성
+df = pd.DataFrame({'latitude' : latitude, 'longitude' : longitude})
+print(df)
+
+# 데이터 추가
+# df = pd.concat([df, pd.DataFrame({'latitude' : [], 'longitude' : []})], ignore_index = True)
+
+# 클러스터 개수 범위 설정
+k_range = range(2, 6)
+
+# 각 클러스터 개수에 대해 KMeans 모델을 훈련하고 실루엣 스코어 계산
+silhouette_scores = []
+for k in k_range:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(df)
+    labels = kmeans.labels_
+    print(labels)
+    if len(np.unique(labels)) > 1:  # 1개의 클러스터가 아닌 경우에만 계산
+        silhouette_avg = silhouette_score(df, labels)
+        silhouette_scores.append(silhouette_avg)
+    else:
+        silhouette_scores.append(0)  # 클러스터가 1개일 때는 스코어를 0으로 설정
+
+# 실루엣 스코어 그래프 그리기
+plt.plot(k_range, silhouette_scores, 'o-')
+plt.xlabel('Number of clusters')
+plt.ylabel('Silhouette Score')
+plt.title('Silhouette Analysis for Optimal k')
 plt.show()

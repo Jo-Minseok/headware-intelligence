@@ -50,7 +50,6 @@ import androidx.compose.ui.draw.alpha
 @Composable
 
 fun Helmet() {
-    var licenseDialog by remember { mutableStateOf(false) }
     var helmetid by remember {
         mutableStateOf("")
     }

@@ -58,9 +58,6 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
     var mail by remember {
         mutableStateOf("")
     }
-    var ENC by remember {
-        mutableStateOf("")
-    }
     var part by remember {
         mutableStateOf("None")
     }
@@ -91,7 +88,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "아이디",
+                    text = "Id",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -111,7 +108,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "비밀번호",
+                    text = "Password",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -131,7 +128,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "비밀번호 확인",
+                    text = "Confirm Password",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -151,7 +148,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "이메일",
+                    text = "E-mail",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -208,8 +205,6 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                     }
                 }
             }
-
-
 
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)

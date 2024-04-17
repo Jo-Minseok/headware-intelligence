@@ -33,8 +33,11 @@ import androidx.compose.ui.unit.sp
 
 @Preview(showBackground = true)
 @Composable
-fun FindID(modifier: Modifier = Modifier) {
+fun Findpw(modifier: Modifier = Modifier) {
     var id by remember {
+        mutableStateOf("")
+    }
+    var name by remember {
         mutableStateOf("")
     }
     var phone by remember {
@@ -55,6 +58,27 @@ fun FindID(modifier: Modifier = Modifier) {
                 painter = painterResource(id = R.drawable.helmet),
                 contentDescription = null
             )
+
+            Column(
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "아이디",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                TextField(
+                    value = id,
+                    onValueChange = { id = it },
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+            }
+            
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
@@ -64,8 +88,8 @@ fun FindID(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = id,
-                    onValueChange = { id = it },
+                    value = name,
+                    onValueChange = { name = it },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
@@ -147,7 +171,7 @@ fun FindID(modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "아이디 찾기",
+                        text = "비밀번호 찾기",
                         fontWeight = FontWeight.Bold
                     )
                 }

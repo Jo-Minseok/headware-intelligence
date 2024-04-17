@@ -37,7 +37,7 @@ for k in k_range:
     silhouette_scores.append(silhouette_avg)
 
 # 실루엣 스코어 출력
-print('Silhouette Score')
+print('\nSilhouette Score')
 for i, j in zip(k_range, silhouette_scores):
     print(i, ':', j)
 

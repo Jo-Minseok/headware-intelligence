@@ -140,6 +140,72 @@ fun Helmet() {
                             modifier = Modifier.padding(bottom = 16.dp)
                         ) {
                             Text(
+                                text = "블루투스 연결",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                        }
+                        
+                        Row {
+                            Button(
+                                onClick = {},
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Box(
+                                        modifier = Modifier.weight(1f),
+                                        contentAlignment = Alignment.Center
+                                    )  {
+                                        Text(
+                                            text = "연결하기",
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Black,
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Row {
+                            Button(
+                                onClick = {},
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Box(
+                                        modifier = Modifier.weight(1f),
+                                        contentAlignment = Alignment.Center
+                                    )  {
+                                        Text(
+                                            text = "연결해제",
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Black,
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(20.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        ) {
+                            Text(
                                 text = "안전모 번호",
                                 color = Color.Black,
                                 fontSize = 20.sp
@@ -157,6 +223,7 @@ fun Helmet() {
                                 )
                             )
                         }
+
                         Row {
                             Button(
                                 onClick = {},

@@ -38,7 +38,10 @@ fun Findid(modifier: Modifier = Modifier) {
     var id by remember {
         mutableStateOf("")
     }
-    var pw by remember {
+    var name by remember {
+        mutableStateOf("")
+    }
+    var phone by remember {
         mutableStateOf("")
     }
     var part by remember {
@@ -61,7 +64,7 @@ fun Findid(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "ID",
+                    text = "아이디",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -86,8 +89,8 @@ fun Findid(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = id,
-                    onValueChange = { id = it },
+                    value = name,
+                    onValueChange = { name = it },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
@@ -106,8 +109,8 @@ fun Findid(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = pw,
-                    onValueChange = { pw = it },
+                    value = phone,
+                    onValueChange = { phone = it },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
@@ -121,7 +124,7 @@ fun Findid(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "Part",
+                    text = "직무",
                     fontWeight = FontWeight.Bold
                 )
                 Row(
@@ -169,7 +172,7 @@ fun Findid(modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "P/W 찾기",
+                        text = "비밀번호 찾기",
                         fontWeight = FontWeight.Bold
                     )
                 }

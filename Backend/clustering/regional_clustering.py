@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from fastapi import APIRouter
@@ -9,6 +8,7 @@ router = APIRouter(prefix="/map")
 
 @router.get("/cluster")
 def cluster_data():
+    # 모델 제작 완료 후 기입
     return {"result": "clustered data"}
 
 # 지도 위도 값 설정(현재 테스트 데이터)
@@ -24,8 +24,8 @@ print(df)
 # 데이터 추가
 # df = pd.concat([df, pd.DataFrame({'latitude' : [], 'longitude' : []})], ignore_index = True)
 
-# 클러스터 개수 범위 설정
-k_range = range(2, 6)
+# 클러스터 개수 범위 설정, 범위를 위도, 경도 값 개수에 따라 2개에서 n - 1까지 지정(데이터가 5개라면 클러스터 개수는 2~4개가 나와야 함)
+k_range = range(2, len(latitude))
 
 # 각 클러스터 개수에 대해 KMeans 모델을 훈련하고 실루엣 스코어 계산
 silhouette_scores = []
@@ -33,12 +33,13 @@ for k in k_range:
     kmeans = KMeans(n_clusters=k, random_state=42)
     kmeans.fit(df)
     labels = kmeans.labels_
-    print(labels)
-    if len(np.unique(labels)) > 1:  # 1개의 클러스터가 아닌 경우에만 계산
-        silhouette_avg = silhouette_score(df, labels)
-        silhouette_scores.append(silhouette_avg)
-    else:
-        silhouette_scores.append(0)  # 클러스터가 1개일 때는 스코어를 0으로 설정
+    silhouette_avg = silhouette_score(df, labels)
+    silhouette_scores.append(silhouette_avg)
+
+# 실루엣 스코어 출력
+print('Silhouette Score')
+for i, j in zip(k_range, silhouette_scores):
+    print(i, ':', j)
 
 # 실루엣 스코어 그래프 그리기
 plt.plot(k_range, silhouette_scores, 'o-')

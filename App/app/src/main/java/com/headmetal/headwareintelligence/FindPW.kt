@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 
 @Preview(showBackground = true)
 @Composable
-fun Findid(modifier: Modifier = Modifier) {
+fun FindPW(modifier: Modifier = Modifier) {
     var id by remember {
         mutableStateOf("")
     }

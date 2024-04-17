@@ -75,51 +75,12 @@ fun Findid(modifier: Modifier = Modifier) {
                     )
                 )
             }
-            Column(
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                Text(
-                    text = "생년월일",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                TextField(
-                    value = pw,
-                    onValueChange = { pw = it },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-            }
 
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "전화번호",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                TextField(
-                    value = pw,
-                    onValueChange = { pw = it },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-            }
-
-            Column(
-                modifier = Modifier.padding(bottom = 30.dp)
-            ) {
-                Text(
-                    text = "이메일",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -188,17 +149,6 @@ fun Findid(modifier: Modifier = Modifier) {
                 ) {
                     Text(
                         text = "ID 찾기",
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "PW 찾기",
                         fontWeight = FontWeight.Bold
                     )
                 }

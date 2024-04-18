@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,9 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
     var confirm_pw by remember {
         mutableStateOf("")
     }
+    var phone by remember {
+        mutableStateOf("")
+    }
     var mail by remember {
         mutableStateOf("")
     }
@@ -66,7 +70,18 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
     var selectedCompany by remember { mutableStateOf("") }
     val companyList = listOf("행복건설", "안전건설", "생명건설")
 
-    var isManagement by remember { mutableStateOf(false) }
+    var expanded2 by remember { mutableStateOf(false) }
+    var selectedManager by remember { mutableStateOf("") }
+    val managerList = listOf("O","X")
+
+    // 각 건설업체에 따른 매니저 리스트 정의
+    val managerListHappyConstruction = listOf("매니저1", "매니저2")
+    val managerListSafeConstruction = listOf("매니저3", "매니저4")
+    val managerListLifeConstruction = listOf("매니저5", "매니저6")
+
+    // 매니저 리스트 선택 변수
+    var managerListSelected by remember { mutableStateOf(emptyList<String>()) }
+    var isNormal by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -88,7 +103,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "Id",
+                    text = "아이디",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -108,7 +123,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "Password",
+                    text = "비밀번호",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -128,7 +143,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "Confirm Password",
+                    text = "비밀번호 확인",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -144,11 +159,33 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                     )
                 )
             }
+
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "E-mail",
+                    text = "전화번호",
+                    fontWeight = FontWeight.Bold
+                )
+                TextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .width(350.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    )
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "이메일",
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
@@ -165,12 +202,52 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 )
             }
 
-            if (isManagement) {
+            Column(
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "건설업체",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 20.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    Text(
+                        text = selectedCompany.takeUnless { it.isEmpty() } ?: "선택하세요",
+                        modifier = Modifier
+                            .clickable(onClick = { expanded = true })
+                            .background(Color(1f, 1f, 1f, 0.4f))
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .width(350.dp)
+                            .height(30.dp)
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        companyList.forEach { company ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    selectedCompany = company
+                                    expanded = false
+                                }
+                            ) {
+                                Text(text = company)
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (isNormal) {
                 Column(
                     modifier = Modifier.padding(bottom = 16.dp)
                 ) {
                     Text(
-                        text = "건설업체",
+                        text = "매니저",
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(start = 20.dp)
                     )
@@ -180,31 +257,43 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                             .clip(RoundedCornerShape(8.dp)) // 둥근 테두리 설정
                     ) {
                         Text(
-                            text = selectedCompany.takeUnless { it.isEmpty() } ?: "선택하세요",
+                            text = selectedManager.takeUnless { it.isEmpty() } ?: "선택하세요",
                             modifier = Modifier
-                                .clickable(onClick = { expanded = true })
-                                .background(Color(1f, 1f, 1f, 0.5f))
+                                .clickable(onClick = { expanded2 = true })
+                                .background(Color(1f, 1f, 1f, 0.4f))
                                 .padding(horizontal = 16.dp, vertical = 12.dp)
                                 .width(350.dp)
+                                .height(30.dp)
                         )
                         DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
+                            expanded = expanded2,
+                            onDismissRequest = { expanded2 = false }
                         ) {
-                            companyList.forEach { company ->
+                            managerListSelected.forEach { manager ->
                                 DropdownMenuItem(
                                     onClick = {
-                                        selectedCompany = company
-                                        expanded = false
+                                        selectedManager = manager
+                                        expanded2 = false
                                     }
                                 ) {
-                                    Text(text = company)
+                                    Text(text = manager)
                                 }
                             }
                         }
                     }
                 }
             }
+
+            // 선택된 건설업체에 따라 매니저 리스트 업데이트
+            LaunchedEffect(selectedCompany) {
+                managerListSelected = when (selectedCompany) {
+                    "행복건설" -> managerListHappyConstruction
+                    "안전건설" -> managerListSafeConstruction
+                    "생명건설" -> managerListLifeConstruction
+                    else -> emptyList()
+                }
+            }
+            
 
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -224,7 +313,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                                 selected = (part == "Normal"),
                                 onClick = {
                                     part = "Normal"
-                                    isManagement = false // 관리직이 아님
+                                    isNormal = true
                                 }
                             )
                             Text(
@@ -242,7 +331,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                                 selected = (part == "Manage"),
                                 onClick = {
                                     part = "Manage"
-                                    isManagement = true // 관리직임
+                                    isNormal = false
                                 }
                             )
                             Text(

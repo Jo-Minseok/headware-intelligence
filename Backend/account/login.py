@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 router = APIRouter(prefix="/login")
 
-@router.get("/manager")
+class
 
-@router.get("/user")
+
+@router.get("/manager")
+@router.get("/employee")

@@ -1,11 +1,14 @@
 from fastapi import APIRouter
-import pymysql
-router = APIRouter(prefix = "/register")
+from typing import Tuple
+from pydantic import BaseModel
+router = APIRouter(prefix="/register")
 
-@router.post("/employee")
-def post_employee_register():
+
+@router.post("/employee/{account_items}}")
+def post_employee_register(account_items: Tuple[str]):
     return 2
 
-@router.post("/manager")
-def post_manager_register():
+
+@ router.post("/manager/{account_items}")
+def post_manager_register(account_items: Tuple[str]):
     return 2

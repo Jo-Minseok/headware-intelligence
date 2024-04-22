@@ -1,1 +1,6 @@
 .vscode
+Backend/.env
+Backend/weather/__pycache__
+Backend/weather/.env
+Backend/user/__pycache__
+Backend/__pycache__

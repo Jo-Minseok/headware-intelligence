@@ -1,4 +1,4 @@
-from .db_connection import Base
+from db.db_connection import Base
 from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Time, Float, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
@@ -9,8 +9,8 @@ class CompanyList(Base):
     __tablename__ = "company_list"
     company = Column(VARCHAR(length=100), primary_key=True)
 
-    rel_manager = relationship("UserManager", backref="company")
-    rel_employee = relationship("UserEmployee", backref="company")
+    rel_manager = relationship("UserManager", backref="company_manager")
+    rel_employee = relationship("UserEmployee", backref="company_employee")
 
 
 # 안전 관리자 회원 테이블
@@ -20,11 +20,12 @@ class UserManager(Base):
 
     id = Column(VARCHAR(length=100), primary_key=True)
     password = Column(VARCHAR(length=100), nullable=False)
-    email = Column(VARCHAR(length=100))
+    name = Column(VARCHAR(length=4), nullable=False)
+    email = Column(VARCHAR(length=100), nullable=True)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
 
-    rel_employee = relationship("UserEmployee", backref="manager")
+    rel_employee = relationship("UserEmployee", backref="manager_employee")
 
 
 # 근로 회원 테이블
@@ -35,15 +36,16 @@ class UserEmployee(Base):
 
     id = Column(VARCHAR(length=100), primary_key=True)
     password = Column(VARCHAR(length=100), nullable=False)
-    email = Column(VARCHAR(length=100))
+    name = Column(VARCHAR(length=4), nullable=False)
+    email = Column(VARCHAR(length=100), nullable=True)
     manager = Column(VARCHAR(length=100), ForeignKey(
         'user_manager.id'), nullable=False)
-    helmet_no = Column(VARCHAR(length=100), nullable=False)
+    helmet_no = Column(VARCHAR(length=100), nullable=True)
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
 
-    rel_accident = relationship("Accident", backref="victim_id")
+    rel_accident = relationship("Accident", backref="victim_employee")
 # 사고 발생 테이블
 
 
@@ -53,8 +55,8 @@ class Accident(Base):
     no = Column(BigInteger, primary_key=True, autoincrement=True, index=True)
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)
-    latitude = Column(Float(precision=6), nullable=False, default=1)
-    longitude = Column(Float(precision=6), nullable=False, default=1)
+    latitude = Column(Float(precision=6), nullable=False, default=1.0)
+    longitude = Column(Float(precision=6), nullable=False, default=1.0)
     __table_args__ = (
         CheckConstraint(
             'longitude >= -180.000000 AND longitude <= 180.000000', name='ck_longitude'),
@@ -66,7 +68,7 @@ class Accident(Base):
     category = Column(VARCHAR(length=100), nullable=False)
 
     rel_victim_id = relationship(
-        "AccidentProcessing", backref="no", uselist=False)
+        "AccidentProcessing", backref="accident_processing", uselist=False)
 # 처리상황 테이블
 
 

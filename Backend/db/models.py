@@ -2,9 +2,8 @@ from db.db_connection import Base
 from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Time, Float, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
+
 # 회사 목록 테이블
-
-
 class CompanyList(Base):
     __tablename__ = "company_list"
     company = Column(VARCHAR(length=100), primary_key=True)
@@ -14,7 +13,6 @@ class CompanyList(Base):
 
 
 # 안전 관리자 회원 테이블
-
 class UserManager(Base):
     __tablename__ = "user_manager"
 
@@ -28,9 +26,7 @@ class UserManager(Base):
     rel_employee = relationship("UserEmployee", backref="manager_employee")
 
 
-# 근로 회원 테이블
-
-
+# 근로자 테이블
 class UserEmployee(Base):
     __tablename__ = "user_employee"
 
@@ -46,9 +42,9 @@ class UserEmployee(Base):
         'company_list.company'), nullable=False)
 
     rel_accident = relationship("Accident", backref="victim_employee")
+
+
 # 사고 발생 테이블
-
-
 class Accident(Base):
     __tablename__ = "accident"
 
@@ -69,9 +65,9 @@ class Accident(Base):
 
     rel_victim_id = relationship(
         "AccidentProcessing", backref="accident_processing", uselist=False)
+
+
 # 처리상황 테이블
-
-
 class AccidentProcessing(Base):
     __tablename__ = "accident_processing"
 

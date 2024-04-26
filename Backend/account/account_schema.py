@@ -2,12 +2,14 @@ from pydantic import BaseModel, field_validator, EmailStr
 from pydantic_core.core_schema import FieldValidationInfo
 
 
+# 근로자 로그인 스키마
 class Employee_Login(BaseModel):
     id: str
     access_token: str
     token_type: str
 
 
+# 근로자 계정 생성 스키마
 class Employee_Create(BaseModel):
     id: str
     password: str
@@ -25,12 +27,14 @@ class Employee_Create(BaseModel):
         return v
 
 
+# 관리자 로그인 스키마
 class Manager_Login(BaseModel):
     id: str
     access_token: str
     token_type: str
 
 
+# 관리자 계정 생성 스키마
 class Manager_Create(BaseModel):
     id: str
     password: str

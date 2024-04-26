@@ -1,6 +1,14 @@
 .vscode
-Backend/.env
+
+Backend/__pycache__
+
+Backend/db/.env
+Backend/db/alembic.ini
+Backend/db/__pycache__
+
+Backend/account/.env
+Backend/account/__pycache__
+
 Backend/weather/__pycache__
 Backend/weather/.env
 Backend/user/__pycache__
-Backend/__pycache__

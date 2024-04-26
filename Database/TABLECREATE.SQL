@@ -2,6 +2,7 @@
 CREATE TABLE user_employee (
     id varchar(100) PRIMARY KEY,
     password varchar(100) NOT NULL,
+    name varchar(4) NOT NULL,
     email varchar(100) NULL,
     manager varchar(100) NOT NULL,
     helmet_no varchar(100) NOT NULL,
@@ -12,6 +13,7 @@ CREATE TABLE user_employee (
 CREATE TABLE user_manager (
     id varchar(100) PRIMARY KEY,
     password varchar(100) NOT NULL,
+    name varchar(4) NOT NULL,
     email varchar(100) NULL,
     company varchar(100) NOT NULL
 );

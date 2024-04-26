@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 import uvicorn
 from weather import weather_api
-from Backend.user import register
-from weather import api_config
+from account import register_router
+from account import login_router
+from db import models
+from db.db_connection import engine
 
 app = FastAPI()
 
@@ -12,6 +14,8 @@ async def main():
     return 1
 
 app.include_router(weather_api.router)
-app.include_router(register.router)
+app.include_router(register_router.router)
+app.include_router(login_router.router)
 if __name__ == '__main__':
+    models.Base.metadata.create_all(bind=engine)
     uvicorn.run(app, host='0.0.0.0', port=8000)

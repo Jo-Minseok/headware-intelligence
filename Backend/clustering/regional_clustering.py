@@ -41,9 +41,27 @@ print('\nSilhouette Score')
 for i, j in zip(k_range, silhouette_scores):
     print(i, ':', j)
 
-# 실루엣 스코어 그래프 그리기
-plt.plot(k_range, silhouette_scores, 'o-')
-plt.xlabel('Number of clusters')
-plt.ylabel('Silhouette Score')
-plt.title('Silhouette Analysis for Optimal k')
+# # 실루엣 스코어 그래프 그리기
+# plt.plot(k_range, silhouette_scores, 'o-')
+# plt.xlabel('Number of clusters')
+# plt.ylabel('Silhouette Score')
+# plt.title('Silhouette Analysis for Optimal k')
+# plt.show()
+
+# K-Means 모델 훈련
+kmeans = KMeans(n_clusters=k_range[silhouette_scores.index(max(silhouette_scores))], random_state=42)  # 클러스터 개수는 적절히 설정
+kmeans.fit(df)
+
+# 클러스터 중심점 추출
+centroids = kmeans.cluster_centers_
+
+# 클러스터 레이블 추출
+labels = kmeans.labels_
+
+# 클러스터링 결과 시각화
+plt.scatter(df['longitude'], df['latitude'], c=labels, cmap='viridis')
+plt.scatter(centroids[:, 1], centroids[:, 0], marker='x', s=200, c='red')
+plt.xlabel('longitude')
+plt.ylabel('latitude')
+plt.title('K-Means Result')
 plt.show()

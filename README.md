@@ -17,13 +17,13 @@
   - [Explain](#Explain)
 - [STACKS](#STACKS)
   - [Collaboration](#collaboration)
-  - [Development](#Development)
+  - [Tool](#Tool)
   - [Database](#Database)
   - [API](#API)
   - [Language](#Language)
   - [Framework](#Framework)
-  - [Distribution](#distribution)
-- [Function](#Function)
+  - [Deployment](#Deployment)
+- [FUNCTION](#FUNCTION)
 - [SOURCE](#source)
 
 ## TEAM
@@ -84,13 +84,13 @@
 
 <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <img src="https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white">
 
-### Development
+### Tool
 
-<img src="https://img.shields.io/badge/android%20studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white"> <img src="https://img.shields.io/badge/visual%20studio%20code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"> <img src="https://img.shields.io/badge/dbeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"> <img src="https://img.shields.io/badge/POSTMAN-FF6C37?style=for-the-badge&logo=postman&logoColor=white">
+<img src="https://img.shields.io/badge/android%20studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white"> <img src="https://img.shields.io/badge/visual%20studio%20code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"> <img src="https://img.shields.io/badge/dbeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"> <img src="https://img.shields.io/badge/POSTMAN-FF6C37?style=for-the-badge&logo=postman&logoColor=white"> <img src="https://img.shields.io/badge/arduino%20ide-00878F?style=for-the-badge&logo=arduino&logoColor=white">
 
 ### Database
 
-<img src="https://img.shields.io/badge/oracle%20DB-F80000?style=for-the-badge&logo=oracle&logoColor=white">
+<img src="https://img.shields.io/badge/maria%20DB-003545?style=for-the-badge&logo=mariadb&logoColor=white">
 
 ### API
 
@@ -98,13 +98,15 @@
 
 ### Language
 
-<img src="https://img.shields.io/badge/arduino%20C++-00878F?style=for-the-badge&logo=arduino&logoColor=white"> <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white">
+<img src="https://img.shields.io/badge/arduino%20C++-00878F?style=for-the-badge&logo=arduino&logoColor=white">
+ <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> <img src="https://img.shields.io/badge/kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white">
 
 ### Framework
 
+<img src="https://img.shields.io/badge/jetpack%20compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white">
 <img src="https://img.shields.io/badge/fastapi-009688?style=for-the-badge&logo=fastapi&logoColor=white">
 
-### Distribution
+### Deployment
 
 <img src="https://img.shields.io/badge/uvicorn-A100FF?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/raspberry%20pi-A22846?style=for-the-badge&logo=raspberrypi&logoColor=white"><br>
 
@@ -114,7 +116,7 @@ FrontEnd Server :
 BackEnd Server :
 ```
 
-## Function
+## FUNCTION
 
 <details>
     <summary><strong>💡 HARDWARE</strong></summary>

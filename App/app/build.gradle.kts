@@ -1,8 +1,13 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
+val properties = Properties()
+properties.load(project.rootProject.file("local.properties").inputStream())
+val NAVER_MAP_API_KEY = properties.getProperty("NAVER_MAP_API_KEY")
 android {
     namespace = "com.headmetal.headwareintelligence"
     compileSdk = 34
@@ -13,11 +18,11 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        manifestPlaceholders["NAVER_MAP_API_KEY"] = NAVER_MAP_API_KEY
     }
 
     buildTypes {
@@ -38,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -63,6 +69,9 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core)
+    implementation("com.naver.maps:map-sdk:3.18.0")
+    implementation("io.github.fornewid:naver-map-compose:1.5.1")
+    implementation("io.github.fornewid:naver-map-location:16.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

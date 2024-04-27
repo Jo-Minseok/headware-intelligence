@@ -6,19 +6,23 @@ from sklearn.metrics import silhouette_score
 
 router = APIRouter(prefix="/map")
 
+
 @router.get("/cluster")
 def cluster_data():
     # 모델 제작 완료 후 기입
     return {"result": "clustered data"}
 
+
 # 지도 위도 값 설정(현재 테스트 데이터)
-latitude = [37.5585, 40.7128, 51.5074, 48.8566, 35.6895, 52.5200, 55.7558, 41.8781, 45.4215, 34.0522, 31.2304, 48.8566, 38.9072, 37.7749, 55.6761, 53.3498, 49.2827, 36.7783]
+latitude = [37.5585, 40.7128, 51.5074, 48.8566, 35.6895, 52.5200, 55.7558, 41.8781,
+            45.4215, 34.0522, 31.2304, 48.8566, 38.9072, 37.7749, 55.6761, 53.3498, 49.2827, 36.7783]
 
 # 지도 경도 값 설정(현재 테스트 데이터)
-longitude = [126.9368, -74.0060, -0.1278, 2.3522, 139.6917, 13.4050, 37.6176, -87.6298, -75.6972, -118.2437, 121.4737, 2.3522, -77.0369, -122.4194, 12.5683, -6.2603, -123.1207, -119.4179]
+longitude = [126.9368, -74.0060, -0.1278, 2.3522, 139.6917, 13.4050, 37.6176, -87.6298, -
+             75.6972, -118.2437, 121.4737, 2.3522, -77.0369, -122.4194, 12.5683, -6.2603, -123.1207, -119.4179]
 
 # 데이터프레임 생성
-df = pd.DataFrame({'latitude' : latitude, 'longitude' : longitude})
+df = pd.DataFrame({'latitude': latitude, 'longitude': longitude})
 print(df)
 
 # 데이터 추가
@@ -49,7 +53,8 @@ plt.title('Silhouette Analysis for Optimal k')
 plt.show()
 
 # K-Means 모델 훈련
-kmeans = KMeans(n_clusters=k_range[silhouette_scores.index(max(silhouette_scores))], random_state=42)  # 클러스터 개수는 적절히 설정
+kmeans = KMeans(n_clusters=k_range[silhouette_scores.index(
+    max(silhouette_scores))], random_state=42)  # 클러스터 개수는 적절히 설정
 kmeans.fit(df)
 
 # 클러스터 중심점 추출

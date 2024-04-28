@@ -51,7 +51,7 @@ def cluster_data():
 
     # 클러스터 중심점 결과
     res = {i + 1 : list(centers[i]) + [max_distances[i]] for i in range(size)}
-        
+    
     return res
 
 '''

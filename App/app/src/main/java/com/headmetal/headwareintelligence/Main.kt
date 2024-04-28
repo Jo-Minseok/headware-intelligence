@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
 import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
 import androidx.compose.material.icons.filled.TripOrigin
 import androidx.compose.material.icons.filled.Umbrella
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.ViewHeadline
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbCloudy
@@ -271,21 +272,62 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*
             }
 
             Spacer(
+                modifier = Modifier.height(15.dp)
+            )
+
+            Button(
+                onClick = {},
+                modifier = Modifier.padding(horizontal = 16.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    )  {
+                        Text(
+                            text = "안전모 등록",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+
+            }
+
+            Spacer(
                 modifier = Modifier.height(20.dp)
             )
             Box(
-                modifier = Modifier
-                    .padding(start = 16.dp)
+                modifier = Modifier.padding(start = 16.dp)
             ) {
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End // 오른쪽 정렬을 지정합니다.
                 ) {
-                    Text(
-                        text = "실시간 정보",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
+                    Column {
+                        Text(
+                            text = "실시간 정보",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(260.dp))
+                    Icon(
+                        imageVector = Icons.Default.Update,
+                        contentDescription = "Refresh Icon",
+                        tint = Color.LightGray, // 아이콘 색상
+                        modifier = Modifier.size(24.dp) // 아이콘 크기 설정
                     )
                 }
             }
+
 
             Spacer(
                 modifier = Modifier.height(10.dp)
@@ -402,11 +444,11 @@ fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*
                 }
             }
 
-            Spacer(
+            /*Spacer(
                 modifier = Modifier.height(10.dp)
             )
             ///////미세먼지//////
-            /*Box(
+            Box(
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .background(color = Color.White)

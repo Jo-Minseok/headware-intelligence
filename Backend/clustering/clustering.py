@@ -1,18 +1,33 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import pandas as pd
 import numpy as np
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from db.db_connection import get_db
+from sqlalchemy.orm import Session
+from clustering import accident_crud
+from starlette import status
 
 router = APIRouter(prefix="/map")
-
+    
 @router.get("/cluster")
-def cluster_data():
-    # 지도 위도 값 설정(현재 테스트 데이터)
-    latitude = [37.5585, 40.7128, 51.5074, 48.8566, 35.6895, 52.5200, 55.7558, 41.8781, 45.4215, 34.0522, 31.2304, 48.8566, 38.9072, 37.7749, 55.6761, 53.3498, 49.2827, 36.7783]
-
-    # 지도 경도 값 설정(현재 테스트 데이터)
-    longitude = [126.9368, -74.0060, -0.1278, 2.3522, 139.6917, 13.4050, 37.6176, -87.6298, -75.6972, -118.2437, 121.4737, 2.3522, -77.0369, -122.4194, 12.5683, -6.2603, -123.1207, -119.4179]
+def cluster_data(db: Session = Depends(get_db)):
+    # 사고 발생 데이터 조회
+    accidents = accident_crud.get_accident(db=db)
+    
+    # 지도 위도, 경도 값 설정(현재 테스트 데이터)
+    latitude = []
+    longitude = []
+    for accident in accidents:
+        latitude.append(accident.latitude)
+        longitude.append(accident.longitude)
+    
+    # 불러온 위도 경도 값의 개수가 3개 미만일 경우 예외 리턴
+    if len(latitude) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT, detail="클러스터를 표시하기에는 데이터가 부족")
 
     # 데이터프레임 생성
     df = pd.DataFrame({'latitude' : latitude, 'longitude' : longitude})
@@ -33,7 +48,7 @@ def cluster_data():
     size = silhouette_scores.index(max(silhouette_scores)) + 2
 
     # K-Means 모델 훈련
-    kmeans = KMeans(n_clusters=k_range[size], random_state=42)
+    kmeans = KMeans(n_clusters=size, random_state=42)
     kmeans.fit(df)
 
     # 클러스터 중심점 추출
@@ -51,15 +66,10 @@ def cluster_data():
 
     # 클러스터 중심점 결과
     res = {i + 1 : list(centers[i]) + [max_distances[i]] for i in range(size)}
-    
     return res
 
 '''
-추가 기능 및 결과 확인용
-
-# 데이터 추가
-df = pd.concat([df, pd.DataFrame({'latitude' : [], 'longitude' : []})], ignore_index = True)
-
+# 결과 시각화
 # 실루엣 스코어 출력
 print('\nSilhouette Score')
 for i, j in zip(k_range, silhouette_scores):
@@ -72,12 +82,9 @@ plt.ylabel('Silhouette Score')
 plt.title('Silhouette Analysis for Optimal k')
 plt.show()
 
-# 클러스터 레이블 추출
-labels = kmeans.labels_
-
 # 클러스터링 결과 시각화
 plt.scatter(df['longitude'], df['latitude'], c=labels, cmap='viridis')
-plt.scatter(centroids[:, 1], centroids[:, 0], marker='x', s=200, c='red')
+plt.scatter(centers[:, 1], centers[:, 0], marker='x', s=200, c='red')
 plt.xlabel('longitude')
 plt.ylabel('latitude')
 plt.title('K-Means Result')

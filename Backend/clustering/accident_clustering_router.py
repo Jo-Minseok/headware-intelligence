@@ -7,7 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from db.db_connection import get_db
 from sqlalchemy.orm import Session
-from clustering import accident_crud
+from clustering import accident_clustering_crud
 from starlette import status
 
 router = APIRouter(prefix="/map")
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/map")
 @router.get("/cluster")
 def cluster_data(db: Session = Depends(get_db)):
     # 사고 발생 데이터 조회
-    accidents = accident_crud.get_accident(db=db)
+    accidents = accident_clustering_crud.get_accident(db=db)
     
     # 지도 위도, 경도 값 설정(현재 테스트 데이터)
     latitude = []
@@ -67,26 +67,3 @@ def cluster_data(db: Session = Depends(get_db)):
     # 클러스터 중심점 결과
     res = {i + 1 : list(centers[i]) + [max_distances[i]] for i in range(size)}
     return res
-
-'''
-# 결과 시각화
-# 실루엣 스코어 출력
-print('\nSilhouette Score')
-for i, j in zip(k_range, silhouette_scores):
-    print(i, ':', j)
-
-# 실루엣 스코어 그래프 그리기
-plt.plot(k_range, silhouette_scores, 'o-')
-plt.xlabel('Number of clusters')
-plt.ylabel('Silhouette Score')
-plt.title('Silhouette Analysis for Optimal k')
-plt.show()
-
-# 클러스터링 결과 시각화
-plt.scatter(df['longitude'], df['latitude'], c=labels, cmap='viridis')
-plt.scatter(centers[:, 1], centers[:, 0], marker='x', s=200, c='red')
-plt.xlabel('longitude')
-plt.ylabel('latitude')
-plt.title('K-Means Result')
-plt.show()
-'''

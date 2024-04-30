@@ -1,11 +1,8 @@
-import sys, os
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from db.models import Accident
 from db.db_connection import get_db, db_session
 from sqlalchemy.orm import Session
 from fastapi import Depends
 from datetime import datetime, timedelta
-from db.models import Accident
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
@@ -96,7 +93,7 @@ def model_learning_result():
     kmeans = KMeans(n_clusters=size, random_state=42)
     kmeans.fit(df)
 
-# insert_accident()
+insert_accident()
 
 start_time = time.time()
 

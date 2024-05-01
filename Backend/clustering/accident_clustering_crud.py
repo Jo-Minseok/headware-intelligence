@@ -93,15 +93,15 @@ def model_learning_result():
     kmeans = KMeans(n_clusters=size, random_state=42)
     kmeans.fit(df)
 
-insert_accident()
+# insert_accident()
 
-start_time = time.time()
+# start_time = time.time()
 
-model_learning_result()
+# model_learning_result()
 
-end_time = time.time()
+# end_time = time.time()
 
-print('time :', end_time - start_time)
+# print('time :', end_time - start_time)
 
 '''
 # 결과 시각화

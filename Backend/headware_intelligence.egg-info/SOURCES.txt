@@ -1,0 +1,5 @@
+setup.py
+headware_intelligence.egg-info/PKG-INFO
+headware_intelligence.egg-info/SOURCES.txt
+headware_intelligence.egg-info/dependency_links.txt
+headware_intelligence.egg-info/top_level.txt

@@ -51,7 +51,7 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
     # x 축 눈금 레이블 변경
     plt.xticks(X.flatten(), date_count.keys(), rotation=45)
 
-    # 그래프 그리기
+    # 그래프 정보 출력
     plt.xlabel('Month')
     plt.ylabel('Accident Count')
     plt.title('Trend of Accident Count')

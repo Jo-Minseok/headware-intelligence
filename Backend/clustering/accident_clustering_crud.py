@@ -1,16 +1,15 @@
 from db.models import Accident
-from db.db_connection import get_db, db_session
+from db.db_connection import db_session
 from sqlalchemy.orm import Session
-from fastapi import Depends
 from datetime import datetime, timedelta
-import numpy as np
-import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+import numpy as np
+import pandas as pd
 import time
 
-# 사고 발생 데이터 불러오기
-def get_accident(db: Session = Depends(get_db)):
+# 사고 발생 데이터 조회
+def get_accidents(db: Session):
     return db.query(Accident).all()
 
 # 사고 발생 데이터 삽입(임시)

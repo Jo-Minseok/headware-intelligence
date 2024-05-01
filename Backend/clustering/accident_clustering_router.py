@@ -1,19 +1,20 @@
-import pandas as pd
-import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from db.db_connection import get_db
 from sqlalchemy.orm import Session
 from clustering import accident_clustering_crud
 from starlette import status
+import pandas as pd
+import numpy as np
 
 router = APIRouter(prefix="/map")
     
 @router.get("/cluster")
 def cluster_data(db: Session = Depends(get_db)):
     # 사고 발생 데이터 조회
-    accidents = accident_clustering_crud.get_accident(db=db)
+    accidents = accident_clustering_crud.get_accidents(db=db)
     
     # 지도 위도, 경도 값 설정(현재 테스트 데이터)
     latitude = []
@@ -64,4 +65,4 @@ def cluster_data(db: Session = Depends(get_db)):
 
     # 클러스터 중심점 결과
     res = {i + 1 : list(centers[i]) + [max_distances[i]] for i in range(size)}
-    return res
+    return JSONResponse(content=res)

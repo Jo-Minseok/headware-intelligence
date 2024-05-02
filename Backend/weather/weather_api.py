@@ -14,7 +14,6 @@ data_dict = {}
 for row in sheet.iter_rows(values_only=True):
     data_dict[row[0]] = [row[1], row[2]]
 
-
 @router.get("/{city}/{district}")
 async def get_weather(city: str, district: str):
     now = datetime.now(pytz.timezone('Asia/Seoul'))
@@ -38,6 +37,7 @@ async def get_weather(city: str, district: str):
                             '&ny=' + data_dict[city + ' ' + district][1])
 
     return response.json()
+
 # # 세부 결과 확인
 # weather_data = response.json()['response']['body']['items']['item']
 # result = ('위치 : ' + city + ' ' + district + '\n' +

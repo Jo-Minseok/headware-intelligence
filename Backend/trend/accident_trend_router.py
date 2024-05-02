@@ -7,7 +7,6 @@ from datetime import datetime
 from collections import defaultdict
 import calendar
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 router = APIRouter(prefix="/trend")
@@ -43,22 +42,6 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
     # 모델 훈련
     model.fit(X, y)
     
-    # 그래프 그리기
-    plt.figure(figsize=(10, 6))
-    plt.plot(X, y, linestyle='-', color='blue', marker='o', label='Line')
-    plt.plot(X, model.predict(X), color='red', label='Trend')
-
-    # x 축 눈금 레이블 변경
-    plt.xticks(X.flatten(), date_count.keys(), rotation=45)
-
-    # 그래프 정보 출력
-    plt.xlabel('Month')
-    plt.ylabel('Accident Count')
-    plt.title('Trend of Accident Count')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-    
     # 추세선의 기울기와 절편 추가
     date_count['inclination'] = model.coef_[0]
     date_count['intercept'] = model.intercept_
@@ -90,25 +73,26 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
 #     # 모델 훈련
 #     model.fit(X, y)
     
-#     # 그래프 그리기
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(X, y, linestyle='-', color='blue', marker='o', label='Line')
-#     plt.plot(X, model.predict(X), color='red', label='Trend')
-
-#     # x 축 눈금 레이블 변경
-#     plt.xticks(X.flatten(), date_count.keys(), rotation=45)
-
-#     # 그래프 그리기
-#     plt.xlabel('Month')
-#     plt.ylabel('Accident Count')
-#     plt.title('Trend of Accident Count')
-#     plt.legend()
-#     plt.grid(True)
-#     plt.show()
-    
 #     # 추세선의 기울기와 절편 추가
 #     date_count['inclination'] = model.coef_[0]
 #     date_count['intercept'] = model.intercept_
     
 #     # json으로 변환하여 반환
 #     return JSONResponse(content=date_count)
+
+# # 결과 시각화
+# # 그래프 그리기
+# plt.figure(figsize=(10, 6))
+# plt.plot(X, y, linestyle='-', color='blue', marker='o', label='Line')
+# plt.plot(X, model.predict(X), color='red', label='Trend')
+
+# # x 축 눈금 레이블 변경
+# plt.xticks(X.flatten(), date_count.keys(), rotation=45)
+
+# # 그래프 정보 출력
+# plt.xlabel('Month')
+# plt.ylabel('Accident Count')
+# plt.title('Trend of Accident Count')
+# plt.legend()
+# plt.grid(True)
+# plt.show()

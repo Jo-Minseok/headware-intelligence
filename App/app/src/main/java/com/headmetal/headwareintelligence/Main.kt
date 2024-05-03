@@ -19,21 +19,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Report
-import androidx.compose.material.icons.filled.SentimentDissatisfied
-import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
-import androidx.compose.material.icons.filled.SentimentVeryDissatisfied
-import androidx.compose.material.icons.filled.TripOrigin
-import androidx.compose.material.icons.filled.Umbrella
 import androidx.compose.material.icons.filled.Update
-import androidx.compose.material.icons.filled.ViewHeadline
 import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.WbCloudy
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -53,14 +42,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-@Preview(showBackground = true)
 @Composable
-fun Main(interest: Int = 10,windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
+fun Main(navController: NavController, modifier: Modifier = Modifier,
+    interest: Int = 10,
+    windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)

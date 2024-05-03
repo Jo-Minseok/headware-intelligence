@@ -29,6 +29,65 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.POST
+
+interface ApiService {
+    @FormUrlEncoded
+    @POST("/login/manager") // /login/employee 또는 /login/manager
+    fun login(
+        @Field("username") username: String,
+        @Field("password") password: String
+    ): Call<LoginResponse>
+}
+
+// 서버로부터 받는 로그인 응답 데이터 모델 정의
+data class LoginResponse(
+    val id: String,
+    val access_token: String,
+    val token_type: String,
+    val success: Boolean,
+    val message: String // 성공 또는 실패 시 메시지
+)
+
+val retrofit = Retrofit.Builder()
+    .baseUrl("http://minseok821lab.kro.kr/8000/") // 서버의 base URL을 입력
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+
+// Retrofit을 사용하여 서버와의 통신을 위한 인터페이스 생성
+val apiService = retrofit.create(ApiService::class.java)
+
+fun performLogin(username: String, password: String, navController: NavController) {
+    apiService.login(username, password).enqueue(object : Callback<LoginResponse> {
+        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+            if (response.isSuccessful) {
+                val loginResponse = response.body()
+                if (loginResponse?.success == true) {
+                    // 로그인 성공 시 다음 화면으로 이동
+                    navController.navigate("mainScreen")
+                } else {
+                    // 로그인 실패 시 메시지 표시 등의 처리
+                    println("로그인 실패: ${loginResponse?.message}")
+                }
+            } else {
+                // 서버 응답 실패 처리
+                println("서버 응답 실패")
+            }
+        }
+
+        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+            // 통신 실패 처리
+            println("서버 통신 실패: ${t.message}")
+        }
+    })
+}
 
 @Composable
 fun Login(navController: NavController, modifier: Modifier = Modifier) {
@@ -136,7 +195,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { performLogin(id, pw, navController) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

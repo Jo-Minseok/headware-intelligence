@@ -20,7 +20,6 @@ def create_employee(db: Session, user_employee: Employee_Create):
                                    user_employee.password),
                                name=user_employee.name,
                                email=user_employee.email,
-                               manager=user_employee.manager,
                                phone_no=user_employee.phone_no,
                                company=user_employee.company)
     # DB INSERT

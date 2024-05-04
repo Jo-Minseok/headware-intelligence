@@ -19,7 +19,7 @@
 // WIFI
 const char *server_address = "http://minseok821lab.kro.kr:8000/"; // 백엔드 주소
 const char *ssid = "seok3764";
-const char *password = "";
+const char *password = "seok6317";
 
 // Bluetooth
 BluetoothSerial SerialBT;

@@ -91,8 +91,6 @@ def model_learning_result():
     # K-Means 모델 훈련
     kmeans = KMeans(n_clusters=size, random_state=42)
     kmeans.fit(df)
-    
-insert_accident()
 
 # # 결과 시각화
 # # 클러스터 중심점 추출

@@ -71,10 +71,11 @@ class TrendViewModel : ViewModel() {
                 // API에서 받은 기울기와 절편을 상태에 저장합니다.
                 _inclination.value = response.inclination
                 _intercept.value = response.intercept
+                Log.d("TrendViewModel", "Inclination: ${response.inclination}, Intercept: ${response.intercept}")
             } catch (e: Exception) {
                 // 오류 처리
                 // 데이터를 가져오는 도중 오류가 발생한 경우에 대한 처리
-                Log.e("TrendViewModel", "Failed to fetch trend data", e)
+                Log.e("TrendViewModel", "데이터 가져오기 실패: ${e.message}", e)
                 // 예외 처리를 하고 사용자에게 적절한 안내를 제공하거나 기본값으로 설정할 수 있습니다.
                 // 여기에서는 기본값으로 0으로 설정합니다.
                 _inclination.value = 0.0
@@ -119,9 +120,6 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: I
     val inclination by viewModel.inclination
     val intercept by viewModel.intercept
 
-    LaunchedEffect(Unit) {
-        viewModel.getTrendData("2024-02-01", "2024-04-01")
-    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         LaunchedEffect(true) {
@@ -129,6 +127,9 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: I
                 delay(1000)
                 current = Calendar.getInstance().time
             }
+        }
+        LaunchedEffect(Unit) {
+            viewModel.getTrendData("2023-07", "2024-01")
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -266,6 +267,19 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: I
                         Canvas(modifier = Modifier.fillMaxSize()) {
                             // 데이터가 유효한 경우에만 그래프 그리기
                             if (inclination != 0.0 && intercept != 0.0) {
+                                val startY = (size.height * (1 - inclination) + intercept).toFloat() // 시작점의 y 좌표 계산
+                                val endY = (size.height * (0 - inclination) + intercept).toFloat() // 끝점의 y 좌표 계산
+
+                                drawLine(
+                                    color = Color.Black,
+                                    start = Offset(0f, startY),
+                                    end = Offset(size.width, endY),
+                                    strokeWidth = 2f
+                                )
+                            }
+
+                            else{
+                                println(inclination)
                                 val startY = (size.height * (1 - inclination) + intercept).toFloat() // 시작점의 y 좌표 계산
                                 val endY = (size.height * (0 - inclination) + intercept).toFloat() // 끝점의 y 좌표 계산
 

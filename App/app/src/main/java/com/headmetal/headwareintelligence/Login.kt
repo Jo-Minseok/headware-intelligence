@@ -42,9 +42,7 @@ import retrofit2.http.POST
 data class LoginResponse(
     val id: String,
     val access_token: String,
-    val token_type: String,
-    val success: Boolean,
-    val message: String // 성공 또는 실패 시 메시지
+    val token_type: String
 )
 
 fun performLogin(username: String, password: String, navController: NavController) {
@@ -52,13 +50,7 @@ fun performLogin(username: String, password: String, navController: NavControlle
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             if (response.isSuccessful) {
                 val loginResponse = response.body()
-                if (loginResponse?.success == true) {
-                    // 로그인 성공 시 다음 화면으로 이동
-                    navController.navigate("mainScreen")
-                } else {
-                    // 로그인 실패 시 메시지 표시 등의 처리
-                    println("로그인 실패: ${loginResponse?.message}")
-                }
+                navController.navigate("mainScreen")
             } else {
                 // 서버 응답 실패 처리
                 println("서버 응답 실패")

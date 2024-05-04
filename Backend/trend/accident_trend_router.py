@@ -33,7 +33,7 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
     date_count = dict(sorted(date_count.items()))
     
     # 데이터를 입력 변수(X)와 타깃 변수(y)로 나눔
-    X = np.array([int(i[:i.index('-')]) * 12 + int(i[i.index('-') + 1:]) for i in date_count.keys()]).reshape(-1, 1)
+    X = np.array([i for i in range(len(date_count.keys()))]).reshape(-1, 1)
     y = np.array(list(date_count.values()))
     
     # 선형 회귀 모델 생성

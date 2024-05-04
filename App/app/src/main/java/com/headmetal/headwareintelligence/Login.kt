@@ -38,15 +38,6 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 
-interface ApiService {
-    @FormUrlEncoded
-    @POST("/login/manager") // /login/employee 또는 /login/manager
-    fun login(
-        @Field("username") username: String,
-        @Field("password") password: String
-    ): Call<LoginResponse>
-}
-
 // 서버로부터 받는 로그인 응답 데이터 모델 정의
 data class LoginResponse(
     val id: String,
@@ -56,16 +47,8 @@ data class LoginResponse(
     val message: String // 성공 또는 실패 시 메시지
 )
 
-val retrofit = Retrofit.Builder()
-    .baseUrl("http://minseok821lab.kro.kr/8000/") // 서버의 base URL을 입력
-    .addConverterFactory(GsonConverterFactory.create())
-    .build()
-
-// Retrofit을 사용하여 서버와의 통신을 위한 인터페이스 생성
-val apiService = retrofit.create(ApiService::class.java)
-
 fun performLogin(username: String, password: String, navController: NavController) {
-    apiService.login(username, password).enqueue(object : Callback<LoginResponse> {
+    RetrofitInstance.apiService.login(username, password).enqueue(object : Callback<LoginResponse> {
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             if (response.isSuccessful) {
                 val loginResponse = response.body()
@@ -81,7 +64,6 @@ fun performLogin(username: String, password: String, navController: NavControlle
                 println("서버 응답 실패")
             }
         }
-
         override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
             // 통신 실패 처리
             println("서버 통신 실패: ${t.message}")

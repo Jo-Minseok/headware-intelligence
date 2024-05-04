@@ -48,7 +48,7 @@ def insert_accident(size = 300, K = 3):
                             time=datetime.now().strftime('%H:%M:%S'), 
                             latitude=lat, 
                             longitude=lon, 
-                            victim_id='user2', 
+                            victim_id='test', 
                             category='test')
         db.add(accident)
 

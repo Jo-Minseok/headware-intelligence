@@ -48,7 +48,7 @@ class Manager_Create(BaseModel):
     email: EmailStr
     company: str
 
-    @field_validator('id', 'password', 'name', 'email', 'phone_no', 'company')
+    @field_validator('id', 'password', 'name', 'email', 'company')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')

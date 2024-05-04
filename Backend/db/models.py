@@ -96,5 +96,7 @@ class Work_list(Base):
 class Work(Base):
     __tablename__ = "work"
 
-    name = Column(VARCHAR(length=100), ForeignKey('work_list.name'))
-    id = Column(VARCHAR(length=100), ForeignKey('user_employee.id'))
+    name = Column(VARCHAR(length=100), ForeignKey(
+        'work_list.name'), primary_key=True)
+    id = Column(VARCHAR(length=100), ForeignKey(
+        'user_employee.id'), primary_key=True)

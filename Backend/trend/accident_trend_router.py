@@ -42,12 +42,12 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
     # 모델 훈련
     model.fit(X, y)
     
-    # 추세선의 기울기와 절편 추가
-    date_count['inclination'] = model.coef_[0]
-    date_count['intercept'] = model.intercept_
-    
     # json으로 변환하여 반환
-    return JSONResponse(content=date_count)
+    return {
+        'month_data' : list(date_count.values()), 
+        'inclination' : model.coef_[0], 
+        'intercept' : model.intercept_
+    }
 
 # # /trend/2023-05-01/2024-02-01 형식
 # @router.get("/{start}/{end}")

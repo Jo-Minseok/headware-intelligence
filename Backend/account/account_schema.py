@@ -32,6 +32,23 @@ class Employee_Create(BaseModel):
         return v
 
 
+# 근로자 아이디 찾기 스키마
+class Employee_Forgot_Id(BaseModel):
+    name: str
+    email: str
+
+
+# 근로자 아이디 찾기 결과 스키마
+class Employee_Forgot_Id_Result(BaseModel):
+    id: str
+
+
+# 근로자 비밀번호 찾기 스키마
+class Employee_Forgot_Pw(BaseModel):
+    id: str
+    email: str
+
+
 # 관리자 로그인 스키마
 class Manager_Login(BaseModel):
     id: str
@@ -59,3 +76,20 @@ class Manager_Create(BaseModel):
         if 'password' in info.data and v != info.data['password']:
             raise ValueError('비밀번호가 일치하지 않습니다')
         return v
+
+
+# 관리자 아이디 찾기 스키마
+class Manager_Forgot_Id(BaseModel):
+    name: str
+    email: str
+
+
+# 관리자 아이디 찾기 결과 스키마
+class Manager_Forgot_Id_Result(BaseModel):
+    id: str
+
+
+# 관리자 비밀번호 찾기 스키마
+class Manager_Forgot_Pw(BaseModel):
+    id: str
+    email: str

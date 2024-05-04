@@ -10,6 +10,7 @@ class CompanyList(Base):
 
     rel_manager = relationship("UserManager", backref="company_manager")
     rel_employee = relationship("UserEmployee", backref="company_employee")
+    rel_work_list = relationship("Work_list", backref="company_work_list")
 
 
 # 안전 관리자 회원 테이블
@@ -23,7 +24,7 @@ class UserManager(Base):
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
 
-    rel_employee = relationship("UserEmployee", backref="manager_employee")
+    rel_employee = relationship("Work_list", backref="manager_work_list")
 
 
 # 근로자 테이블
@@ -34,21 +35,20 @@ class UserEmployee(Base):
     password = Column(VARCHAR(length=100), nullable=False)
     name = Column(VARCHAR(length=4), nullable=False)
     email = Column(VARCHAR(length=100), nullable=True)
-    manager = Column(VARCHAR(length=100), ForeignKey(
-        'user_manager.id'), nullable=False)
     helmet_no = Column(VARCHAR(length=100), nullable=True)
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
 
     rel_accident = relationship("Accident", backref="victim_employee")
+    rel_work = relationship("Work", backref='work_employee')
 
 
 # 사고 발생 테이블
 class Accident(Base):
     __tablename__ = "accident"
 
-    no = Column(BigInteger, primary_key=True, autoincrement=True, index=True)
+    no = Column(BigInteger, primary_key=True, autoincrement=True)
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)
     latitude = Column(Float(precision=6), nullable=False, default=1.0)
@@ -72,8 +72,29 @@ class AccidentProcessing(Base):
     __tablename__ = "accident_processing"
 
     no = Column(BigInteger, ForeignKey('accident.no'),
-                primary_key=True, autoincrement=True, index=True)
+                primary_key=True, autoincrement=True)
     situation = Column(VARCHAR(length=100), nullable=False)
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)
     detail = Column(VARCHAR(length=100), nullable=False)
+
+
+class Work_list(Base):
+    __tablename__ = "work_list"
+
+    name = Column(VARCHAR(length=100), primary_key=True)
+    company = Column(VARCHAR(length=100), ForeignKey(
+        'company_list.company'), nullable=False)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=True)
+    manager = Column(VARCHAR(length=100), ForeignKey(
+        'user_manager.id'), nullable=False)
+
+    rel_work = relationship("Work", backref='work')
+
+
+class Work(Base):
+    __tablename__ = "work"
+
+    name = Column(VARCHAR(length=100), ForeignKey('work_list.name'))
+    id = Column(VARCHAR(length=100), ForeignKey('user_employee.id'))

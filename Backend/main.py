@@ -3,6 +3,7 @@ import uvicorn
 from weather import weather_api
 from account import register_router
 from account import login_router
+from accident import accident_api
 from account import forgot_router
 from clustering import accident_clustering_router
 from trend import accident_trend_router
@@ -16,7 +17,7 @@ app = FastAPI()
 # 백엔드 서버 접속 여부
 @app.get("/")
 async def main():
-    return 1
+    return 200
 
 
 # 라우터 추가
@@ -26,7 +27,7 @@ app.include_router(login_router.router)
 app.include_router(forgot_router.router)
 app.include_router(accident_clustering_router.router)
 app.include_router(accident_trend_router.router)
-
+app.include_router(accident_api.router)
 
 # Main
 if __name__ == '__main__':

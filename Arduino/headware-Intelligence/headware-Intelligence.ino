@@ -14,6 +14,8 @@
 #include <MPU6050.h>
 #include "esp_camera.h"
 
+using namespace websockets;
+
 // GPIO 4 -> 보드 자체 LED, GPIO 16 -> 보드 자체 WIFI 핀이니까 사용하면 안 됨
 #define SHOCK 2                 // 충격 센서 핀
 #define PIEZO 14                // 피에조 소자
@@ -26,10 +28,18 @@
 #define CAMERA_MODEL_AI_THINKER // 카메라 모듈
 
 // 백엔드
-char *server_address = "http://minseok821lab.kro.kr:8000/accident/upload"; // 백엔드 주소
+String server_address = "minseok821lab.kro.kr:8000";
+WebsocketsClient client;
 
 // 블루투스
 BluetoothSerial SerialBT;
+
+// 앱으로부터 User_ID, 핫스팟 SSID, password 받기
+String user_id = "";
+String work_id = "";
+String ssid = "";
+String password = "";
+String bluetooth_data = "";
 
 // 시간 구하기
 const char *ntpServer = "pool.ntp.org";
@@ -42,14 +52,6 @@ NTPClient timeClient(ntpUDP, ntpServer, gmtOffset_sec);
 MPU6050 mpu;
 int16_t ax, ay, az; // 가속도
 int16_t gx, gy, gz; // 자이로
-
-// 웹소켓
-
-// 앱으로부터 User_ID, 핫스팟 SSID, password 받기
-String user_id = "";
-String ssid = "";
-String password = "";
-String bluetooth_data = "";
 
 // 피에조 소자 음
 const int melody[] = {262, 294, 330, 349, 392, 440, 494, 523}; // 도, 레, 미, 파, 솔, 라, 시, 도
@@ -98,6 +100,11 @@ void setup()
   // 와이파이 연결
   WIFI_connect();
 
+  // 웹소켓 설정
+  client.onMessage(onMessageCallback);
+  client.onEvent(onEventsCallback);
+  client.connect("ws://" + server_address + "/ws/" + work_id + "/" + user_id);
+
   // 시간
   timeClient.begin();
   timeClient.setTimeOffset(32400);
@@ -134,6 +141,7 @@ void loop()
 
   if (WiFi.status() == WL_CONNECTED)
   {
+    client.poll();
     // 충격 감지 (낙하 사고)
     if (digitalRead(SHOCK) == HIGH)
     {
@@ -272,7 +280,7 @@ void SendingData(String type)
   if (WiFi.status() == WL_CONNECTED)
   { // WIFI가 연결되어 있으면
     HTTPClient http;
-    http.begin(server_address);                         // 대상 서버 주소
+    http.begin("http://" + server_address + "/accident/upload");// 대상 서버 주소
     http.addHeader("Content-Type", "application/json"); // POST 전송 방식 json 형식으로 전송 multipart/form-data는 이미지 같은 바이너리 데이터
 
     // Json 형식 설정
@@ -291,6 +299,7 @@ void SendingData(String type)
     send_data["time"][0] = timeInfo->tm_hour;
     send_data["time"][1] = timeInfo->tm_min;
     send_data["time"][2] = timeInfo->tm_sec;
+    send_data["id"] = user_id;
     serializeJsonPretty(send_data, json_to_string);
     send_data.clear();
 
@@ -309,7 +318,38 @@ void SendingData(String type)
     http.end();
   }
   else
-  { // WIFI가 연결 안 되어 있으면
-    // tone(PIEZO,262,125); // 1000 / 8= 125 8분음표
+  {
+    WIFI_connect();
   }
+}
+/*
+  ################################################################################################
+  #                                        webSocket()                                           #
+  ################################################################################################
+*/
+void onMessageCallback(WebsocketsMessage message) {
+  String receiveData = message.data();
+  if (receiveData.startsWith(user_id)) {
+    String action = receiveData.substring(receiveData.indexOf(":") + 1);
+    if (action == "소리") {
+      for (int freq = 150; freq <= 1800; freq = freq + 2) {
+        tone(PIEZO, freq, 10);
+      }
+      for (int freq = 1800; freq <= 150; freq = freq - 2) {
+        tone(PIEZO, freq, 10);
+      }
+    }
+  }
+}
+
+void onEventsCallback(WebsocketsEvent event, String data) {
+    if(event == WebsocketsEvent::ConnectionOpened) {
+        Serial.println("웹 소켓 오픈");
+    } else if(event == WebsocketsEvent::ConnectionClosed) {
+        Serial.println("웹 소켓 폐쇄");
+    } else if(event == WebsocketsEvent::GotPing) {
+        Serial.println("서버 핑!");
+    } else if(event == WebsocketsEvent::GotPong) {
+        Serial.println("서버 퐁!");
+    }
 }

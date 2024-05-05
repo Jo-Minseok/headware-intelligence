@@ -280,8 +280,8 @@ void SendingData(String type)
   if (WiFi.status() == WL_CONNECTED)
   { // WIFI가 연결되어 있으면
     HTTPClient http;
-    http.begin("http://" + server_address + "/accident/upload");// 대상 서버 주소
-    http.addHeader("Content-Type", "application/json"); // POST 전송 방식 json 형식으로 전송 multipart/form-data는 이미지 같은 바이너리 데이터
+    http.begin("http://" + server_address + "/accident/upload"); // 대상 서버 주소
+    http.addHeader("Content-Type", "application/json");          // POST 전송 방식 json 형식으로 전송 multipart/form-data는 이미지 같은 바이너리 데이터
 
     // Json 형식 설정
     String json_to_string = "";
@@ -327,29 +327,42 @@ void SendingData(String type)
   #                                        webSocket()                                           #
   ################################################################################################
 */
-void onMessageCallback(WebsocketsMessage message) {
+void onMessageCallback(WebsocketsMessage message)
+{
   String receiveData = message.data();
-  if (receiveData.startsWith(user_id)) {
+  if (receiveData.startsWith(user_id))
+  {
     String action = receiveData.substring(receiveData.indexOf(":") + 1);
-    if (action == "소리") {
-      for (int freq = 150; freq <= 1800; freq = freq + 2) {
+    if (action == "소리")
+    {
+      for (int freq = 150; freq <= 1800; freq = freq + 2)
+      {
         tone(PIEZO, freq, 10);
       }
-      for (int freq = 1800; freq <= 150; freq = freq - 2) {
+      for (int freq = 1800; freq <= 150; freq = freq - 2)
+      {
         tone(PIEZO, freq, 10);
       }
     }
   }
 }
 
-void onEventsCallback(WebsocketsEvent event, String data) {
-    if(event == WebsocketsEvent::ConnectionOpened) {
-        Serial.println("웹 소켓 오픈");
-    } else if(event == WebsocketsEvent::ConnectionClosed) {
-        Serial.println("웹 소켓 폐쇄");
-    } else if(event == WebsocketsEvent::GotPing) {
-        Serial.println("서버 핑!");
-    } else if(event == WebsocketsEvent::GotPong) {
-        Serial.println("서버 퐁!");
-    }
+void onEventsCallback(WebsocketsEvent event, String data)
+{
+  if (event == WebsocketsEvent::ConnectionOpened)
+  {
+    Serial.println("웹 소켓 오픈");
+  }
+  else if (event == WebsocketsEvent::ConnectionClosed)
+  {
+    Serial.println("웹 소켓 폐쇄");
+  }
+  else if (event == WebsocketsEvent::GotPing)
+  {
+    Serial.println("서버 핑!");
+  }
+  else if (event == WebsocketsEvent::GotPong)
+  {
+    Serial.println("서버 퐁!");
+  }
 }

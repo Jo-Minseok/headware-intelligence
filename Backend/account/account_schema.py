@@ -36,6 +36,12 @@ class Employee_Create(BaseModel):
 class Employee_Forgot_Id(BaseModel):
     name: str
     email: str
+    
+    @field_validator('name', 'email')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
 
 
 # 근로자 아이디 찾기 결과 스키마
@@ -47,6 +53,30 @@ class Employee_Forgot_Id_Result(BaseModel):
 class Employee_Forgot_Pw(BaseModel):
     id: str
     email: str
+    
+    @field_validator('id', 'email')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
+
+
+# 근로자 비밀번호 변경 스키마
+class Employee_Change_Pw(BaseModel):
+    password: str
+    re_password: str
+    
+    @field_validator('password', 're_password')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
+    
+    @field_validator('re_password')
+    def passwords_match(cls, v, info: FieldValidationInfo):
+        if 'password' in info.data and v != info.data['password']:
+            raise ValueError('비밀번호가 일치하지 않습니다')
+        return v
 
 
 # 관리자 로그인 스키마
@@ -82,6 +112,12 @@ class Manager_Create(BaseModel):
 class Manager_Forgot_Id(BaseModel):
     name: str
     email: str
+    
+    @field_validator('name', 'email')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
 
 
 # 관리자 아이디 찾기 결과 스키마
@@ -93,3 +129,27 @@ class Manager_Forgot_Id_Result(BaseModel):
 class Manager_Forgot_Pw(BaseModel):
     id: str
     email: str
+    
+    @field_validator('id', 'email')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
+
+
+# 관리자 비밀번호 변경 스키마
+class Manager_Change_Pw(BaseModel):
+    password: str
+    re_password: str
+    
+    @field_validator('password', 're_password')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise ValueError('빈 값은 허용되지 않습니다.')
+        return v
+    
+    @field_validator('re_password')
+    def passwords_match(cls, v, info: FieldValidationInfo):
+        if 'password' in info.data and v != info.data['password']:
+            raise ValueError('비밀번호가 일치하지 않습니다')
+        return v

@@ -72,6 +72,8 @@ dependencies {
     implementation("com.naver.maps:map-sdk:3.18.0")
     implementation("io.github.fornewid:naver-map-compose:1.5.1")
     implementation("io.github.fornewid:naver-map-location:16.0.0")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

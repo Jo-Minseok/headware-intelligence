@@ -29,6 +29,39 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.POST
+
+// 서버로부터 받는 로그인 응답 데이터 모델 정의
+data class LoginResponse(
+    val id: String,
+    val access_token: String,
+    val token_type: String
+)
+
+fun performLogin(username: String, password: String, navController: NavController) {
+    RetrofitInstance.apiService.login(username, password).enqueue(object : Callback<LoginResponse> {
+        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+            if (response.isSuccessful) {
+                val loginResponse = response.body()
+                navController.navigate("mainScreen")
+            } else {
+                // 서버 응답 실패 처리
+                println("서버 응답 실패")
+            }
+        }
+        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+            // 통신 실패 처리
+            println("서버 통신 실패: ${t.message}")
+        }
+    })
+}
 
 @Composable
 fun Login(navController: NavController, modifier: Modifier = Modifier) {
@@ -136,7 +169,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { performLogin(id, pw, navController) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

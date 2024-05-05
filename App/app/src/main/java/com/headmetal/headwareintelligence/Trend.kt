@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +28,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -39,13 +43,59 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import retrofit2.http.GET
+import retrofit2.http.Path
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+
+class TrendViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    // 기울기와 절편을 상태로 정의합니다.
+    private val _inclination = mutableStateOf(0.0)
+    val inclination: State<Double> = _inclination
+
+    private val _intercept = mutableStateOf(0.0)
+    val intercept: State<Double> = _intercept
+
+//    private val _month_data = mutableListOf(0)
+//    val month_data: List<Int> = _month_data
+
+    // API로부터 데이터를 가져오는 함수
+    fun getTrendData(start: String, end: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getTrendData(start, end)
+                // API에서 받은 기울기와 절편을 상태에 저장합니다.
+                _inclination.value = response.inclination
+                _intercept.value = response.intercept
+                Log.d("TrendViewModel", "Inclination: ${response.inclination}, Intercept: ${response.intercept}")
+            } catch (e: Exception) {
+                // 오류 처리
+                // 데이터를 가져오는 도중 오류가 발생한 경우에 대한 처리
+                Log.e("TrendViewModel", "데이터 가져오기 실패: ${e.message}", e)
+                // 예외 처리를 하고 사용자에게 적절한 안내를 제공하거나 기본값으로 설정할 수 있습니다.
+                // 여기에서는 기본값으로 0으로 설정합니다.
+                _inclination.value = 0.0
+                _intercept.value = 0.0
+            }
+        }
+    }
+}
+data class TrendResponse(
+    val month_data: List<Int>,
+    val inclination: Double,
+    val intercept: Double
+)
 
 @Preview(showBackground = true)
 @Composable
-fun Trend(interest: Int = 10) {
+fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: Int = 10) {
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)
@@ -71,12 +121,19 @@ fun Trend(interest: Int = 10) {
         mutableStateOf(false)
     }
 
+    val inclination by viewModel.inclination
+    val intercept by viewModel.intercept
+
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         LaunchedEffect(true) {
             while (true) {
                 delay(1000)
                 current = Calendar.getInstance().time
             }
+        }
+        LaunchedEffect(Unit) {
+            viewModel.getTrendData("2023-07", "2024-01")
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -205,12 +262,46 @@ fun Trend(interest: Int = 10) {
                         )
                         //DatePicker 구현
                     }
-                    Box {
-                        Text(
-                            text = "추세선 그래프 임시",
-                            modifier = Modifier
-                                .padding(top = 30.dp)
-                        )
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 30.dp)
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            // X축
+                            drawLine(
+                                color = Color.Black,
+                                start = Offset(50f, size.height - 50f),
+                                end = Offset(size.width - 50f, size.height - 50f),
+                                strokeWidth = 2f
+                            )
+
+                            // Y축
+                            drawLine(
+                                color = Color.Black,
+                                start = Offset(50f, size.height - 50f),
+                                end = Offset(50f, 50f),
+                                strokeWidth = 2f
+                            )
+
+                            // 데이터가 유효한 경우에만 그래프 그리기
+                            if (inclination != 0.0 && intercept != 0.0) {
+                                println(inclination)
+                                println(intercept)
+                                val startX = 0f
+                                val startY = startX * inclination + intercept // 시작점의 y 좌표 계산
+                                val endX = size.width
+                                val endY = endX * inclination + intercept // 끝점의 y 좌표 계산
+
+                                drawLine(
+                                    color = Color.Black,
+                                    start = Offset(startX, startY.toFloat()),
+                                    end = Offset(endX, endY.toFloat()),
+                                    strokeWidth = 10f
+                                )
+                            }
+                        }
                     }
                     Row (
                         modifier = Modifier

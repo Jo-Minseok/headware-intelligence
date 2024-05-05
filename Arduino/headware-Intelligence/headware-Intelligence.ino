@@ -26,7 +26,7 @@
 #define CAMERA_MODEL_AI_THINKER // 카메라 모듈
 
 // 백엔드
-char *server_address = "http://59.20.127.11:8000/accident/upload"; // 백엔드 주소
+char *server_address = "http://minseok821lab.kro.kr:8000/accident/upload"; // 백엔드 주소
 
 // 블루투스
 BluetoothSerial SerialBT;
@@ -151,7 +151,8 @@ void loop()
       }
     */
   }
-  else {
+  else
+  {
     WIFI_connect();
   }
 }
@@ -197,7 +198,8 @@ void light()
   #                                         블루투스()                                            #
   ################################################################################################
 */
-void BT_connect(){
+void BT_connect()
+{
   // 블루투스 ON
   SerialBT.begin("HEADWARE 1번 헬멧");
 
@@ -228,7 +230,8 @@ void BT_connect(){
   #                                         WIFI()                                              #
   ################################################################################################
 */
-void WIFI_connect() {
+void WIFI_connect()
+{
   ssid = "";
   password = "";
   SerialBT.println("wifi");

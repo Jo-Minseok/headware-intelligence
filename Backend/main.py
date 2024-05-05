@@ -16,7 +16,7 @@ app = FastAPI()
 # 백엔드 서버 접속 여부
 @app.get("/")
 async def main():
-    return 1
+    return 200
 
 
 # 라우터 추가

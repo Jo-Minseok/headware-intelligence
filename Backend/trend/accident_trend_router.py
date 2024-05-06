@@ -48,7 +48,7 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
     
     # json으로 변환하여 반환
     return {
-        'month_data' : list(date_count.values()), 
+        'monthData' : list(date_count.values()), 
         'inclination' : model.coef_[0], 
         'intercept' : model.intercept_
     }

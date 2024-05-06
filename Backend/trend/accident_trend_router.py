@@ -1,10 +1,8 @@
 from fastapi import APIRouter, Depends, Path
-from fastapi.responses import JSONResponse
 from db.db_connection import get_db
 from sqlalchemy.orm import Session
 from trend import accident_trend_crud
-from datetime import datetime
-from collections import defaultdict
+from datetime import datetime, timedelta
 import calendar
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -25,7 +23,13 @@ def trend_inclination(db: Session = Depends(get_db), start: str = Path(...), end
     accidents = accident_trend_crud.get_accidents_by_date_range(db=db, start_date=start_date, end_date=end_date)
     
     # 월별로 사고 발생 데이터를 집계
-    date_count = defaultdict(int)
+    date_count = {}
+    cur_date = start_date
+    while cur_date <= end_date:
+        date_count[cur_date.strftime('%Y-%m')] = 0
+        cur_date += timedelta(days=31)
+        cur_date = cur_date.replace(day=1)
+
     for accident in accidents:
         date_count[accident.date.strftime("%Y-%m")] += 1
     

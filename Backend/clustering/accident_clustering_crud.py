@@ -12,7 +12,7 @@ def get_accidents(db: Session):
     return db.query(Accident).all()
 
 # 사고 발생 데이터 삽입(테스트 용도)
-def insert_accident(size = 300, K = 3):
+def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=400, K=3):
     # db 세션 연결
     db = db_session()
     
@@ -34,8 +34,8 @@ def insert_accident(size = 300, K = 3):
     longitude = np.random.uniform(low=base_longitude - radius_km, high=base_longitude + radius_km, size=size)
     
     # 시작 날짜와 끝 날짜 설정
-    start_date = datetime(2023, 5, 1)
-    end_date = datetime(2024, 4, 1)
+    start_date = start
+    end_date = end
 
     # size개의 무작위 정수 생성 (날짜 차이를 일 단위로 나타내는 정수)
     random_days = np.random.randint(0, (end_date - start_date).days + 1, size=size)
@@ -91,6 +91,8 @@ def model_learning_result():
     # K-Means 모델 훈련
     kmeans = KMeans(n_clusters=size, random_state=42)
     kmeans.fit(df)
+
+# insert_accident()
 
 # # 결과 시각화
 # # 클러스터 중심점 추출

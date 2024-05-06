@@ -1,12 +1,8 @@
 package com.headmetal.headwareintelligence
 
 import android.graphics.Paint
-import androidx.compose.ui.viewinterop.AndroidView
-import android.util.Log
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -24,9 +19,6 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -43,15 +35,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.Locale
 import androidx.lifecycle.ViewModel
@@ -59,19 +48,22 @@ import androidx.lifecycle.viewModelScope
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.line.lineSpec
+import com.patrykandpatrick.vico.compose.chart.column.columnChart
+import com.patrykandpatrick.vico.compose.component.lineComponent
+import com.patrykandpatrick.vico.compose.component.shapeComponent
+import com.patrykandpatrick.vico.compose.legend.verticalLegendItem
 import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
-import com.patrykandpatrick.vico.core.chart.decoration.Decoration
-import com.patrykandpatrick.vico.core.chart.line.LineChart
+import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.line.LineChart.LineSpec
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.component.text.textComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.composed.plus
-import com.patrykandpatrick.vico.views.chart.line.lineChart
+import com.patrykandpatrick.vico.core.legend.VerticalLegend
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 
 class TrendViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
@@ -131,6 +123,9 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
     var expanded by remember { mutableStateOf(false) }
     val options = generateOptions()
     var selectedOption by remember { mutableStateOf(options[0]) }
+    var previousSelectedOption by remember { mutableStateOf(options[0]) }
+
+    //var chartVisible by remember { mutableStateOf(true) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
 //        LaunchedEffect(Unit) {
@@ -144,10 +139,7 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
             viewModel.getTrendData(startMonth, endMonth)
         }
 
-        val yValues = mutableListOf<Double>()
-        for (x in month_data.indices) {
-            yValues.add(x * inclination + intercept)
-        }
+
 
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
@@ -288,15 +280,17 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
                             )
                             ExposedDropdownMenu(
                                 expanded = expanded,
-                                onDismissRequest = { expanded = false }
+                                onDismissRequest = {
+                                    expanded = false
+                                }
                             ) {
                                 options.forEach { item ->
                                     DropdownMenuItem(
                                         text = { Text(text = item) },
                                         onClick = {
+                                            previousSelectedOption = selectedOption
                                             selectedOption = item
                                             expanded = false
-
                                         }
                                     )
                                 }
@@ -309,63 +303,110 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
                             .fillMaxWidth()
                             .height(200.dp)
                     ) {
-                        Column {
-                            val monthDataProducer = ChartEntryModelProducer(
-                                month_data.mapIndexed { index, value ->
-                                    FloatEntry(index.toFloat(), value.toFloat())
-                                }
-                            )
-                            val trendDataProducer = ChartEntryModelProducer(
-                                yValues.mapIndexed { index, value ->
-                                    FloatEntry(index.toFloat(), value.toFloat())
-                                }
-                            )
-
-                            Chart(
-                                chart = com.patrykandpatrick.vico.compose.chart.line.lineChart(
-                                    lines = listOf(
-                                        LineSpec(
-                                            lineColor = android.graphics.Color.RED
-                                        ),
-                                        LineSpec(
-                                            lineColor = android.graphics.Color.BLUE
-                                        )
-                                    ),
-                                    axisValuesOverrider = AxisValuesOverrider.adaptiveYValues(
-                                        yFraction = 1.1f
-                                    )
-                                ),
-                                chartModelProducer = monthDataProducer.plus(trendDataProducer),
-                                startAxis = startAxis(),
-                                bottomAxis = bottomAxis(
-                                    valueFormatter = { value, _ ->
-                                        val monthOffset = month_data.size
-                                        val startMonth = (
-                                                if (selectedOption.endsWith("상반기")) {
-                                                    val currentCalendar = Calendar.getInstance()
-                                                    val july1st = Calendar.getInstance()
-                                                    july1st.set(currentCalendar.get(Calendar.YEAR), Calendar.JULY, 1)
-                                                    if (currentCalendar.before(july1st)) {
-                                                        1
-                                                    } else {
-                                                        1 + (6 - monthOffset)
-                                                    }
-                                                } else {
-
-
-                                                    7
-                                                })
-                                        val month = (startMonth + value.toInt()) % 12
-                                        String.format("%02d", if (month == 0) 12 else month)
-                                    }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .padding(5.dp)
+                        ) {
+                            if (!expanded) {
+                                chartPrint(
+                                    month_data = month_data,
+                                    inclination = inclination,
+                                    intercept = intercept,
+                                    selectedOption = selectedOption
                                 )
-                            )
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun chartPrint(month_data: List<Int>, inclination: Double, intercept: Double, selectedOption: String) {
+    val yValues = mutableListOf<Double>()
+    for (x in month_data.indices) {
+        yValues.add(x * inclination + intercept)
+    }
+    val monthDataProducer = ChartEntryModelProducer(
+        month_data.mapIndexed { index, value ->
+            FloatEntry(index.toFloat(), value.toFloat())
+        }
+    )
+    val trendDataProducer = ChartEntryModelProducer(
+        yValues.mapIndexed { index, value ->
+            FloatEntry(index.toFloat(), value.toFloat())
+        }
+    )
+
+    Chart(
+        chart = columnChart( // 월별 사고 데이터 차트 부분
+            columns = listOf(
+                lineComponent(
+                    color = Color.Blue,
+                    thickness = 10.dp,
+                    shape = Shapes.cutCornerShape(topRightPercent = 20, topLeftPercent = 20)
+                )
+            ),
+            axisValuesOverrider = AxisValuesOverrider.fixed(
+                minY = 0f,
+                maxY = month_data.maxOrNull()?.toFloat()?.times(1.1f) ?: Float.MIN_VALUE
+            )
+        ).plus(
+            com.patrykandpatrick.vico.compose.chart.line.lineChart( // 추세선 차트 부분
+                lines = listOf(
+                    LineSpec(
+                        lineColor = android.graphics.Color.RED,
+                        lineCap = Paint.Cap.BUTT,
+                        pointConnector = DefaultPointConnector(
+                            cubicStrength = 0f
+                        ),
+                    )
+                ),
+                axisValuesOverrider = AxisValuesOverrider.fixed(
+                    minY = 0f,
+                    maxY = yValues.maxOrNull()?.toFloat()?.times(1.1f) ?: Float.MIN_VALUE
+                )
+            )
+        ),
+        chartModelProducer = monthDataProducer.plus(trendDataProducer),
+        startAxis = startAxis(
+            valueFormatter = { value, _ ->
+                String.format("%.1f", value)
+            }
+        ),
+        bottomAxis = bottomAxis(
+            valueFormatter = { value, _ ->
+                val startMonth = if (selectedOption.endsWith("상반기")) 1 else 7
+                val month = (startMonth + value.toInt()) % 12
+                String.format("%02d", if (month == 0) 12 else month)
+            }
+        ),
+        runInitialAnimation = true,
+        legend = rememberLegend(listOf(Color.Blue, Color.Red))
+    )
+}
+
+@Composable
+fun rememberLegend(colors: List<Color>) : VerticalLegend {
+    val labelTextList = listOf("월별 사고 건수", "사고 추세")
+
+    return VerticalLegend(
+        items = List(labelTextList.size) { index ->
+            verticalLegendItem(
+                icon = shapeComponent(
+                    shape = Shapes.pillShape,
+                    color = colors[index],
+                ),
+                label = textComponent(),
+                labelText = labelTextList[index]
+            )
+        },
+        iconSizeDp = 10f,
+        iconPaddingDp = 8f
+    )
 }
 
 fun getMonthsFromOption(option: String): Pair<String, String> {
@@ -380,7 +421,7 @@ fun generateOptions(): List<String> {
     val startDate = Calendar.getInstance()
     startDate.set(2023, Calendar.JANUARY, 1)
     val endDate = Calendar.getInstance()
-    val options = mutableListOf<String>()
+    var options = mutableListOf<String>()
     val currentDate = startDate.clone() as Calendar
 
     while (currentDate.before(endDate) || currentDate == endDate) {
@@ -392,6 +433,9 @@ fun generateOptions(): List<String> {
             currentDate.set(currentDate.get(Calendar.YEAR) + 1, Calendar.JANUARY, 1)
         }
     }
+
+    options[options.lastIndex] += "(현재)"
+    options = options.reversed().toMutableList()
 
     return options
 }

@@ -56,7 +56,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -81,4 +80,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("com.patrykandpatrick.vico:views:1.6.3")
+    implementation("com.patrykandpatrick.vico:compose:1.6.3")
+    implementation("com.patrykandpatrick.vico:compose-m2:1.6.3")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.6.3")
 }

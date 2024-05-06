@@ -44,13 +44,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 
-@Preview(showBackground = true)
 @Composable
-fun Processing(modifier: Modifier = Modifier) {
+fun Processing(navController: NavController, modifier: Modifier = Modifier) {
     var searchText by remember {
         mutableStateOf("")
     }
@@ -100,25 +100,33 @@ fun Processing(modifier: Modifier = Modifier) {
             TabRow(
                 selectedTabIndex = selectedTabIndex,
                 modifier = modifier
-                .border(
-                    width = 1.dp,
-                    color = Color(0xFFE0E0E0),
-                    shape = RoundedCornerShape(8.dp)
-                )
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFFE0E0E0),
+                        shape = RoundedCornerShape(8.dp)
+                    )
             ) {
                 Tab(
                     modifier = modifier.background(color = Color.White),
                     selected = selectedTabIndex == 0,
                     onClick = { selectedTabIndex = 0 },
-                    text = { Text("사고 처리",fontSize = 20.sp,
-                        color = Color.Black) }
+                    text = {
+                        Text(
+                            "사고 처리", fontSize = 20.sp,
+                            color = Color.Black
+                        )
+                    }
                 )
                 Tab(
                     modifier = modifier.background(color = Color.White),
                     selected = selectedTabIndex == 1,
                     onClick = { selectedTabIndex = 1 },
-                    text = { Text("오작동 처리",fontSize = 20.sp,
-                        color = Color.Black) }
+                    text = {
+                        Text(
+                            "오작동 처리", fontSize = 20.sp,
+                            color = Color.Black
+                        )
+                    }
                 )
             }
             Box(modifier = Modifier.weight(1f)) {

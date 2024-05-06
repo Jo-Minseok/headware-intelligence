@@ -67,6 +67,6 @@ async def websocket_endpoint(websocket: WebSocket, work_id: str, user_id: str):
     try:
         while True:
             data = await websocket.receive_text()  # client 메시지 수신 대기
-            await manager.broadcast(work_id, f"{user_id}: {data}")
+            await manager.broadcast(work_id, f"{user_id}:{data}")
     except WebSocketDisconnect:
         manager.disconnect(work_id, websocket)

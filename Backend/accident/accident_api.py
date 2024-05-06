@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, Depends
+from fastapi import APIRouter, WebSocket, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List
 from starlette.websockets import WebSocketDisconnect
@@ -18,7 +18,14 @@ class Accident_Json(BaseModel):
     user_id: str
 
 
+class Communication(BaseModel):
+    send_id: str
+    receive_id: str
+    data: str
+
 # Websocket 접속 매니저
+
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections = {}
@@ -35,10 +42,10 @@ class ConnectionManager:
         if not self.active_connections[work_id]:
             del self.active_connections[work_id]
 
-    async def broadcast(self, work_id: str, message: str):
+    async def broadcast(self, work_id: str, message: Communication):
         if work_id in self.active_connections:
             for connection in self.active_connections[work_id]:
-                await connection.send_text(message)
+                await connection.send_json(message.dict())
 
 
 # 사고 발생시 데이터를 받아오고, 이를 DB에 저장하는 방식
@@ -66,7 +73,7 @@ async def websocket_endpoint(websocket: WebSocket, work_id: str, user_id: str):
     await manager.connect(work_id, websocket)  # client websocket 접속 허용
     try:
         while True:
-            data = await websocket.receive_text()  # client 메시지 수신 대기
-            await manager.broadcast(work_id, f"{user_id}:{data}")
+            data = await websocket.receive_json()  # client 메시지 수신 대기
+            await manager.broadcast(work_id, Communication(**data))
     except WebSocketDisconnect:
         manager.disconnect(work_id, websocket)

@@ -1,8 +1,3 @@
-/*
-  ################################################################################################
-  #                                    include/define                                            #
-  ################################################################################################
-*/
 #include <ArduinoJson.h>
 #include <ArduinoWebsockets.h>
 #include <WiFi.h>
@@ -12,25 +7,32 @@
 #include <Wire.h>
 #include <BluetoothSerial.h>
 #include <MPU6050.h>
-#include <Base64.h>
 #include "esp_camera.h"
 #include "camera_pins.h"
+#include <base64.hpp>
 
 using namespace websockets;
 
 // GPIO 4 -> 보드 자체 LED, GPIO 16 -> 보드 자체 WIFI 핀이니까 사용하면 안 됨
 #define SHOCK 2                 // 충격 센서 핀
 #define PIEZO 14                // 피에조 소자
-//#define LED_PIN 12              // LED
-//#define CDS 0                   // 조도 센서
+#define LED_PIN 12              // LED
+#define CDS 0                   // 조도 센서
 #define GPS_1 1                 // GPS
 #define GPS_2 3                 // GPS
 #define GYRO_1 13               // 자이로스코프 센서
 #define GYRO_2 15               // 자이로스코프 센서
 #define CAMERA_MODEL_AI_THINKER // 카메라
 
+// 헬멧 번호
+int HELMET_NUM = 1;
+
+// 카메라 버퍼
+const int bufferSize = 1024 * 23; // 23552 bytes
+
 // 백엔드
-String server_address = "minseok821lab.kro.kr:8000/accident";
+//String server_address = "minseok821lab.kro.kr:8000/accident";
+String server_address = "bychul0424.kro.kr:8000/accident";
 WebsocketsClient client;
 HTTPClient http;
 
@@ -62,10 +64,11 @@ const int policeSirenFreq[] = {500, 1500};
 
 /*
   ################################################################################################
-  #                                        Cameara                                               #
+  #                                         CAMERA                                               #
   ################################################################################################
 */
 void CAMERA_setup() {
+  Serial.println("[SETUP] CAMERA: SETUP START");
   // 카메라 초기화
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -82,75 +85,101 @@ void CAMERA_setup() {
   config.pin_pclk = PCLK_GPIO_NUM;
   config.pin_vsync = VSYNC_GPIO_NUM;
   config.pin_href = HREF_GPIO_NUM;
-  config.pin_sccb_sda = SIOD_GPIO_NUM;
-  config.pin_sccb_scl = SIOC_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.frame_size = FRAMESIZE_HVGA;
-  config.pixel_format = PIXFORMAT_JPEG; // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
-  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
-  config.fb_location = CAMERA_FB_IN_PSRAM;
-  config.jpeg_quality = 12; // 원래 12
-  config.fb_count = 1;
+  config.pixel_format = PIXFORMAT_JPEG;
+  config.frame_size = FRAMESIZE_240X240; //
+  config.jpeg_quality = 30;
+  config.fb_count = 2;
 
   if (esp_camera_init(&config) != ESP_OK) {
     while (true) {
-      Serial.println("카메라 초기화 실패");
+      Serial.println("[ERROR] CAMERA: SETUP FAIL");
       tone(PIEZO, 1500, 250);
       delay(500);
     }
   }
-  Serial.println("카메라 초기화 성공");
+  Serial.println("[SETUP] CAMERA: SETUP SUCCESS");
+}
+
+String generateBoundary() {
+  String boundary = "--------------------------";
+  for (int i = 0; i < 24; i++) {
+    boundary += String(random(0, 10));
+  }
+  return boundary;
 }
 
 void capture_and_send_image(String send_id) {
+  // 웹 소켓 잠깐 끊기
+  client.close();
   // 이미지 촬영
-  camera_fb_t *fb = esp_camera_fb_get();
-  if (!fb) {
-    Serial.println("이미지 촬영 실패");
-    return;
-  }
+  camera_fb_t * fb = esp_camera_fb_get();
+  if (fb != NULL && fb->format == PIXFORMAT_JPEG && fb->len < bufferSize) {
+    http.begin("http://" + server_address + "/upload_image");
+    String boundary = generateBoundary();
+    String fileName = user_id + "_" + send_id + ".jpg";
 
-  // 서버로 전송할 이미지를 메모리에 저장
-  if (!client.available()) {
-    Serial.println("웹 소켓 연결 불가");
+    // 파일 업로드를 위한 multipart/form-data 시작
+    String body = "--";
+    body += boundary + "\r\n";
+    body += "Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n";
+    body += "Content-Type: image/jpeg\r\n\r\n";
+
+    // 이미지 데이터 추가
+    unsigned char *imageData = fb->buf;
+    unsigned int imageDataLength = fb->len;
+    unsigned int encodedLength = (imageDataLength + 2) / 3 * 4; // 인코딩 후 길이 계산
+    char *encodedData = new char[encodedLength + 1]; // 인코딩된 데이터를 저장할 공간 할당
+    encodedData[encodedLength] = '\0';
+    encode_base64(imageData, imageDataLength, (unsigned char *)encodedData); // Base64로 인코딩
+    // 이미지 촬영 후 메모리 해제
     esp_camera_fb_return(fb);
+    // Base64로 인코딩된 데이터를 본문에 추가
+    body += String(encodedData);
+    
+    // HTTP 헤더 설정
+    http.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+    http.addHeader("Content-Length", String(body.length()));
+
+    // 메모리 해제
+    delete[] encodedData;
+
+    // multipart/form-data의 끝 부분 추가
+    body += "\r\n--" + boundary + "--\r\n";
+    int httpResponseCode = http.POST(body);
+
+    // HTTP 응답 받기
+    String response = http.getString();
+    Serial.println("[SYSTEM] CAMERA: " + response);
+    // HTTP 세션 종료
+    http.end();
+  }
+  else {
+    Serial.println("[ERROR] CAMERA: TAKE ERROR");
+    WEBSOCKET_setup();
     return;
   }
+  Serial.println("[SYSTEM] CAMERA: TAKE SUCCESS");
 
-  size_t fb_len = fb->len;
-  uint8_t *fb_buf = fb->buf;
-
-  JsonDocument send_data;
-  send_data["send_id"] = send_id;
-  send_data["image_size"] = String(fb_len);
-  String base64_encoded_image = base64::encode(fb_buf, fb_len);
-  send_data["image_data"] = base64_encoded_image;
-  String jsonString;
-  serializeJson(send_data, jsonString);
-  Serial.println(jsonString);
-
-  client.send(send_id+":카메라완료");
-  if (client.send(jsonString) != 1) {
-    Serial.println("이미지 전송 실패");
-  } else {
-    Serial.println("이미지 전송 성공");
-  }
-
-  // 이미지 촬영 후 메모리 해제
-  esp_camera_fb_return(fb);
+  // 웹 소켓 재연결
+  WEBSOCKET_setup();
+  client.send(send_id + ":카메라완료");
 }
 
 /*
   ################################################################################################
-  #                                         Melody                                               #
+  #                                          PIEZO                                               #
   ################################################################################################
 */
 void PIEZO_setup() {
+  Serial.println("[SETUP] PIEZO: SETUP START");
   ledcSetup(0, 5000, 8);
   ledcAttachPin(PIEZO, 0);
+  Serial.println("[SETUP] PIEZO: SETUP SUCCESS");
 }
 
 void setup_success() {
@@ -173,6 +202,7 @@ void setup_success() {
 }
 
 void playSiren() {
+  Serial.println("[SYSTEM] PIEZO: HELP CALL");
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < 2; j++) {
       tone(PIEZO, policeSirenFreq[j], 250); // 주파수별로 소리 재생
@@ -182,38 +212,42 @@ void playSiren() {
 }
 /*
   ################################################################################################
-  #                                           시간                                               #
+  #                                           TIME                                               #
   ################################################################################################
 */
 void TIME_setup() {
+  Serial.println("[SETUP] TIME: SETUP START");
   timeClient.begin();
   timeClient.setTimeOffset(32400);
   timeClient.forceUpdate();
+  Serial.println("[SETUP] TIME: SETUP SUCCESS");
 }
+
+
 /*
   ################################################################################################
-  #                                  MPU6050 자이로스코프                                         #
+  #                                        MPU6050 GYRO                                          #
   ################################################################################################
 */
 void GYRO_setup() {
+  Serial.println("[SETUP] MPU6050: SETUP START");
   //Wire.begin(13,15);
   Wire.begin(GYRO_1, GYRO_2);
   mpu.initialize();
   while (!mpu.testConnection())
   {
     mpu.initialize();
-    Serial.println("MPU 연결 실패");
+    Serial.println("[ERROR] MPU6050: SETUP FAIL");
     tone(PIEZO, 1500, 250);
     delay(500);
   }
-  Serial.println("MPU 연결 성공");
-  Serial.println("MPU 보정 시작");
   mpu.setXAccelOffset(-3597);
   mpu.setYAccelOffset(-5201);
   mpu.setZAccelOffset(1188);
   mpu.setXGyroOffset(-371);
   mpu.setYGyroOffset(-27);
   mpu.setZGyroOffset(-12);
+  Serial.println("[SETUP] MPU6050: SETUP SUCCESS");
 }
 
 void MPU6050_check()
@@ -236,32 +270,30 @@ void MPU6050_check()
 
 /*
   ################################################################################################
-  #                                       CDS 조도센서                                            #
+  #                                         CDS LIGHT                                            #
   ################################################################################################
 */
-/*
-  void light()
-  {
+void light()
+{
   if (digitalRead(CDS) == HIGH)
   { // 어두울 경우
     digitalWrite(LED_PIN, HIGH);
     Serial.println("어두움");
   }
-  }
-*/
+}
 
 /*
   ################################################################################################
-  #                                         블루투스                                              #
+  #                                         BLUETOOTH                                            #
   ################################################################################################
 */
 void BT_connect()
 {
+  Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP START");
   // 블루투스 ON
-  SerialBT.begin("HEADWARE 1번 헬멧");
+  SerialBT.begin("HEADWARE " + String(HELMET_NUM) + "번 헬멧");
 
   // [블루투스] ID 등록
-  SerialBT.println("id");
   while (user_id == "")
   {
     bluetooth_data = SerialBT.readStringUntil('\n');
@@ -269,7 +301,7 @@ void BT_connect()
     {
       int spacePos = bluetooth_data.indexOf(' ');
       user_id = bluetooth_data.substring(spacePos + 1);
-      Serial.println(user_id);
+      Serial.println("[SYSTEM] BLUETOOTH: ID=" + user_id);
     }
     tone(PIEZO, melody[7], 500);
     delay(1000);
@@ -280,6 +312,7 @@ void BT_connect()
   tone(PIEZO, melody[1], 500);
   delay(500);
   tone(PIEZO, melody[2], 500);
+  Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
 }
 
 /*
@@ -289,6 +322,7 @@ void BT_connect()
 */
 void WIFI_connect()
 {
+  Serial.println("[SETUP] WIFI: " + String(HELMET_NUM) + ".NO HELMET WIFI SETUP START");
   ssid = "";
   password = "";
   SerialBT.println("wifi");
@@ -299,13 +333,13 @@ void WIFI_connect()
     {
       int spacePos = bluetooth_data.indexOf(' ');
       ssid = bluetooth_data.substring(spacePos + 1);
-      Serial.println("ssid: " + ssid);
+      Serial.println("[SYSTEM] WIFI: SSID= " + ssid);
     }
     else if (bluetooth_data[0] == 'p')
     {
       int spacePos = bluetooth_data.indexOf(' ');
       password = bluetooth_data.substring(spacePos + 1);
-      Serial.println("password: " + password);
+      Serial.println("[SYSTEM] WIFI: PASSWORD= " + password);
     }
     WiFi.begin(ssid, password);
     tone(PIEZO, melody[0], 500);
@@ -317,6 +351,7 @@ void WIFI_connect()
   tone(PIEZO, melody[6], 500);
   delay(500);
   tone(PIEZO, melody[7], 500);
+  Serial.println("[SETUP] WIFI: " + String(HELMET_NUM) + ".NO HELMET WIFI SETUP SUCCESS");
 }
 
 /*
@@ -324,8 +359,10 @@ void WIFI_connect()
   #                                         HTTP                                                 #
   ################################################################################################
 */
-void SendingData(String type)
+void SendingData(String accident_type)
 {
+  Serial.println("[SYSTEM] ACCIDENT: " + accident_type + " 사고 감지");
+  client.close();
   if (WiFi.status() == WL_CONNECTED)
   { // WIFI가 연결되어 있으면
     http.begin("http://" + server_address + "/upload");// 대상 서버 주소
@@ -340,14 +377,14 @@ void SendingData(String type)
     struct tm *timeInfo;
     timeInfo = localtime(&epochTime);
 
-    send_data["type"] = type;
+    send_data["type"] = accident_type;
     send_data["date"][0] = timeInfo->tm_year + 1900;
     send_data["date"][1] = timeInfo->tm_mon + 1;
     send_data["date"][2] = timeInfo->tm_mday;
     send_data["time"][0] = timeInfo->tm_hour;
     send_data["time"][1] = timeInfo->tm_min;
     send_data["time"][2] = timeInfo->tm_sec;
-    send_data["id"] = user_id;
+    send_data["user_id"] = user_id;
     serializeJsonPretty(send_data, json_to_string);
     send_data.clear();
 
@@ -356,14 +393,15 @@ void SendingData(String type)
     if (httpResponseCode > 0)
     {
       String response = http.getString(); // http 방식으로 보낸 코드 출력
-      Serial.println(response);           // http 방식으로 전송 후 받은 응답 코드 출력
+      Serial.println("[SYSTEM] HTTP: " + response);           // http 방식으로 전송 후 받은 응답 코드 출력
     }
     else
     { // 반환 값이 올바르지 않다면
-      Serial.print("Error on sending POST: ");
+      Serial.print("[ERROR] HTTP: ");
       Serial.println(httpResponseCode);
     }
     http.end();
+    WEBSOCKET_setup();
   }
   else
   {
@@ -372,13 +410,16 @@ void SendingData(String type)
 }
 /*
   ################################################################################################
-  #                                        WebSocket                                             #
+  #                                        WEBSOCKET                                             #
   ################################################################################################
 */
 void WEBSOCKET_setup() {
+  client.close();
+  Serial.println("[SETUP] WEBSOCKET: SETUP START");
   client.onMessage(onMessageCallback);
   client.onEvent(onEventsCallback);
   client.connect("ws://" + server_address + "/ws/" + work_id + "/" + user_id);
+  Serial.println("[SETUP] WEBSOCKET: SETUP SUCCESS");
 }
 
 void onMessageCallback(WebsocketsMessage message) {
@@ -386,22 +427,20 @@ void onMessageCallback(WebsocketsMessage message) {
   int firstColonIndex = receiveData.indexOf(":");
   int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
   if (firstColonIndex == -1 || secondColonIndex == -1) {
-    Serial.println("Invalid Message Format");
+    Serial.println("[ERROR] WEBSOCKET: NOT FORMAT");
     return;
   }
   String send_id = receiveData.substring(0, firstColonIndex);
   String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
   String action = receiveData.substring(secondColonIndex + 1);
-  Serial.println("Message:" + receiveData);
-  Serial.println("send_id:" + send_id);
-  Serial.println("receive_id:" + receive_id);
-  Serial.println("action:" + action);
   if (user_id == receive_id) {
     if (action == "소리") {
-      client.send(send_id + ":" + action + "완료");
+      client.send(send_id + ":" + action + "전달");
       playSiren();
+      client.send(send_id + ":" + action + "완료");
     }
     else if (action == "카메라") {
+      client.send(send_id + ":" + action + "전달");
       capture_and_send_image(send_id);
     }
   }
@@ -409,23 +448,25 @@ void onMessageCallback(WebsocketsMessage message) {
 
 void onEventsCallback(WebsocketsEvent event, String data) {
   if (event == WebsocketsEvent::ConnectionOpened) {
-    Serial.println("웹 소켓 오픈");
+    Serial.println("[SYSTEM] WEBSOCKET: CONNECT");
   } else if (event == WebsocketsEvent::ConnectionClosed) {
-    Serial.println("웹 소켓 폐쇄");
+    Serial.println("[SYSTEM] WEBSOCKET: CLOSE");
   }
 }
 
 /*
   ################################################################################################
-  #                                       setup()                                                #
+  #                                         SETUP                                                #
   ################################################################################################
 */
 
 void PIN_setup() {
+  Serial.println("[SETUP] PIN: SETUP START");
   pinMode(SHOCK, INPUT);    // 충격
   pinMode(PIEZO, OUTPUT);   // 피에조
   //pinMode(CDS, INPUT);      // 조명
   //pinMode(LED_PIN, OUTPUT); // LED
+  Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
 void setup()
@@ -463,36 +504,33 @@ void setup()
 
 /*
   ################################################################################################
-  #                                        loop()                                                #
+  #                                          LOOP                                                #
   ################################################################################################
 */
 void loop()
 {
+  client.poll();
   // 빛 감지 (어두우면 자동으로 LED ON)
   //light();
 
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    client.poll();
-    // 충격 감지 (낙하 사고)
-    if (digitalRead(SHOCK) == HIGH)
-    {
-      SendingData("낙하");
-    }
+  // WEBSOCKET_check(); // 웹소켓 확인
 
-    // 추락 감지 (낙상 사고)
-    mpu.getAcceleration(&ax, &ay, &az);
-    mpu.getRotation(&gx, &gy, &gz);
-    //MPU6050_check();
-    /*
-      else if(){
-      SendingData("낙상");
-      Serial.println("낙상 발생!");
-      }
-    */
-  }
-  else
+  // 자이로센서 인식
+  mpu.getAcceleration(&ax, &ay, &az);
+  mpu.getRotation(&gx, &gy, &gz);
+  //MPU6050_check();
+
+  // 충격 감지 (낙하 사고)
+  if (digitalRead(SHOCK) == HIGH)
   {
-    WIFI_connect();
+    SendingData("낙하");
   }
+
+  // 추락 감지 (낙상 사고)
+  /*
+    else if(){
+    SendingData("낙상");
+    Serial.println("낙상 발생!");
+    }
+  */
 }

@@ -32,7 +32,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,13 +51,9 @@ import androidx.lifecycle.viewModelScope
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
-import com.naver.maps.map.NaverMap
-import com.naver.maps.map.clustering.ClusterMarkerInfo
 import com.naver.maps.map.clustering.Clusterer
 import com.naver.maps.map.clustering.ClusteringKey
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
-import com.naver.maps.map.overlay.Marker
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -96,6 +91,10 @@ class LocationViewModel : ViewModel() {
 fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
     val sheetState = rememberModalBottomSheetState()
     var isBottomSheetVisible by mutableStateOf(true)
+
+    LaunchedEffect(Unit) {
+        viewModel.getLocationData()
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         Box {
@@ -287,20 +286,10 @@ fun MapPrint(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                         val latitude by viewModel.latitude
                         val longitude by viewModel.longitude
 
-                        viewModel.getLocationData()
-
                         withContext(Dispatchers.Main) {
-                            println(latitude)
-
                             // 초기 위치 설정
                             val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
                             map.moveCamera(initialCameraPosition)
-                            //
-
-                            // 일반 마커 추가
-                            val marker = Marker()
-                            marker.position = LatLng(37.571648599, 126.976372775)
-                            marker.map = map
                             //
 
                             // 클러스터

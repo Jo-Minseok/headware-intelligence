@@ -52,4 +52,4 @@ def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=
     db.commit()
     db.close()
     
-insert_accident()
+# insert_accident()

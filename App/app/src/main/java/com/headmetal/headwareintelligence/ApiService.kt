@@ -27,4 +27,8 @@ interface ApiService {
         @Path("start") start: String,
         @Path("end") end: String
     ): TrendResponse
+
+    @GET("/map/marker")
+    suspend fun getLocationData(
+    ): LocationResponse
 }

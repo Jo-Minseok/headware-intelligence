@@ -184,7 +184,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { performLogin(id, pw, isManager, navController,idState, pwState) },
+                    onClick = { performLogin(idState.value, pwState.value, isManager, navController,idState, pwState) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

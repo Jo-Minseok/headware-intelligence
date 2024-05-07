@@ -9,8 +9,15 @@ import retrofit2.http.Path
 
 interface ApiService {
     @FormUrlEncoded
-    @POST("/login/employee") // /login/employee 또는 /login/manager
-    fun login(
+    @POST("/login/employee")
+    fun loginemployee(
+        @Field("username") username: String,
+        @Field("password") password: String
+    ): Call<LoginResponse>
+
+    @FormUrlEncoded
+    @POST("/login/manager")
+    fun loginmanager(
         @Field("username") username: String,
         @Field("password") password: String
     ): Call<LoginResponse>

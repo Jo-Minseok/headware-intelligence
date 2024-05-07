@@ -28,7 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +46,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.headmetal.headwareintelligence.RetrofitInstance
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapFragment
@@ -56,7 +62,31 @@ import com.naver.maps.map.compose.Marker
 import com.naver.maps.map.compose.MarkerDefaults
 import com.naver.maps.map.overlay.LocationOverlay
 import com.naver.maps.map.overlay.Marker
+import kotlinx.coroutines.launch
+import java.math.BigDecimal
 
+data class LocationResponse(
+    val latitude: List<BigDecimal>,
+    val longitude: List<BigDecimal>
+)
+
+class LocationViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    private val _latitude = mutableStateOf(emptyList<BigDecimal>())
+    val latitude: MutableState<List<BigDecimal>> = _latitude
+
+    private val _longitude = mutableStateOf(emptyList<BigDecimal>())
+    val longitude: MutableState<List<BigDecimal>> = _longitude
+
+    fun getLocationData() {
+        viewModelScope.launch {
+            val response = apiService.getLocationData()
+            _latitude.value = response.latitude
+            _longitude.value = response.longitude
+        }
+    }
+}
 
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)

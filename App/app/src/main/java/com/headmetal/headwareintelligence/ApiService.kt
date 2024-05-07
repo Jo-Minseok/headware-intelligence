@@ -26,5 +26,5 @@ interface ApiService {
     suspend fun getTrendData(
         @Path("start") start: String,
         @Path("end") end: String
-    ): TrendResponse // TrendResponse는 FastAPI에서 반환하는 JSON 형식에 맞게 정의해야 합니다.
+    ): TrendResponse
 }

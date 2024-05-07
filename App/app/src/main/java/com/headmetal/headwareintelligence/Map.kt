@@ -29,18 +29,33 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraUpdate
+import com.naver.maps.map.MapFragment
+import com.naver.maps.map.MapView
+import com.naver.maps.map.clustering.Clusterer
+import com.naver.maps.map.clustering.ClusteringKey
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.compose.LocationOverlay
 import com.naver.maps.map.compose.NaverMap
+import com.naver.maps.map.compose.Marker
+import com.naver.maps.map.compose.MarkerDefaults
+import com.naver.maps.map.overlay.LocationOverlay
+import com.naver.maps.map.overlay.Marker
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -51,9 +66,10 @@ import com.naver.maps.map.compose.NaverMap
 fun Map() {
     val sheetState = rememberModalBottomSheetState()
     var isBottomSheetVisible by mutableStateOf(true)
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         Box {
-            NaverMap(modifier = Modifier.fillMaxSize())
+            MapPrint()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -226,3 +242,58 @@ fun Map() {
         }
     }
 }
+
+@Composable
+fun MapPrint() {
+    val context = LocalContext.current
+
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { _ ->
+            MapView(context).apply {
+                getMapAsync { Map ->
+                    val initialCameraPosition = CameraUpdate.scrollTo(LatLng(37.372, 127.113))
+                    Map.moveCamera(initialCameraPosition)
+
+                    val marker = Marker()
+                    marker.position = LatLng(37.571648599, 126.976372775)
+                    marker.map = Map
+
+                    val clusterer: Clusterer<ItemKey> = Clusterer.Builder<ItemKey>().build()
+
+                    val keyTagMap = mapOf(
+                        ItemKey(1, LatLng(37.372, 127.113)) to null,
+                        ItemKey(2, LatLng(37.366, 127.106)) to null,
+                        ItemKey(3, LatLng(37.365, 127.157)) to null,
+                        ItemKey(4, LatLng(37.361, 127.105)) to null,
+                        ItemKey(5, LatLng(37.368, 127.110)) to null,
+                        ItemKey(6, LatLng(37.360, 127.106)) to null,
+                        ItemKey(7, LatLng(37.363, 127.111)) to null
+                    )
+                    clusterer.addAll(keyTagMap)
+                    clusterer.map = Map
+                }
+            }
+        }
+    )
+}
+
+class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {
+    override fun getPosition() = position
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val itemKey = other as ItemKey
+        return id == itemKey.id
+    }
+
+    override fun hashCode() = id
+}
+
+//NaverMap(
+//modifier = Modifier.fillMaxSize(),
+//content = {
+//    com.naver.maps.map.compose.Marker()
+//}
+//)

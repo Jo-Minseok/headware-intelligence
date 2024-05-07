@@ -6,6 +6,7 @@ from account import login_router
 from accident import accident_api
 from account import forgot_router
 from clustering import accident_clustering_router
+from marker import accident_marker_router
 from trend import accident_trend_router
 from db import models
 from db.db_connection import engine
@@ -26,6 +27,7 @@ app.include_router(register_router.router)
 app.include_router(login_router.router)
 app.include_router(forgot_router.router)
 app.include_router(accident_clustering_router.router)
+app.include_router(accident_marker_router.router)
 app.include_router(accident_trend_router.router)
 app.include_router(accident_api.router)
 

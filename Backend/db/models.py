@@ -52,7 +52,7 @@ class Accident(Base):
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)
     latitude = Column(Float(precision=6), nullable=False, default=1.0)
-    longitude = Column(Float(precision=6), nullable=False, default=1.0)
+    longtitude = Column(Float(precision=6), nullable=False, default=1.0)
     __table_args__ = (
         CheckConstraint(
             'longitude >= -180.000000 AND longitude <= 180.000000', name='ck_longitude'),

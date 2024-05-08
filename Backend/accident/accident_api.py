@@ -54,7 +54,7 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
                            time=datetime.time(
                                hour=accident.time[0], minute=accident.time[1], second=accident.time[2]),
                            latitude=0.000000,
-                           longtitude=0.000000,
+                           longitude=0.000000,
                            victim_id=accident.user_id,
                            category=accident.type)
     db.add(db_accident)

@@ -64,6 +64,7 @@ import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.OverlayImage
 import com.naver.maps.map.util.MarkerIcons
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -108,7 +109,70 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         Box {
-            MapPrint(viewModel)
+            val context = LocalContext.current
+
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { _ ->
+                    MapView(context).apply {
+                        getMapAsync { map ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val latitude by viewModel.latitude
+                                val longitude by viewModel.longitude
+
+                                withContext(Dispatchers.Main) {
+                                    // 초기 위치 설정
+                                    val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
+                                    map.moveCamera(initialCameraPosition)
+                                    //
+
+                                    println(latitude)
+
+                                    // 클러스터 및 마커 설정
+                                    val builder = Clusterer.Builder<ItemKey>()
+                                    val icons = arrayOf(MarkerIcons.BLUE, MarkerIcons.GREEN, MarkerIcons.RED, MarkerIcons.YELLOW)
+
+                                    builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
+                                        override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
+                                            super.updateClusterMarker(info, marker)
+                                            marker.icon = if (info.size < 3) {
+                                                MarkerIcons.CLUSTER_LOW_DENSITY
+                                            } else {
+                                                MarkerIcons.CLUSTER_MEDIUM_DENSITY
+                                            }
+                                        }
+                                    }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
+                                        override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
+                                            super.updateLeafMarker(info, marker)
+                                            val key = info.key as ItemKey
+                                            marker.icon = icons[key.id % icons.size]
+                                            marker.onClickListener = Overlay.OnClickListener {
+                                                isBottomSheetVisible = true
+                                                true
+                                            }
+                                        }
+                                    })
+
+                                    builder.animate(false)
+                                    //
+
+                                    // 클러스터
+                                    val cluster = builder.build()
+
+                                    for (i in latitude.indices) {
+                                        cluster.add(ItemKey(i + 1, LatLng(latitude[i], longitude[i])), null)
+                                    }
+
+                                    cluster.map = map
+                                    //
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -280,73 +344,6 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
             }
         }
     }
-}
-
-@OptIn(DelicateCoroutinesApi::class)
-@Composable
-fun MapPrint(viewModel: LocationViewModel = remember { LocationViewModel() }) {
-    val context = LocalContext.current
-
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { _ ->
-            MapView(context).apply {
-                getMapAsync { map ->
-                    GlobalScope.launch(Dispatchers.IO) {
-                        val latitude by viewModel.latitude
-                        val longitude by viewModel.longitude
-
-                        withContext(Dispatchers.Main) {
-                            // 초기 위치 설정
-                            val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
-                            map.moveCamera(initialCameraPosition)
-                            //
-
-                            // 클러스터 및 마커 설정
-                            val builder = Clusterer.Builder<ItemKey>()
-                            val icons = arrayOf(MarkerIcons.BLUE, MarkerIcons.GREEN, MarkerIcons.RED, MarkerIcons.YELLOW)
-
-                            builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
-                                override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
-                                    super.updateClusterMarker(info, marker)
-                                    marker.icon = if (info.size < 3) {
-                                        MarkerIcons.CLUSTER_LOW_DENSITY
-                                    } else {
-                                        MarkerIcons.CLUSTER_MEDIUM_DENSITY
-                                    }
-                                }
-                            }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
-                                override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
-                                    super.updateLeafMarker(info, marker)
-                                    val key = info.key as ItemKey
-                                    marker.icon = icons[key.id % icons.size]
-                                    marker.onClickListener = Overlay.OnClickListener {
-
-                                        true
-                                    }
-                                }
-                            })
-
-                            builder.animate(false)
-                            //
-
-                            // 클러스터
-                            val cluster = builder.build()
-
-                            for (i in latitude.indices) {
-                                cluster.add(ItemKey(i + 1, LatLng(latitude[i], longitude[i])), null)
-                            }
-
-                            cluster.map = map
-                            //
-                        }
-                    }
-
-
-                }
-            }
-        }
-    )
 }
 
 class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {

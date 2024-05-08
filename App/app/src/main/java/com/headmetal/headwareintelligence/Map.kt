@@ -51,9 +51,19 @@ import androidx.lifecycle.viewModelScope
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
+import com.naver.maps.map.clustering.ClusterMarkerInfo
+import com.naver.maps.map.clustering.ClusterMarkerUpdater
 import com.naver.maps.map.clustering.Clusterer
 import com.naver.maps.map.clustering.ClusteringKey
+import com.naver.maps.map.clustering.DefaultClusterMarkerUpdater
+import com.naver.maps.map.clustering.DefaultLeafMarkerUpdater
+import com.naver.maps.map.clustering.DefaultMarkerManager
+import com.naver.maps.map.clustering.LeafMarkerInfo
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
+import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
+import com.naver.maps.map.util.MarkerIcons
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -292,14 +302,42 @@ fun MapPrint(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                             map.moveCamera(initialCameraPosition)
                             //
 
+                            // 클러스터 및 마커 설정
+                            val builder = Clusterer.Builder<ItemKey>()
+                            val icons = arrayOf(MarkerIcons.BLUE, MarkerIcons.GREEN, MarkerIcons.RED, MarkerIcons.YELLOW)
+
+                            builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
+                                override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
+                                    super.updateClusterMarker(info, marker)
+                                    marker.icon = if (info.size < 3) {
+                                        MarkerIcons.CLUSTER_LOW_DENSITY
+                                    } else {
+                                        MarkerIcons.CLUSTER_MEDIUM_DENSITY
+                                    }
+                                }
+                            }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
+                                override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
+                                    super.updateLeafMarker(info, marker)
+                                    val key = info.key as ItemKey
+                                    marker.icon = icons[key.id % icons.size]
+                                    marker.onClickListener = Overlay.OnClickListener {
+
+                                        true
+                                    }
+                                }
+                            })
+
+                            builder.animate(false)
+                            //
+
                             // 클러스터
-                            val clusterer: Clusterer<ItemKey> = Clusterer.Builder<ItemKey>().build()
+                            val cluster = builder.build()
 
                             for (i in latitude.indices) {
-                                clusterer.add(ItemKey(i + 1, LatLng(latitude[i], longitude[i])), null)
+                                cluster.add(ItemKey(i + 1, LatLng(latitude[i], longitude[i])), null)
                             }
 
-                            clusterer.map = map
+                            cluster.map = map
                             //
                         }
                     }
@@ -311,7 +349,7 @@ fun MapPrint(viewModel: LocationViewModel = remember { LocationViewModel() }) {
     )
 }
 
-class ItemKey(private val id: Int, private val position: LatLng) : ClusteringKey {
+class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {
     override fun getPosition() = position
 
     override fun equals(other: Any?): Boolean {

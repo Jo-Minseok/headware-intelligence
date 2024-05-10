@@ -1,5 +1,5 @@
 from db.db_connection import Base
-from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Time, ForeignKey, Date, DOUBLE
+from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Double, Time, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
 
@@ -51,8 +51,8 @@ class Accident(Base):
     no = Column(BigInteger, primary_key=True, autoincrement=True)
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)
-    latitude = Column(DOUBLE, nullable=False, default=1.0)
-    longitude = Column(DOUBLE, nullable=False, default=1.0)
+    latitude = Column(Double, nullable=False, default=1.0)
+    longitude = Column(Double, nullable=False, default=1.0)
     __table_args__ = (
         CheckConstraint(
             'longitude >= -180.000000 AND longitude <= 180.000000', name='ck_longitude'),

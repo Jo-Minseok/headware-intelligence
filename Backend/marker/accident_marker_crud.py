@@ -1,4 +1,4 @@
-from db.models import Accident
+from db.models import Accident, AccidentProcessing
 from sqlalchemy.orm import Session
 from db.db_connection import db_session
 from datetime import datetime, timedelta
@@ -7,6 +7,10 @@ import numpy as np
 # 사고 발생 데이터 조회
 def get_accidents(db: Session):
     return db.query(Accident).all()
+
+# 사고처리 데이터 조회
+def get_accident_processing(db: Session, no: int):
+    return db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
 
 # 사고 발생 데이터 삽입(테스트 용도)
 def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=400, K=3):
@@ -49,6 +53,26 @@ def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=
                             category='test')
         db.add(accident)
 
+    db.commit()
+    
+    # 사고 처리 데이터의 번호 값을 지정하기 위해 Accident 테이블의 모든 데이터를 질의
+    accidents = db.query(Accident).all()
+    
+    # 데이터 생성 전 데이터 삭제
+    db.query(AccidentProcessing).delete()
+    db.commit()
+    
+    # 상황 데이터는 아래 세 가지 데이터를 랜덤하게 사용
+    situation = ['처리 완료', '119 신고중', '처리중']
+    
+    for accident in accidents:
+        processing = AccidentProcessing(no=accident.no, 
+                                        situation=situation[np.random.randint(0, 3)], 
+                                        date=day.strftime('%Y-%m-%d'), 
+                                        time=datetime.now().strftime('%H:%M:%S'), 
+                                        detail='')
+        db.add(processing)
+    
     db.commit()
     db.close()
     

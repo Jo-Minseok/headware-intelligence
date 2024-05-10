@@ -70,14 +70,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.math.BigInteger
 
 data class LocationResponse(
+    val no: List<BigInteger>,
     val latitude: List<Double>,
     val longitude: List<Double>
 )
 
 class LocationViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
+
+    private val _no = mutableStateOf(emptyList<BigInteger>())
+    val no: State<List<BigInteger>> = _no
 
     private val _latitude = mutableStateOf(emptyList<Double>())
     val latitude: State<List<Double>> = _latitude
@@ -153,7 +158,6 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                                         }
                                     })
 
-                                    builder.animate(false)
                                     //
 
                                     // 클러스터

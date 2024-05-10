@@ -30,6 +30,9 @@ def accident_data(db: Session = Depends(get_db)):
 def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
     # 사고 처리 데이터 조회
     accident = accident_marker_crud.get_accident_processing(db=db, no=no)
+    
+    # 사고자 이름 조회
+    victim = accident_marker_crud.get_victim_name(db=db, no=no)
 
     # 사고 처리 데이터 반환
     return {
@@ -37,5 +40,6 @@ def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
         'situation' : accident.situation, 
         'date' : accident.date, 
         'time' : accident.time, 
-        'detail' : accident.detail
+        'detail' : accident.detail, 
+        'victim' : victim
     }

@@ -1,4 +1,5 @@
-from db.models import Accident, AccidentProcessing
+from db.models import Accident, AccidentProcessing, UserEmployee
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from db.db_connection import db_session
 from datetime import datetime, timedelta
@@ -11,6 +12,18 @@ def get_accidents(db: Session):
 # 사고처리 데이터 조회
 def get_accident_processing(db: Session, no: int):
     return db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
+
+def get_victim_name(db: Session, no: int):
+    accident_query = select(Accident.victim_id).where(Accident.no == no)
+    accident_result = db.execute(accident_query).fetchone()
+    victim_id = accident_result[0]
+    
+    employee_query = select(UserEmployee.name).where(UserEmployee.id == victim_id)
+    employee_result = db.execute(employee_query).fetchone()
+    victim_name = employee_result[0]
+    
+    return victim_name
+    
 
 # 사고 발생 데이터 삽입(테스트 용도)
 def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=400, K=3):

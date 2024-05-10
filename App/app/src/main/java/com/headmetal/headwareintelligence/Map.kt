@@ -1,3 +1,5 @@
+package com.headmetal.headwareintelligence
+
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,11 +30,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,36 +48,47 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.headmetal.headwareintelligence.RetrofitInstance
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
-import com.naver.maps.map.MapFragment
 import com.naver.maps.map.MapView
+import com.naver.maps.map.clustering.ClusterMarkerInfo
+import com.naver.maps.map.clustering.ClusterMarkerUpdater
 import com.naver.maps.map.clustering.Clusterer
 import com.naver.maps.map.clustering.ClusteringKey
+import com.naver.maps.map.clustering.DefaultClusterMarkerUpdater
+import com.naver.maps.map.clustering.DefaultLeafMarkerUpdater
+import com.naver.maps.map.clustering.DefaultMarkerManager
+import com.naver.maps.map.clustering.LeafMarkerInfo
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
-import com.naver.maps.map.compose.LocationOverlay
-import com.naver.maps.map.compose.NaverMap
-import com.naver.maps.map.compose.Marker
-import com.naver.maps.map.compose.MarkerDefaults
-import com.naver.maps.map.overlay.LocationOverlay
 import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
+import com.naver.maps.map.util.MarkerIcons
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
+import kotlinx.coroutines.withContext
+import java.math.BigInteger
 
 data class LocationResponse(
-    val latitude: List<BigDecimal>,
-    val longitude: List<BigDecimal>
+    val no: List<BigInteger>,
+    val latitude: List<Double>,
+    val longitude: List<Double>
 )
 
 class LocationViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
-    private val _latitude = mutableStateOf(emptyList<BigDecimal>())
-    val latitude: MutableState<List<BigDecimal>> = _latitude
+    private val _no = mutableStateOf(emptyList<BigInteger>())
+    val no: State<List<BigInteger>> = _no
 
-    private val _longitude = mutableStateOf(emptyList<BigDecimal>())
-    val longitude: MutableState<List<BigDecimal>> = _longitude
+    private val _latitude = mutableStateOf(emptyList<Double>())
+    val latitude: State<List<Double>> = _latitude
+
+    private val _longitude = mutableStateOf(emptyList<Double>())
+    val longitude: State<List<Double>> = _longitude
 
     fun getLocationData() {
         viewModelScope.launch {
@@ -93,13 +104,79 @@ class LocationViewModel : ViewModel() {
 @Preview(showBackground = true)
 @Composable
 @ExperimentalNaverMapApi
-fun Map() {
+fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
     val sheetState = rememberModalBottomSheetState()
     var isBottomSheetVisible by mutableStateOf(true)
 
+    LaunchedEffect(Unit) {
+        viewModel.getLocationData()
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         Box {
-            MapPrint()
+            val context = LocalContext.current
+
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { _ ->
+                    MapView(context).apply {
+                        getMapAsync { map ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val latitude by viewModel.latitude
+                                val longitude by viewModel.longitude
+
+                                withContext(Dispatchers.Main) {
+                                    // 초기 위치 설정
+                                    val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
+                                    map.moveCamera(initialCameraPosition)
+                                    //
+
+                                    println(latitude)
+
+                                    // 클러스터 및 마커 설정
+                                    val builder = Clusterer.Builder<ItemKey>()
+                                    val icons = arrayOf(MarkerIcons.BLUE, MarkerIcons.GREEN, MarkerIcons.RED, MarkerIcons.YELLOW)
+
+                                    builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
+                                        override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
+                                            super.updateClusterMarker(info, marker)
+                                            marker.icon = if (info.size < 3) {
+                                                MarkerIcons.CLUSTER_LOW_DENSITY
+                                            } else {
+                                                MarkerIcons.CLUSTER_MEDIUM_DENSITY
+                                            }
+                                        }
+                                    }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
+                                        override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
+                                            super.updateLeafMarker(info, marker)
+                                            val key = info.key as ItemKey
+                                            marker.icon = icons[key.id % icons.size]
+                                            marker.onClickListener = Overlay.OnClickListener {
+                                                isBottomSheetVisible = true
+                                                true
+                                            }
+                                        }
+                                    })
+
+                                    //
+
+                                    // 클러스터
+                                    val cluster = builder.build()
+
+                                    for (i in latitude.indices) {
+                                        cluster.add(ItemKey(i + 1, LatLng(latitude[i], longitude[i])), null)
+                                    }
+
+                                    cluster.map = map
+                                    //
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -273,41 +350,6 @@ fun Map() {
     }
 }
 
-@Composable
-fun MapPrint() {
-    val context = LocalContext.current
-
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { _ ->
-            MapView(context).apply {
-                getMapAsync { Map ->
-                    val initialCameraPosition = CameraUpdate.scrollTo(LatLng(37.372, 127.113))
-                    Map.moveCamera(initialCameraPosition)
-
-                    val marker = Marker()
-                    marker.position = LatLng(37.571648599, 126.976372775)
-                    marker.map = Map
-
-                    val clusterer: Clusterer<ItemKey> = Clusterer.Builder<ItemKey>().build()
-
-                    val keyTagMap = mapOf(
-                        ItemKey(1, LatLng(37.372, 127.113)) to null,
-                        ItemKey(2, LatLng(37.366, 127.106)) to null,
-                        ItemKey(3, LatLng(37.365, 127.157)) to null,
-                        ItemKey(4, LatLng(37.361, 127.105)) to null,
-                        ItemKey(5, LatLng(37.368, 127.110)) to null,
-                        ItemKey(6, LatLng(37.360, 127.106)) to null,
-                        ItemKey(7, LatLng(37.363, 127.111)) to null
-                    )
-                    clusterer.addAll(keyTagMap)
-                    clusterer.map = Map
-                }
-            }
-        }
-    )
-}
-
 class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {
     override fun getPosition() = position
 
@@ -320,10 +362,3 @@ class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {
 
     override fun hashCode() = id
 }
-
-//NaverMap(
-//modifier = Modifier.fillMaxSize(),
-//content = {
-//    com.naver.maps.map.compose.Marker()
-//}
-//)

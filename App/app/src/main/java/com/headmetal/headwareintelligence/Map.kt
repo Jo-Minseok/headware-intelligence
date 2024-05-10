@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,18 +72,27 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigInteger
+import java.util.Calendar
 
 data class LocationResponse(
-    val no: List<BigInteger>,
+    val no: List<Int>,
     val latitude: List<Double>,
     val longitude: List<Double>
+)
+
+data class AccidentResponse(
+    val no: Int,
+    val situation: String,
+    val date: String,
+    val time: String,
+    val detail: String
 )
 
 class LocationViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
-    private val _no = mutableStateOf(emptyList<BigInteger>())
-    val no: State<List<BigInteger>> = _no
+    private val _no = mutableStateOf(emptyList<Int>())
+    val no: State<List<Int>> = _no
 
     private val _latitude = mutableStateOf(emptyList<Double>())
     val latitude: State<List<Double>> = _latitude
@@ -93,8 +103,39 @@ class LocationViewModel : ViewModel() {
     fun getLocationData() {
         viewModelScope.launch {
             val response = apiService.getLocationData()
+            _no.value = response.no
             _latitude.value = response.latitude
             _longitude.value = response.longitude
+        }
+    }
+}
+
+class AccidentViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    private val _no = mutableIntStateOf(0)
+    val no: State<Int> = _no
+
+    private val _situation = mutableStateOf<String>("")
+    val situation: State<String> = _situation
+
+    private val _date = mutableStateOf<String>("")
+    val date: State<String> = _date
+
+    private val _time = mutableStateOf<String>("")
+    val time: State<String> = _time
+
+    private val _detail = mutableStateOf<String>("")
+    val detail: State<String> = _detail
+
+    fun getAccidentData(no: BigInteger) {
+        viewModelScope.launch {
+            val response = apiService.getAccidentData(no)
+            _no.intValue = response.no
+            _situation.value = response.situation
+            _date.value = response.date
+            _time.value = response.time
+            _detail.value = response.detail
         }
     }
 }
@@ -104,12 +145,13 @@ class LocationViewModel : ViewModel() {
 @Preview(showBackground = true)
 @Composable
 @ExperimentalNaverMapApi
-fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
+fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() }, accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }) {
     val sheetState = rememberModalBottomSheetState()
     var isBottomSheetVisible by mutableStateOf(true)
+    var accidentNo by mutableIntStateOf(0)
 
     LaunchedEffect(Unit) {
-        viewModel.getLocationData()
+        locationViewModel.getLocationData()
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
@@ -122,16 +164,15 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                     MapView(context).apply {
                         getMapAsync { map ->
                             CoroutineScope(Dispatchers.IO).launch {
-                                val latitude by viewModel.latitude
-                                val longitude by viewModel.longitude
+                                val no by locationViewModel.no
+                                val latitude by locationViewModel.latitude
+                                val longitude by locationViewModel.longitude
 
                                 withContext(Dispatchers.Main) {
                                     // 초기 위치 설정
                                     val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
                                     map.moveCamera(initialCameraPosition)
                                     //
-
-                                    println(latitude)
 
                                     // 클러스터 및 마커 설정
                                     val builder = Clusterer.Builder<ItemKey>()
@@ -152,6 +193,7 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                                             val key = info.key as ItemKey
                                             marker.icon = icons[key.id % icons.size]
                                             marker.onClickListener = Overlay.OnClickListener {
+                                                accidentNo = key.id
                                                 isBottomSheetVisible = true
                                                 true
                                             }
@@ -164,7 +206,7 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                                     val cluster = builder.build()
 
                                     for (i in latitude.indices) {
-                                        cluster.add(ItemKey(i + 1, LatLng(latitude[i], longitude[i])), null)
+                                        cluster.add(ItemKey(no[i], LatLng(latitude[i], longitude[i])), null)
                                     }
 
                                     cluster.map = map
@@ -220,7 +262,7 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                         horizontalArrangement = Arrangement.SpaceAround,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "작업 현장 1", fontSize = 20.sp)
+                        Text(text = "사고 발생지 $accidentNo", fontSize = 20.sp)
                         Spacer(modifier = Modifier.width(160.dp))
                         Text(
                             text = "0.0KM",
@@ -230,7 +272,6 @@ fun Map(viewModel: LocationViewModel = remember { LocationViewModel() }) {
                                 .width(100.dp),
                             textAlign = TextAlign.Center
                         )
-
                     }
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Icon(

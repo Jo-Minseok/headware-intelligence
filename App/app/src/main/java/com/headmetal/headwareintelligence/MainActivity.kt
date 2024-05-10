@@ -35,6 +35,12 @@ class MainActivity : ComponentActivity() {
                         composable("mainScreen") {
                             Main(navController)
                         }
+                        composable("processingScreen") {
+                            Processing(navController)
+                        }
+                        composable("menuScreen") {
+                            Menu(navController)
+                        }
                     }
                 }
             }

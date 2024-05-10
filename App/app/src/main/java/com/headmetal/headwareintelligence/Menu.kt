@@ -36,10 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
-@Preview(showBackground = true)
 @Composable
-fun Menu() {
+fun Menu(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -118,7 +118,7 @@ fun Menu() {
                             .padding(vertical = 2.5.dp)
                             .fillMaxWidth()
                             .height(60.dp),
-                        colors= ButtonDefaults.buttonColors(Color.Transparent)
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -149,7 +149,7 @@ fun Menu() {
                             .padding(vertical = 2.5.dp)
                             .fillMaxWidth()
                             .height(60.dp),
-                        colors= ButtonDefaults.buttonColors(Color.Transparent)
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -180,7 +180,7 @@ fun Menu() {
                             .padding(vertical = 2.5.dp)
                             .fillMaxWidth()
                             .height(60.dp),
-                        colors= ButtonDefaults.buttonColors(Color.Transparent)
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -218,7 +218,7 @@ fun Menu() {
                             .padding(vertical = 2.5.dp)
                             .fillMaxWidth()
                             .height(60.dp),
-                        colors= ButtonDefaults.buttonColors(Color.Transparent)
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -249,7 +249,7 @@ fun Menu() {
                             .padding(vertical = 2.5.dp)
                             .fillMaxWidth()
                             .height(60.dp),
-                        colors= ButtonDefaults.buttonColors(Color.Transparent)
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -272,5 +272,6 @@ fun Menu() {
                 }
             }
         }
+        NavigationBar(navController = navController)
     }
 }

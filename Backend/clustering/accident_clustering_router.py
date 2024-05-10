@@ -16,7 +16,7 @@ def cluster_data(db: Session = Depends(get_db)):
     # 사고 발생 데이터 조회
     accidents = accident_clustering_crud.get_accidents(db=db)
     
-    # 지도 위도, 경도 값 설정(현재 테스트 데이터)
+    # 지도 위도, 경도 값 설정
     latitude = []
     longitude = []
     for accident in accidents:

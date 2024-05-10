@@ -88,32 +88,11 @@ fun Main(navController: NavController, modifier: Modifier = Modifier,
         rainy < 20 -> "호우주의보"
         else -> "보통"
     }
-
     val tempColor = when {
         temp < 10 -> Color.Red
         temp < 20 -> Color(0xFFFF6600)
         else -> Color.Green
     }
-/////미세먼지/////
-/*    val dustText = when {
-        dust < 10 -> "좋음"
-        dust < 20 -> "보통"
-        else -> "나쁨"
-    }
-
-    val dustIcon = when {
-        dust < 10 -> Icons.Default.SentimentVeryDissatisfied
-        dust < 20 -> Icons.Default.SentimentDissatisfied
-        else -> Icons.Default.SentimentSatisfiedAlt
-    }
-
-    val dustColor = when {
-        dust < 10 -> Color.Red
-        dust < 20 -> Color(0xFFFF6600)
-        else -> Color.Green
-    }*/
-
-
     var current by remember {
         mutableStateOf(Calendar.getInstance().time)
     }
@@ -435,68 +414,6 @@ fun Main(navController: NavController, modifier: Modifier = Modifier,
                 }
             }
 
-            /*Spacer(
-                modifier = Modifier.height(10.dp)
-            )
-            ///////미세먼지//////
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                    .background(color = Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .fillMaxWidth()
-
-            ) {
-                Column {
-
-                    Row {
-                        Icon(
-                            imageVector = dustIcon,
-                            contentDescription = null,
-                            tint = dustColor,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
-                                .size(40.dp)
-
-                        )
-                        Column {
-
-                            Row {
-                                Text(
-                                    text = "미세먼지/초미세먼지",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 10.dp, top = 30.dp)
-                                )
-
-
-                            }
-
-                        }
-                        Column {
-
-                            Text(
-                                text = dustText,
-                                fontSize = 16.sp,
-                                color = dustColor,
-                                style = TextStyle(textAlign = TextAlign.End),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 10.dp, top = 30.dp)
-                            )
-                        }
-
-                    }
-
-
-
-                }
-            }*/
-
             Spacer(
                 modifier = Modifier.height(10.dp)
             )
@@ -585,10 +502,10 @@ fun Main(navController: NavController, modifier: Modifier = Modifier,
                             }
 
                         }
-
                     }
                 }
             }
+            NavigationBar(navController = navController)
         }
     }
 }

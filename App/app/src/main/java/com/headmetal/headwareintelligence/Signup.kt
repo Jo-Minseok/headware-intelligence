@@ -43,7 +43,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-data class RegisterEmployeeRequest(
+data class RegisterEmployeeResponse(
     val id: String,
     val password: String,
     val re_password: String,
@@ -53,7 +53,7 @@ data class RegisterEmployeeRequest(
     val company: String
 )
 
-data class RegisterManagerRequest(
+data class RegisterManagerResponse(
     val id: String,
     val password: String,
     val re_password: String,
@@ -80,20 +80,20 @@ private fun performEmployeeSignup(id: String, password: String, re_password: Str
 ) {
     val apiService = RetrofitInstance.apiService
     val call = apiService.registerEmployee(
-        RegisterEmployeeRequest(id, password, re_password, name, email, phone_no, company)
+        RegisterEmployeeResponse(id, password, re_password, name, email, phone_no, company)
     )
-    call.enqueue(object : Callback<RegisterEmployeeRequest> {
-        override fun onResponse(call: Call<RegisterEmployeeRequest>, response: Response<RegisterEmployeeRequest>) {
+    call.enqueue(object : Callback<RegisterEmployeeResponse> {
+        override fun onResponse(call: Call<RegisterEmployeeResponse>, response: Response<RegisterEmployeeResponse>) {
             if (response.isSuccessful) {
                 // 회원 가입 성공 시
                 showSignupSuccessDialog(navController)
             } else {
-                // 회원 가입 실패 시 처리할 코드
+                // 회원 가입 실패 시
                 showSignupFailedDialog(navController)
             }
         }
 
-        override fun onFailure(call: Call<RegisterEmployeeRequest>, t: Throwable) {
+        override fun onFailure(call: Call<RegisterEmployeeResponse>, t: Throwable) {
             // 통신 실패 시 처리할 코드
             println("서버 통신 실패: ${t.message}")
         }
@@ -105,11 +105,11 @@ private fun performManagerSignup(id: String, password: String, re_password: Stri
 ) {
     val apiService = RetrofitInstance.apiService
     val call = apiService.registerManager(
-        RegisterManagerRequest(id, password, re_password, name, email, company)
+        RegisterManagerResponse(id, password, re_password, name, email, company)
     )
-    call.enqueue(object : Callback<RegisterManagerRequest>
+    call.enqueue(object : Callback<RegisterManagerResponse>
     {
-        override fun onResponse(call: Call<RegisterManagerRequest>, response: Response<RegisterManagerRequest>
+        override fun onResponse(call: Call<RegisterManagerResponse>, response: Response<RegisterManagerResponse>
         ) {
             if (response.isSuccessful) {
                 // 회원 가입 성공 시
@@ -120,7 +120,7 @@ private fun performManagerSignup(id: String, password: String, re_password: Stri
             }
         }
 
-        override fun onFailure(call: Call<RegisterManagerRequest>
+        override fun onFailure(call: Call<RegisterManagerResponse>
                                , t: Throwable) {
             // 통신 실패 시 처리할 코드
             println("서버 통신 실패: ${t.message}")
@@ -141,31 +141,31 @@ private fun showPasswordMismatchDialog(navController: NavController) {
     dialog.show()
 }
 
-private fun showIdDuplicateDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("아이디 중복")
-    builder.setMessage("이미 사용 중인 아이디입니다.")
-
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    val dialog = builder.create()
-    dialog.show()
-}
-
-private fun showEmailDuplicateDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("이메일 중복")
-    builder.setMessage("이미 사용 중인 이메일입니다.")
-
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    val dialog = builder.create()
-    dialog.show()
-}
+//private fun showIdDuplicateDialog(navController: NavController) {
+//    val builder = AlertDialog.Builder(navController.context)
+//    builder.setTitle("아이디 중복")
+//    builder.setMessage("이미 사용 중인 아이디입니다.")
+//
+//    builder.setPositiveButton("확인") { dialog, _ ->
+//        dialog.dismiss()
+//    }
+//
+//    val dialog = builder.create()
+//    dialog.show()
+//}
+//
+//private fun showEmailDuplicateDialog(navController: NavController) {
+//    val builder = AlertDialog.Builder(navController.context)
+//    builder.setTitle("이메일 중복")
+//    builder.setMessage("이미 사용 중인 이메일입니다.")
+//
+//    builder.setPositiveButton("확인") { dialog, _ ->
+//        dialog.dismiss()
+//    }
+//
+//    val dialog = builder.create()
+//    dialog.show()
+//}
 
 
 

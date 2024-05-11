@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import android.app.AlertDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,18 +31,106 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-@Preview(showBackground = true)
+data class Forgot_Id_Request(
+    val name: String,
+    val email: String
+)
+
+data class Forgot_Id_Result(
+    val id: String
+)
+
+fun performFindId(name: String, email: String, isManager: Boolean, navController: NavController) {
+    val apiService = RetrofitInstance.apiService
+    val call = if (isManager) {
+        apiService.findmanagerId(Forgot_Id_Request(name, email))
+    } else {
+        apiService.findemployeeId(Forgot_Id_Request(name, email))
+    }
+
+    call.enqueue(object : Callback<Forgot_Id_Result> {
+        override fun onResponse(call: Call<Forgot_Id_Result>, response: Response<Forgot_Id_Result>) {
+            // 서버로부터 응답을 받았을 때
+
+            if (response.isSuccessful) {
+                // 서버가 요청을 성공적으로 처리했을 때의 경우
+                val idResponse = response.body()
+                val id = idResponse?.id
+                if (!id.isNullOrEmpty()) {
+                    // ID 값이 비어 있지 않은 경우
+                    showIdDialog(navController, id)
+                } else {
+                    // ID 값이 비어 있거나 null인 경우
+                    showAccessFailedDialog(navController)
+                }
+            } else {
+                // 서버가 요청을 처리하지 못했을 때의 경우(예: 404 Not Found, 500 Internal Server Error 등)
+                showFindIdFailedDialog(navController)
+            }
+        }
+
+        override fun onFailure(call: Call<Forgot_Id_Result>, t: Throwable) {
+            // 서버 통신에 실패했을 때
+            println("서버 통신 실패: ${t.message}")
+        }
+    })
+}
+
+
+
+private fun showFindIdFailedDialog(navController: NavController) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("아이디 찾기 실패")
+    builder.setMessage("일치하는 계정을 찾을 수 없습니다.")
+
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+    }
+
+    val dialog = builder.create()
+    dialog.show()
+}
+
+fun showAccessFailedDialog(navController: NavController) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("서버 응답 실패")
+    builder.setMessage("서버 응답에 실패 하였습니다.")
+
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+    }
+
+    val dialog = builder.create()
+    dialog.show()
+}
+private fun showIdDialog(navController: NavController, id: String) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("아이디")
+    builder.setMessage("ID: $id")
+
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+    }
+
+    val dialog = builder.create()
+    dialog.show()
+}
+
 @Composable
-fun Findid(modifier: Modifier = Modifier) {
-    var id by remember {
+fun Findid(navController: NavController, modifier: Modifier = Modifier) {
+    var name by remember {
         mutableStateOf("")
     }
-    var phone by remember {
+    var email by remember {
         mutableStateOf("")
     }
-    var part by remember {
-        mutableStateOf("None")
+    var isManager by remember {
+        mutableStateOf(false)
     }
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -64,8 +153,8 @@ fun Findid(modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = id,
-                    onValueChange = { id = it },
+                    value = name,
+                    onValueChange = { name = it },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
@@ -79,13 +168,13 @@ fun Findid(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "전화번호",
+                    text = "이메일",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = phone,
-                    onValueChange = { phone = it },
+                    value = email,
+                    onValueChange = { email = it },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
@@ -110,8 +199,8 @@ fun Findid(modifier: Modifier = Modifier) {
                     ) {
                         Row {
                             RadioButton(
-                                selected = (part == "Normal"),
-                                onClick = { part = "Normal" }
+                                selected = !isManager,
+                                onClick = { isManager = false }
                             )
                             Text(
                                 text = "일반직",
@@ -125,8 +214,8 @@ fun Findid(modifier: Modifier = Modifier) {
                     ) {
                         Row {
                             RadioButton(
-                                selected = (part == "Manage"),
-                                onClick = { part = "Manage" }
+                                selected = isManager,
+                                onClick = { isManager = true }
                             )
                             Text(
                                 text = "관리직",
@@ -141,13 +230,25 @@ fun Findid(modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = {},
+                    onClick = { performFindId(name, email, isManager, navController)},
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = "아이디 찾기",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Button(
+                    onClick = {navController.navigate("findpwScreen")},
+                    colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "비밀번호 찾기",
                         fontWeight = FontWeight.Bold
                     )
                 }

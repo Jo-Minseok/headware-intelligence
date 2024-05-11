@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,6 +62,7 @@ import com.naver.maps.map.clustering.Clusterer
 import com.naver.maps.map.clustering.ClusteringKey
 import com.naver.maps.map.clustering.DefaultClusterMarkerUpdater
 import com.naver.maps.map.clustering.DefaultLeafMarkerUpdater
+import com.naver.maps.map.clustering.DefaultMarkerManager
 import com.naver.maps.map.clustering.LeafMarkerInfo
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 import com.naver.maps.map.overlay.Marker
@@ -73,6 +75,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 data class LocationResponse(
     val no: List<Int>,
@@ -122,7 +127,7 @@ class AccidentViewModel : ViewModel() {
     private val no: State<Int?> = _no
 
     private val _situation = mutableStateOf<String?>(null)
-    private val situation: State<String?> = _situation
+    val situation: State<String?> = _situation
 
     private val _date = mutableStateOf<String?>(null)
     private val date: State<String?> = _date
@@ -153,6 +158,40 @@ class AccidentViewModel : ViewModel() {
     }
 }
 
+fun updateAccidentComplete(no: Int, detail: String) {
+    val call = RetrofitInstance.apiService.updateAccidentComplete(no, detail)
+    call.enqueue(object : Callback<Void> {
+        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+            if (response.isSuccessful) {
+                println("사고 상황 업데이트 성공(완료)")
+            } else {
+                println("서버에서 오류 응답을 받음")
+            }
+        }
+
+        override fun onFailure(call: Call<Void>, t: Throwable) {
+            println("네트워크 오류 또는 예외 발생: ${t.message}")
+        }
+    })
+}
+
+fun updateAccidentSituation(no: Int, situation: String) {
+    val call = RetrofitInstance.apiService.updateAccidentSituation(no, situation)
+    call.enqueue(object : Callback<Void> {
+        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+            if (response.isSuccessful) {
+                println("사고 상황 업데이트 성공")
+            } else {
+                println("서버에서 오류 응답을 받음")
+            }
+        }
+
+        override fun onFailure(call: Call<Void>, t: Throwable) {
+            println("네트워크 오류 또는 예외 발생: ${t.message}")
+        }
+    })
+}
+
 @SuppressLint("UnrememberedMutableState")
 @Preview(showBackground = true)
 @Composable
@@ -161,7 +200,7 @@ fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() },
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) }
     val victimName: MutableState<String> = remember { mutableStateOf("") }
-    val selectedMarker: Marker? = null
+    val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         LoadingScreen()
@@ -176,7 +215,8 @@ fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() },
         BottomSheetScreen(
             isBottomSheetVisible,
             accidentNo,
-            victimName
+            victimName,
+            selectedMarker
         )
     }
 }
@@ -218,7 +258,7 @@ fun MapScreen(
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
     victimName: MutableState<String>,
-    selectedMarker: Marker?
+    selectedMarker: MutableState<Marker?>
 ) {
     class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {
         override fun getPosition() = position
@@ -260,7 +300,6 @@ fun MapScreen(
 
                         // 클러스터 및 마커 설정
                         val builder = Clusterer.Builder<ItemKey>()
-                        val icons = arrayOf(MarkerIcons.BLUE, MarkerIcons.GREEN, MarkerIcons.RED, MarkerIcons.YELLOW)
 
                         builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
                             override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
@@ -275,7 +314,8 @@ fun MapScreen(
                             override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
                                 super.updateLeafMarker(info, marker)
                                 val key = info.key as ItemKey
-                                marker.icon = icons[key.id % icons.size]
+
+                                println(key.id)
                                 marker.onClickListener = Overlay.OnClickListener {
                                     CoroutineScope(Dispatchers.Main).launch {
                                         accidentNo.value = key.id
@@ -291,6 +331,8 @@ fun MapScreen(
 
                                         val victim by accidentViewModel.victim
                                         victimName.value = victim.toString()
+
+                                        selectedMarker.value = marker
 
                                         isBottomSheetVisible.value = true
                                     }
@@ -317,21 +359,24 @@ fun MapScreen(
     )
 }
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetScreen(
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
-    victimName: MutableState<String>
+    victimName: MutableState<String>,
+    selectedMarker: MutableState<Marker?>
 ) {
     val sheetState = rememberModalBottomSheetState()
-    val detail_info = remember { mutableStateOf("") }
+    var showModal by remember { mutableStateOf(false) }
+
+    if (showModal) {
+        DetailInput(onClose = { showModal = false })
+    }
 
     if (isBottomSheetVisible.value) {
         ModalBottomSheet(
-            modifier = Modifier.height(280.dp),
+            modifier = Modifier.height(270.dp),
             onDismissRequest = {
                 isBottomSheetVisible.value = false
             },
@@ -385,30 +430,7 @@ fun BottomSheetScreen(
                         onClick = { println("스피커 아이콘 클릭") } // 안전모의 스피커 출력(차후 수정 필요)
                     )
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Row {
-                    TextField(
-                        value = detail_info.value,
-                        onValueChange = { detail_info.value = it }
-                    )
-                    Spacer(modifier = Modifier.weight(0.3f))
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
-                        modifier = Modifier.height(55.dp)
-                    ) {
-                        Text(
-                            text = "전송",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 11.sp,
-                        )
-                    }
-                }
-                Spacer(Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Divider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -418,7 +440,7 @@ fun BottomSheetScreen(
                 Spacer(Modifier.height(10.dp))
                 Row {
                     Button(
-                        onClick = {},
+                        onClick = { showModal = true },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
                         modifier = Modifier.weight(1f)
@@ -433,7 +455,7 @@ fun BottomSheetScreen(
                         )
                     }
                     Button(
-                        onClick = {},
+                        onClick = { selectedMarker.value?.icon = MarkerIcons.YELLOW },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
                         modifier = Modifier.weight(1f)
@@ -448,7 +470,7 @@ fun BottomSheetScreen(
                         )
                     }
                     Button(
-                        onClick = {},
+                        onClick = { selectedMarker.value?.map = null },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color.Gray),
                         modifier = Modifier.weight(1f)
@@ -463,7 +485,7 @@ fun BottomSheetScreen(
                         )
                     }
                     Button(
-                        onClick = {},
+                        onClick = { selectedMarker.value?.icon = MarkerIcons.RED },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp)
@@ -498,4 +520,34 @@ fun ClickableIcon(
                 .size(40.dp)
         )
     }
+}
+
+@Composable
+fun DetailInput(onClose: () -> Unit) {
+    val detail = remember { mutableStateOf("") }
+    Dialog(
+        onDismissRequest = onClose,
+        content = {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color.White,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        value = detail.value,
+                        onValueChange = { detail.value = it },
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = onClose) {
+                        Text(text = "닫기")
+                    }
+                }
+            }
+        }
+    )
 }

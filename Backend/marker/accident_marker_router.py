@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, Path
 from db.db_connection import get_db
 from sqlalchemy.orm import Session
-from marker import accident_marker_crud
+from marker import accident_marker_crud, accident_marker_schema
 
-router = APIRouter(prefix="/map")
+router = APIRouter(prefix='/map')
     
-@router.get("/marker")
+@router.get('/marker')
 def accident_data(db: Session = Depends(get_db)):
     # 사고 발생 데이터 조회
     accidents = accident_marker_crud.get_accidents(db=db)
@@ -26,7 +26,7 @@ def accident_data(db: Session = Depends(get_db)):
         'longitude' : longitude
     }
     
-@router.get("/marker/{no}")
+@router.get('/marker/{no}')
 def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
     # 사고 처리 데이터 조회
     accident = accident_marker_crud.get_accident_processing(db=db, no=no)
@@ -43,3 +43,13 @@ def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
         'detail' : accident.detail, 
         'victim' : victim
     }
+    
+@router.post('/marker/{no}/complete')
+def accident_processing_complete(accident_processing_detail: accident_marker_schema.Accident_Processing_Detail, db: Session = Depends(get_db), no: str = Path(...)):
+    # 사고 처리 데이터 갱신
+    accident_marker_crud.update_accident_processing(db=db, no=no, situation='처리 완료', detail=accident_processing_detail)
+
+@router.post('/marker/{no}/{situation}')
+def accident_processing_change(db: Session = Depends(get_db), no: str = Path(...), situation: str = Path(...)):
+    # 사고 처리 데이터 갱신
+    accident_marker_crud.update_accident_processing(db=db, no=no, situation=situation, detail='')

@@ -9,9 +9,9 @@ from starlette import status
 import pandas as pd
 import numpy as np
 
-router = APIRouter(prefix="/map")
+router = APIRouter(prefix='/map')
     
-@router.get("/cluster")
+@router.get('/cluster')
 def cluster_data(db: Session = Depends(get_db)):
     # 사고 발생 데이터 조회
     accidents = accident_clustering_crud.get_accidents(db=db)
@@ -26,7 +26,7 @@ def cluster_data(db: Session = Depends(get_db)):
     # 불러온 위도 경도 값의 개수가 3개 미만일 경우 예외 리턴
     if len(latitude) < 3:
         raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT, detail="클러스터를 표시하기에는 데이터가 부족")
+            status_code=status.HTTP_204_NO_CONTENT, detail='클러스터를 표시하기에는 데이터가 부족')
 
     # 데이터프레임 생성
     df = pd.DataFrame({'latitude' : latitude, 'longitude' : longitude})

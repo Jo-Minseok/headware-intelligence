@@ -10,7 +10,7 @@ def accident_data(db: Session = Depends(get_db)):
     # 사고 발생 데이터 조회
     accidents = accident_marker_crud.get_accidents(db=db)
     
-    # 지도 위도, 경도 값 설정
+    # 지도 위도, 경도 값 지정
     no = []
     latitude = []
     longitude = []
@@ -18,14 +18,22 @@ def accident_data(db: Session = Depends(get_db)):
         no.append(accident.no)
         latitude.append(accident.latitude)
         longitude.append(accident.longitude)
+        
+    # 사고 처리 데이터 조회
+    accidents = accident_marker_crud.get_accident_processings(db=db)
+    
+    # 프로세스 코드 지정
+    codeDict = {'처리 완료' : 0, '처리 중' : 1, '오작동' : 2, '119 신고' : 3}
+    processCode = [codeDict[accident.situation] for accident in accidents]
 
-    # 위치 결과 반환
+    # 결과 반환
     return {
         'no' : no, 
         'latitude' : latitude, 
-        'longitude' : longitude
+        'longitude' : longitude,
+        'processCode' : processCode
     }
-    
+
 @router.get('/marker/{no}')
 def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
     # 사고 처리 데이터 조회

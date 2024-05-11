@@ -11,6 +11,10 @@ def get_accidents(db: Session):
     return db.query(Accident).all()
 
 # 사고 처리 데이터 조회
+def get_accident_processings(db: Session):
+    return db.query(AccidentProcessing).all()
+
+# 사고 처리 데이터 조회(단일)
 def get_accident_processing(db: Session, no: int):
     return db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
 

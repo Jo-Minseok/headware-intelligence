@@ -43,6 +43,18 @@ interface ApiService {
 
     @GET("/map/marker/{no}")
     suspend fun getAccidentData(
-        @Path("no") no: BigInteger
+        @Path("no") no: Int
     ): AccidentResponse
+
+    @POST("/map/marker/{no}/complete")
+    fun updateAccidentComplete(
+        @Path("no") no: Int,
+        @Field("detail") detail: String
+    ): Call<Void>
+
+    @POST("/map/marker/{no}/{situation}")
+    fun updateAccidentSituation(
+        @Path("no") no: Int,
+        @Path("situation") situation: String
+    ): Call<Void>
 }

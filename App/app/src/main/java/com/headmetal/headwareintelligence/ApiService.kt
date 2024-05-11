@@ -43,6 +43,6 @@ interface ApiService {
 
     @GET("/map/marker/{no}")
     suspend fun getAccidentData(
-        @Path("no") no: BigInteger
+        @Path("no") no: Int
     ): AccidentResponse
 }

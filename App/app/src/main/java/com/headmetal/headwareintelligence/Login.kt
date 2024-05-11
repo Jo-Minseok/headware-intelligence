@@ -110,6 +110,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     value = idState.value,
                     onValueChange = { idState.value = it },
                     shape = RoundedCornerShape(8.dp),
+                    singleLine = true,
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -128,6 +129,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     value = pwState.value,
                     onValueChange = { pwState.value = it },
                     shape = RoundedCornerShape(8.dp),
+                    singleLine = true,
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TextFieldDefaults.colors(
@@ -184,7 +186,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { performLogin(id, pw, isManager, navController,idState, pwState) },
+                    onClick = { performLogin(idState.value, pwState.value, isManager, navController,idState, pwState) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

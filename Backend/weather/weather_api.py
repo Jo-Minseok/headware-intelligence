@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import requests
 from weather import api_config
 
-router = APIRouter(prefix="/weather")
+router = APIRouter(prefix='/weather')
 
 data = openpyxl.load_workbook(r'.\weather\processing data.xlsx')
 sheet = data.active

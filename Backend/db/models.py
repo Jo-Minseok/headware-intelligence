@@ -1,5 +1,5 @@
 from db.db_connection import Base
-from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Time, ForeignKey, Date, DOUBLE
+from sqlalchemy import CheckConstraint, Column, VARCHAR, Integer, Time, ForeignKey, Date, DOUBLE
 from sqlalchemy.orm import relationship
 
 
@@ -23,7 +23,8 @@ class UserManager(Base):
     email = Column(VARCHAR(length=100), nullable=True)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
-    token = Column(VARCHAR(length=100), nullable=True)
+    alert_token = Column(VARCHAR(length=100), nullable=True)
+    login_token = Column(VARCHAR(length=100), nullable=True)
     rel_employee = relationship("Work_list", backref="manager_work_list")
 
 
@@ -39,7 +40,8 @@ class UserEmployee(Base):
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
-    token = Column(VARCHAR(length=100), nullable=True)
+    alert_token = Column(VARCHAR(length=100), nullable=True)
+    login_token = Column(VARCHAR(length=100), nullable=True)
     rel_accident = relationship("Accident", backref="victim_employee")
     rel_work = relationship("Work", backref='work_employee')
 
@@ -48,7 +50,7 @@ class UserEmployee(Base):
 class Accident(Base):
     __tablename__ = "accident"
 
-    no = Column(BigInteger, primary_key=True, autoincrement=True)
+    no = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date, nullable=False)
     time = Column(Time, nullable=False)
     latitude = Column(DOUBLE, nullable=False, default=1.0)
@@ -73,7 +75,7 @@ class Accident(Base):
 class AccidentProcessing(Base):
     __tablename__ = "accident_processing"
 
-    no = Column(BigInteger, ForeignKey('accident.no'),
+    no = Column(Integer, ForeignKey('accident.no'),
                 primary_key=True, autoincrement=True)
     situation = Column(VARCHAR(length=100), nullable=False)
     date = Column(Date, nullable=False)

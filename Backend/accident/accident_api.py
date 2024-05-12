@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, WebSocket, Depends
 from pydantic import BaseModel
 from typing import List
-from pydantic_settings import SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 import datetime
@@ -15,19 +15,23 @@ router = APIRouter(prefix="/accident")
 
 # 사고 발생 Json 구조
 class Accident_Json(BaseModel):
-    type: str
+    category: str
     date: List[int] = []
     time: List[int] = []
-    user_id: str
+    latitude: float
+    longitude: float
+    work_id: str
+    victim_id: str
 
 
-class Alert(BaseModel):
+class Alert(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=r'./accident/.env', env_file_encoding='utf-8')
-    APIKEY: str
+    api_key: str
 
 
-alert = Alert(_env_file=r'./accident/.env', _env_file_encoding='utf-8')
+FCM_API_KEY = Alert(_env_file=r'./accident/.env', _env_file_encoding='utf-8')
+
 # Websocket 접속 매니저
 
 
@@ -56,15 +60,14 @@ class ConnectionManager:
 # 사고 발생시 데이터를 받아오고, 이를 DB에 저장하는 방식
 @router.post("/upload")
 def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
-    db_accident = Accident(no="",
-                           date=datetime.date(
-                               year=accident.date[0], month=accident.date[1], day=accident.date[2]),
+    db_accident = Accident(date=datetime.date(year=accident.date[0], month=accident.date[1], day=accident.date[2]),
                            time=datetime.time(
                                hour=accident.time[0], minute=accident.time[1], second=accident.time[2]),
-                           latitude=0.000000,
-                           longitude=0.000000,
-                           victim_id=accident.user_id,
-                           category=accident.type)
+                           latitude=accident.latitude,
+                           longitude=accident.longitude,
+                           work_id=accident.work_id,
+                           victim_id=accident.victim_id,
+                           category=accident.category)
     db.add(db_accident)
     db.commit()
     user = db.query(UserEmployee).filter(
@@ -72,11 +75,11 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
     # 사고 발생 시 알림 전송
-    push_service = FCMNotification(alert.APIKEY)
-    alert = push_service.single_device_data_message(
-        registration_id=,
-        message_title=f"{accident.type} 사고 발생!",
-        message_body=f"피해자: {user.name} (accident.user_id)",
+    push_service = FCMNotification(FCM_API_KEY.api_key)
+    alert = push_service.multiple_devices_data_message(
+        topic_name=accident.work_id,
+        message_title=f"{accident.category} 사고 발생!",
+        message_body=f"피해자: {user.name} ({accident.user_id})"
     )
     return {"status": "success"}
 

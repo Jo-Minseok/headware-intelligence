@@ -55,9 +55,9 @@ def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
 @router.post('/marker/{no}/complete')
 def accident_processing_complete(accident_processing_detail: accident_marker_schema.Accident_Processing_Detail, db: Session = Depends(get_db), no: str = Path(...)):
     # 사고 처리 데이터 갱신
-    accident_marker_crud.update_accident_processing(db=db, no=no, situation='처리 완료', detail=accident_processing_detail)
+    accident_marker_crud.update_accident_processing(db=db, no=no, situationCode='0', detail=accident_processing_detail)
 
-@router.post('/marker/{no}/{situation}')
-def accident_processing_change(db: Session = Depends(get_db), no: str = Path(...), situation: str = Path(...)):
+@router.post('/marker/{no}/{situationCode}')
+def accident_processing_change(db: Session = Depends(get_db), no: str = Path(...), situationCode: str = Path(...)):
     # 사고 처리 데이터 갱신
-    accident_marker_crud.update_accident_processing(db=db, no=no, situation=situation, detail='')
+    accident_marker_crud.update_accident_processing(db=db, no=no, situationCode=situationCode, detail=accident_marker_schema.Accident_Processing_Detail(detail=''))

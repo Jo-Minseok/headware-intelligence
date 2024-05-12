@@ -8,7 +8,6 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
-import java.math.BigInteger
 
 interface ApiService {
     @FormUrlEncoded
@@ -49,8 +48,8 @@ interface ApiService {
     @POST("/map/marker/{no}/complete")
     fun updateAccidentComplete(
         @Path("no") no: Int,
-        @Field("detail") detail: String
-    ): Call<Void>
+        @Body requestBody: AccidentUpdateRequest
+    ): Call<AccidentUpdateRequest>
 
     @POST("/map/marker/{no}/{situation}")
     fun updateAccidentSituation(

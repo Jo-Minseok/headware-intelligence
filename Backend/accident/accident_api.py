@@ -1,11 +1,14 @@
-from fastapi import APIRouter, WebSocket, Depends
+from fastapi import APIRouter, HTTPException, WebSocket, Depends
 from pydantic import BaseModel
 from typing import List
+from pydantic_settings import SettingsConfigDict
 from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 import datetime
 from db.db_connection import get_db
 from db.models import Accident
+from pyfcm import FCMNotification
+from db.models import UserEmployee
 
 router = APIRouter(prefix="/accident")
 
@@ -18,7 +21,16 @@ class Accident_Json(BaseModel):
     user_id: str
 
 
+class Alert(BaseModel):
+    model_config = SettingsConfigDict(
+        env_file=r'./accident/.env', env_file_encoding='utf-8')
+    APIKEY: str
+
+
+alert = Alert(_env_file=r'./accident/.env', _env_file_encoding='utf-8')
 # Websocket 접속 매니저
+
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections = {}
@@ -50,11 +62,22 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
                            time=datetime.time(
                                hour=accident.time[0], minute=accident.time[1], second=accident.time[2]),
                            latitude=0.000000,
-                           longtitude=0.000000,
+                           longitude=0.000000,
                            victim_id=accident.user_id,
                            category=accident.type)
     db.add(db_accident)
     db.commit()
+    user = db.query(UserEmployee).filter(
+        UserEmployee.id == accident.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    # 사고 발생 시 알림 전송
+    push_service = FCMNotification(alert.APIKEY)
+    alert = push_service.single_device_data_message(
+        registration_id=,
+        message_title=f"{accident.type} 사고 발생!",
+        message_body=f"피해자: {user.name} (accident.user_id)",
+    )
     return {"status": "success"}
 
 

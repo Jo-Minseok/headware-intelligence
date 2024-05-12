@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Head Buddy</string>
     <string name="title_activity_processing">Processing</string>
     <string name="title_activity_trend">Trend</string>
 </resources>

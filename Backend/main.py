@@ -36,4 +36,4 @@ if __name__ == '__main__':
     # DB 테이블 없을 경우 생성
     models.Base.metadata.create_all(bind=engine)
     # uvicorn 서버 가동
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)

@@ -71,7 +71,7 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
     db.add(db_accident)
     db.commit()
     user = db.query(UserEmployee).filter(
-        UserEmployee.id == accident.user_id).first()
+        UserEmployee.employee_id == accident.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
     # 사고 발생 시 알림 전송

@@ -32,7 +32,7 @@ def create_employee(db: Session, user_employee: Employee_Create):
 def get_existing_employee(db: Session, user_employee: Employee_Create):
     # DB SELECT 이용. ID 또는 Email 존재 여부 확인
     return db.query(UserEmployee).filter(
-        (UserEmployee.id == user_employee.id) | (
+        (UserEmployee.employee_id == user_employee.id) | (
             UserEmployee.email == user_employee.email)
     ).first()
 
@@ -40,7 +40,7 @@ def get_existing_employee(db: Session, user_employee: Employee_Create):
 # 관리자 계정 생성 함수
 def create_manager(db: Session, user_manager: Manager_Create):
     # ORM 관리자 객체 생성 + bcrypt 해쉬 알고리즘으로 비밀번호 암호화
-    db_manager = UserManager(id=user_manager.id,
+    db_manager = UserManager(manager_id=user_manager.id,
                              password=pwd_context.hash(user_manager.password),
                              name=user_manager.name,
                              email=user_manager.email,
@@ -56,6 +56,6 @@ def create_manager(db: Session, user_manager: Manager_Create):
 def get_existing_manager(db: Session, user_manager: Manager_Create):
     # DB SELECT 이용. ID 또는 Email 존재 여부 확인
     return db.query(UserManager).filter(
-        (UserManager.id == user_manager.id) | (
+        (UserManager.manager_id == user_manager.id) | (
             UserManager.email == user_manager.email)
     ).first()

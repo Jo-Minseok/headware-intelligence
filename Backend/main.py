@@ -5,6 +5,7 @@ from account import register_router
 from account import login_router
 from accident import accident_api
 from account import forgot_router
+from account import company_list
 from clustering import accident_clustering_router
 from marker import accident_marker_router
 from trend import accident_trend_router
@@ -30,10 +31,11 @@ app.include_router(accident_clustering_router.router)
 app.include_router(accident_marker_router.router)
 app.include_router(accident_trend_router.router)
 app.include_router(accident_api.router)
+app.include_router(company_list.router)
 
 # Main
 if __name__ == '__main__':
     # DB 테이블 없을 경우 생성
     models.Base.metadata.create_all(bind=engine)
     # uvicorn 서버 가동
-    uvicorn.run("main:app", host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port="8000")

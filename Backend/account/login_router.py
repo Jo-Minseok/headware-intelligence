@@ -42,7 +42,7 @@ def get_employee_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Ses
         )
     # jwt에서 이용할 데이터 저장. 사용자 ID, 토큰 만료 시간
     data = {
-        "sub": user_row.id,
+        "sub": user_row.employee_id,
         "exp": datetime.utcnow() + timedelta(minutes=secure_object.ACCESS_TOKEN_EXPIRE_MINUTES)
     }
     # 토큰은 현재 시간에서 보안 토큰 만료 시간까지, 알고리즘은 비공개
@@ -52,7 +52,7 @@ def get_employee_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Ses
     db.commit()
     # Employee_Login 스키마 반환
     return {
-        "id": user_row.id,
+        "id": user_row.employee_id,
         "access_token": access_token,
         "token_type": "bearer"
     }
@@ -72,7 +72,7 @@ def get_manager_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
         )
         # jwt에서 이용할 데이터 저장. 사용자 ID, 토큰 만료 시간
     data = {
-        "sub": user_row.id,
+        "sub": user_row.manager_id,
         "exp": datetime.utcnow() + timedelta(minutes=secure_object.ACCESS_TOKEN_EXPIRE_MINUTES)
     }
     # 토큰은 현재 시간에서 보안 토큰 만료 시간까지, 알고리즘은 비공개
@@ -82,7 +82,7 @@ def get_manager_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
     db.commit()
     # Manager_Login 스키마 반환
     return {
-        "id": user_row.id,
+        "id": user_row.manager_id,
         "access_token": access_token,
         "token_type": "bearer"
     }

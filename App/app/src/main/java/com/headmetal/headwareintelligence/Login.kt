@@ -75,17 +75,16 @@ fun performLogin(username: String, password: String, isManager: Boolean, navCont
 
 @Composable
 fun Login(navController: NavController, modifier: Modifier = Modifier) {
-    var id by remember {
+    val idState = remember {
         mutableStateOf("")
     }
-    var pw by remember {
+    val pwState = remember {
         mutableStateOf("")
     }
     var isManager by remember {
         mutableStateOf(false)
     }
-    val idState = remember { mutableStateOf("") }
-    val pwState = remember { mutableStateOf("") }
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -186,7 +185,8 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { performLogin(idState.value, pwState.value, isManager, navController,idState, pwState) },
+                    onClick = { performLogin(idState.value, pwState.value, isManager,
+                        navController,idState, pwState) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)
@@ -208,7 +208,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     )
                 }
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { navController.navigate("findidScreen") },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

@@ -101,13 +101,13 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
                                             situation='119 신고', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='DDD')
+                                            detail='')
         else:
             processing = AccidentProcessing(no=accident.no, 
                                             situation='처리 중', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='AAA')
+                                            detail='')
             
         db.add(processing)
     

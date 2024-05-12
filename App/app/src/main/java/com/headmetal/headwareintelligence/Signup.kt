@@ -42,7 +42,6 @@ import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
 data class RegisterEmployeeResponse(
     val id: String,
     val password: String,
@@ -61,6 +60,8 @@ data class RegisterManagerResponse(
     val email: String,
     val company: String
 )
+
+// 회원가입 함수
 fun performSignup(id: String, password: String, re_password: String, name: String,
     email: String, phone_no: String, company: String, isManager: Boolean, navController: NavController
 ) {
@@ -75,31 +76,21 @@ fun performSignup(id: String, password: String, re_password: String, name: Strin
     }
 }
 
-private fun performEmployeeSignup(id: String, password: String, re_password: String, name: String,
-    email: String, phone_no: String, company: String, navController: NavController
-) {
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.registerEmployee(
-        RegisterEmployeeResponse(id, password, re_password, name, email, phone_no, company)
-    )
-    call.enqueue(object : Callback<RegisterEmployeeResponse> {
-        override fun onResponse(call: Call<RegisterEmployeeResponse>, response: Response<RegisterEmployeeResponse>) {
-            if (response.isSuccessful) {
-                // 회원 가입 성공 시
-                showSignupSuccessDialog(navController)
-            } else {
-                // 회원 가입 실패 시
-                showSignupFailedDialog(navController)
-            }
-        }
+// 비밀번호 일치 불일치 확인 함수
+private fun showPasswordMismatchDialog(navController: NavController) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("비밀번호 불일치")
+    builder.setMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
 
-        override fun onFailure(call: Call<RegisterEmployeeResponse>, t: Throwable) {
-            // 통신 실패 시 처리할 코드
-            println("서버 통신 실패: ${t.message}")
-        }
-    })
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+    }
+
+    val dialog = builder.create()
+    dialog.show()
 }
 
+// 관리자 회원가입 함수
 private fun performManagerSignup(id: String, password: String, re_password: String, name: String,
     email: String, company: String, navController: NavController
 ) {
@@ -128,17 +119,30 @@ private fun performManagerSignup(id: String, password: String, re_password: Stri
     })
 }
 
-private fun showPasswordMismatchDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("비밀번호 불일치")
-    builder.setMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
+// 직원 회원가입 함수
+private fun performEmployeeSignup(id: String, password: String, re_password: String, name: String,
+                                  email: String, phone_no: String, company: String, navController: NavController
+) {
+    val apiService = RetrofitInstance.apiService
+    val call = apiService.registerEmployee(
+        RegisterEmployeeResponse(id, password, re_password, name, email, phone_no, company)
+    )
+    call.enqueue(object : Callback<RegisterEmployeeResponse> {
+        override fun onResponse(call: Call<RegisterEmployeeResponse>, response: Response<RegisterEmployeeResponse>) {
+            if (response.isSuccessful) {
+                // 회원 가입 성공 시
+                showSignupSuccessDialog(navController)
+            } else {
+                // 회원 가입 실패 시
+                showSignupFailedDialog(navController)
+            }
+        }
 
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    val dialog = builder.create()
-    dialog.show()
+        override fun onFailure(call: Call<RegisterEmployeeResponse>, t: Throwable) {
+            // 통신 실패 시 처리할 코드
+            println("서버 통신 실패: ${t.message}")
+        }
+    })
 }
 
 //private fun showIdDuplicateDialog(navController: NavController) {
@@ -167,13 +171,10 @@ private fun showPasswordMismatchDialog(navController: NavController) {
 //    dialog.show()
 //}
 
-
-
-
-
-
+// 회원가입 화면
 @Composable
 fun Signup(navController: NavController, modifier: Modifier = Modifier) {
+
     var id by remember {
         mutableStateOf("")
     }
@@ -192,25 +193,10 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
     var email by remember {
         mutableStateOf("")
     }
-    var part by remember {
-        mutableStateOf("None")
-    }
 
     var expanded by remember { mutableStateOf(false) }
     var Company by remember { mutableStateOf("") }
-    val companyList = listOf("동의건설", "안전건설", "생명건설","")
-
-    var expanded2 by remember { mutableStateOf(false) }
-    var selectedManager by remember { mutableStateOf("") }
-    val managerList = listOf("O","X")
-
-    // 각 건설업체에 따른 매니저 리스트 정의
-    val managerListHappyConstruction = listOf("매니저1", "매니저2")
-    val managerListSafeConstruction = listOf("매니저3", "매니저4")
-    val managerListLifeConstruction = listOf("매니저5", "매니저6")
-
-    // 매니저 리스트 선택 변수
-    var managerListSelected by remember { mutableStateOf(emptyList<String>()) }
+    var companyList by remember{mutableStateOf<List<String>>(emptyList())}
 
     var isManager by remember {
         mutableStateOf(false)
@@ -411,59 +397,6 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 }
             }
 
-            if (!isManager) {
-                Column(
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Text(
-                        text = "매니저",
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 20.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp) // 좌우 여백 추가
-                            .clip(RoundedCornerShape(8.dp)) // 둥근 테두리 설정
-                    ) {
-                        Text(
-                            text = selectedManager.takeUnless { it.isEmpty() } ?: "선택하세요",
-                            modifier = Modifier
-                                .clickable(onClick = { expanded2 = true })
-                                .background(Color(1f, 1f, 1f, 0.4f))
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                .width(350.dp)
-                                .height(30.dp)
-                        )
-                        DropdownMenu(
-                            expanded = expanded2,
-                            onDismissRequest = { expanded2 = false }
-                        ) {
-                            managerListSelected.forEach { manager ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        selectedManager = manager
-                                        expanded2 = false
-                                    }
-                                ) {
-                                    Text(text = manager)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 선택된 건설업체에 따라 매니저 리스트 업데이트
-            LaunchedEffect(Company) {
-                managerListSelected = when (Company) {
-                    "행복건설" -> managerListHappyConstruction
-                    "안전건설" -> managerListSafeConstruction
-                    "생명건설" -> managerListLifeConstruction
-                    else -> emptyList()
-                }
-            }
-
-
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
@@ -526,6 +459,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
     }
 }
 
+//회원가입 실패 다이얼로그
 fun showSignupFailedDialog(navController: NavController) {
     val builder = AlertDialog.Builder(navController.context)
     builder.setTitle("회원가입 실패")
@@ -541,6 +475,7 @@ fun showSignupFailedDialog(navController: NavController) {
     dialog.show()
 }
 
+// 회원가입 성공 다이얼로그
 fun showSignupSuccessDialog(navController: NavController) {
     val builder = AlertDialog.Builder(navController.context)
     builder.setTitle("회원가입 성공")

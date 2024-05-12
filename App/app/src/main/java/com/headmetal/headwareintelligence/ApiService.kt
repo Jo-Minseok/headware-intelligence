@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 
+import LocationResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field

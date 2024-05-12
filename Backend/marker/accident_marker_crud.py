@@ -1,19 +1,53 @@
-from db.models import Accident
+from db.models import Accident, AccidentProcessing, UserEmployee
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from db.db_connection import db_session
-from datetime import datetime, timedelta
+from marker.accident_marker_schema import Accident_Processing_Detail
+import datetime
 import numpy as np
 
 # 사고 발생 데이터 조회
 def get_accidents(db: Session):
     return db.query(Accident).all()
 
+# 사고 처리 데이터 조회
+def get_accident_processings(db: Session):
+    return db.query(AccidentProcessing).all()
+
+# 사고 처리 데이터 조회(단일)
+def get_accident_processing(db: Session, no: int):
+    return db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
+
+# 사고자 이름 조회
+def get_victim_name(db: Session, no: int):
+    accident_query = select(Accident.victim_id).where(Accident.no == no)
+    accident_result = db.execute(accident_query).fetchone()
+    victim_id = accident_result[0]
+    
+    employee_query = select(UserEmployee.name).where(UserEmployee.id == victim_id)
+    employee_result = db.execute(employee_query).fetchone()
+    victim_name = employee_result[0]
+    
+    return victim_name
+
+# 사고 처리 데이터 갱신
+def update_accident_processing(db: Session, no: int, situationCode: str, detail: Accident_Processing_Detail):
+    accident = db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
+    accident.situation = {'0' : '처리 완료', '1' : '처리 중', '2' : '오작동', '3' : '119 신고'}[situationCode]
+    accident.detail = detail.detail
+    accident.date = datetime.date.today().strftime('%Y-%m-%d')
+    accident.time = datetime.datetime.now().strftime('%H:%M:%S')
+    db.add(accident)
+    db.commit()
+
 # 사고 발생 데이터 삽입(테스트 용도)
-def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=400, K=3):
+def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2024, 6, 30), size=400, K=3):
     # db 세션 연결
     db = db_session()
     
     # 데이터 생성 전 데이터 삭제
+    db.query(AccidentProcessing).delete()
+    db.commit()
     db.query(Accident).delete()
     db.commit()
     
@@ -38,17 +72,45 @@ def insert_accident(start=datetime(2023, 1, 1), end=datetime(2024, 6, 30), size=
     random_days = np.random.randint(0, (end_date - start_date).days + 1, size=size)
 
     # 시작 날짜에 무작위로 생성된 날짜 차이를 더하여 날짜 생성
-    random_dates = [start_date + timedelta(days=int(random_day)) for random_day in random_days]
+    random_dates = [start_date + datetime.timedelta(days=int(random_day)) for random_day in random_days]
     
     for lat, lon, day in zip(latitude, longitude, random_dates):
         accident = Accident(date=day.strftime('%Y-%m-%d'), 
-                            time=datetime.now().strftime('%H:%M:%S'), 
+                            time=datetime.datetime.now().strftime('%H:%M:%S'), 
                             latitude=lat, 
                             longitude=lon, 
                             victim_id='test', 
                             category='test')
         db.add(accident)
 
+    db.commit()
+    
+    # 사고 처리 데이터의 번호 값을 지정하기 위해 Accident 테이블의 모든 데이터를 질의
+    accidents = db.query(Accident).all()
+    
+    for accident in accidents:
+        idx = np.random.randint(0, 3)
+        if idx == 0:
+            processing = AccidentProcessing(no=accident.no, 
+                                            situation='처리 완료', 
+                                            date=day.strftime('%Y-%m-%d'), 
+                                            time=datetime.datetime.now().strftime('%H:%M:%S'), 
+                                            detail='TTT' + str(np.random.randint(1, 100)))
+        elif idx == 1:
+            processing = AccidentProcessing(no=accident.no, 
+                                            situation='119 신고', 
+                                            date=day.strftime('%Y-%m-%d'), 
+                                            time=datetime.datetime.now().strftime('%H:%M:%S'), 
+                                            detail='DDD')
+        else:
+            processing = AccidentProcessing(no=accident.no, 
+                                            situation='처리 중', 
+                                            date=day.strftime('%Y-%m-%d'), 
+                                            time=datetime.datetime.now().strftime('%H:%M:%S'), 
+                                            detail='AAA')
+            
+        db.add(processing)
+    
     db.commit()
     db.close()
     

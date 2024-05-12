@@ -11,3 +11,5 @@ Backend/weather/.env
 Backend/user/__pycache__
 Backend/accident/__pycache__
 Backend/accident/.env
+Backend/marker/__pycache__
+Backend/accident/uploaded_images

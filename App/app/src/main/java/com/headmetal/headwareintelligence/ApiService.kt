@@ -40,4 +40,21 @@ interface ApiService {
     @GET("/map/marker")
     suspend fun getLocationData(
     ): LocationResponse
+
+    @GET("/map/marker/{no}")
+    suspend fun getAccidentData(
+        @Path("no") no: Int
+    ): AccidentResponse
+
+    @POST("/map/marker/{no}/complete")
+    fun updateAccidentComplete(
+        @Path("no") no: Int,
+        @Body requestBody: AccidentUpdateRequest
+    ): Call<AccidentUpdateRequest>
+
+    @POST("/map/marker/{no}/{situation}")
+    fun updateAccidentSituation(
+        @Path("no") no: Int,
+        @Path("situation") situation: String
+    ): Call<Void>
 }

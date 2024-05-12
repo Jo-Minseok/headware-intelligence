@@ -5,7 +5,7 @@ from account import account_schema
 from sqlalchemy.orm import Session
 from account import forgot_crud
 
-router = APIRouter(prefix="/forgot")
+router = APIRouter(prefix='/forgot')
 
 
 @router.post("/employee/id", response_model=account_schema.Employee_Forgot_Id_Result)
@@ -18,7 +18,7 @@ def get_employee_id(user_employee: account_schema.Employee_Forgot_Id, db: Sessio
     return {'id': employee.id}
 
 
-@router.post("/employee/pw", status_code=status.HTTP_204_NO_CONTENT)
+@router.post('/employee/pw', status_code=status.HTTP_204_NO_CONTENT)
 def confirm_employee(user_employee: account_schema.Employee_Forgot_Pw, db: Session = Depends(get_db)):
     employee = forgot_crud.forgot_employee_pw(
         db, user_employee.id, user_employee.phone_no)
@@ -43,7 +43,7 @@ def get_manager_id(user_manager: account_schema.Manager_Forgot_Id, db: Session =
     return {'id': manager.id}
 
 
-@router.post("/manager/pw", status_code=status.HTTP_204_NO_CONTENT)
+@router.post('/manager/pw', status_code=status.HTTP_204_NO_CONTENT)
 def confirm_manager(user_manager: account_schema.Manager_Forgot_Pw, db: Session = Depends(get_db)):
     manager = forgot_crud.forgot_manager_pw(
         db, user_manager.id, user_manager.phone_no)

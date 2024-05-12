@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from db.models import UserEmployee, UserManager
 from passlib.context import CryptContext
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 def forgot_employee_id(db: Session, name: str, email: str):

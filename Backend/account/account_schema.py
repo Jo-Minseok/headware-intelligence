@@ -19,7 +19,7 @@ class Employee_Create(BaseModel):
     phone_no: str
     company: str
 
-    @field_validator('id', 'password', 'name', 'email', 'phone_no', 'company')
+    @field_validator('id', 'password', 'name', 'email', 'phone_no')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
@@ -46,9 +46,10 @@ class Manager_Create(BaseModel):
     re_password: str
     name: str
     email: EmailStr
+    phone_no: str
     company: str
 
-    @field_validator('id', 'password', 'name', 'email', 'company')
+    @field_validator('id', 'password', 'name', 'email', 'phone_no')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
@@ -66,7 +67,7 @@ class Manager_Create(BaseModel):
 class Employee_Forgot_Id(BaseModel):
     name: str
     email: EmailStr
-    
+
     @field_validator('name', 'email')
     def not_empty(cls, v):
         if not v or not v.strip():
@@ -82,9 +83,9 @@ class Employee_Forgot_Id_Result(BaseModel):
 # 근로자 비밀번호 찾기 스키마
 class Employee_Forgot_Pw(BaseModel):
     id: str
-    email: EmailStr
-    
-    @field_validator('id', 'email')
+    phone_no: str
+
+    @field_validator('id', 'phone_no')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
@@ -95,13 +96,13 @@ class Employee_Forgot_Pw(BaseModel):
 class Employee_Change_Pw(BaseModel):
     password: str
     re_password: str
-    
+
     @field_validator('password', 're_password')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
         return v
-    
+
     @field_validator('re_password')
     def passwords_match(cls, v, info: FieldValidationInfo):
         if 'password' in info.data and v != info.data['password']:
@@ -113,7 +114,7 @@ class Employee_Change_Pw(BaseModel):
 class Manager_Forgot_Id(BaseModel):
     name: str
     email: EmailStr
-    
+
     @field_validator('name', 'email')
     def not_empty(cls, v):
         if not v or not v.strip():
@@ -129,9 +130,9 @@ class Manager_Forgot_Id_Result(BaseModel):
 # 관리자 비밀번호 찾기 스키마
 class Manager_Forgot_Pw(BaseModel):
     id: str
-    email: EmailStr
-    
-    @field_validator('id', 'email')
+    phone_no: str
+
+    @field_validator('id', 'phone_no')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
@@ -142,13 +143,13 @@ class Manager_Forgot_Pw(BaseModel):
 class Manager_Change_Pw(BaseModel):
     password: str
     re_password: str
-    
+
     @field_validator('password', 're_password')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
         return v
-    
+
     @field_validator('re_password')
     def passwords_match(cls, v, info: FieldValidationInfo):
         if 'password' in info.data and v != info.data['password']:

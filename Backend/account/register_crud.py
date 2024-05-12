@@ -44,6 +44,7 @@ def create_manager(db: Session, user_manager: Manager_Create):
                              password=pwd_context.hash(user_manager.password),
                              name=user_manager.name,
                              email=user_manager.email,
+                             phone_no=user_manager.phone_no,
                              company=user_manager.company)
     # DB INSERT
     db.add(db_manager)

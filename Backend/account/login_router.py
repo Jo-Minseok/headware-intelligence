@@ -48,6 +48,8 @@ def get_employee_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Ses
     # 토큰은 현재 시간에서 보안 토큰 만료 시간까지, 알고리즘은 비공개
     access_token = jwt.encode(
         data, secure_object.SECRET_KEY, algorithm=secure_object.ALGORITHM)
+    user_row.login_token = access_token
+    db.commit()
     # Employee_Login 스키마 반환
     return {
         "id": user_row.id,
@@ -76,6 +78,8 @@ def get_manager_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
     # 토큰은 현재 시간에서 보안 토큰 만료 시간까지, 알고리즘은 비공개
     access_token = jwt.encode(
         data, secure_object.SECRET_KEY, algorithm=secure_object.ALGORITHM)
+    user_row.login_token = access_token
+    db.commit()
     # Manager_Login 스키마 반환
     return {
         "id": user_row.id,

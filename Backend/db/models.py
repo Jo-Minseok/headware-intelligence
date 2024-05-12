@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 # 회사 목록 테이블
 class CompanyList(Base):
     __tablename__ = "company_list"
+
     company = Column(VARCHAR(length=100), primary_key=True)
 
     rel_manager = relationship("UserManager", backref="company_manager")
@@ -20,11 +21,13 @@ class UserManager(Base):
     id = Column(VARCHAR(length=100), primary_key=True)
     password = Column(VARCHAR(length=100), nullable=False)
     name = Column(VARCHAR(length=4), nullable=False)
-    email = Column(VARCHAR(length=100), nullable=True)
+    email = Column(VARCHAR(length=100), nullable=False)
+    phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=True)
     alert_token = Column(VARCHAR(length=100), nullable=True)
     login_token = Column(VARCHAR(length=100), nullable=True)
+
     rel_employee = relationship("Work_list", backref="manager_work_list")
 
 
@@ -35,13 +38,14 @@ class UserEmployee(Base):
     id = Column(VARCHAR(length=100), primary_key=True)
     password = Column(VARCHAR(length=100), nullable=False)
     name = Column(VARCHAR(length=4), nullable=False)
-    email = Column(VARCHAR(length=100), nullable=True)
+    email = Column(VARCHAR(length=100), nullable=False)
     helmet_no = Column(VARCHAR(length=100), nullable=True)
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=True)
     alert_token = Column(VARCHAR(length=100), nullable=True)
     login_token = Column(VARCHAR(length=100), nullable=True)
+
     rel_accident = relationship("Accident", backref="victim_employee")
     rel_work = relationship("Work", backref='work_employee')
 

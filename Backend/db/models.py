@@ -22,7 +22,7 @@ class UserManager(Base):
     name = Column(VARCHAR(length=4), nullable=False)
     email = Column(VARCHAR(length=100), nullable=True)
     company = Column(VARCHAR(length=100), ForeignKey(
-        'company_list.company'), nullable=False)
+        'company_list.company'), nullable=True)
     alert_token = Column(VARCHAR(length=100), nullable=True)
     login_token = Column(VARCHAR(length=100), nullable=True)
     rel_employee = relationship("Work_list", backref="manager_work_list")
@@ -39,7 +39,7 @@ class UserEmployee(Base):
     helmet_no = Column(VARCHAR(length=100), nullable=True)
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
-        'company_list.company'), nullable=False)
+        'company_list.company'), nullable=True)
     alert_token = Column(VARCHAR(length=100), nullable=True)
     login_token = Column(VARCHAR(length=100), nullable=True)
     rel_accident = relationship("Accident", backref="victim_employee")
@@ -83,11 +83,12 @@ class AccidentProcessing(Base):
     detail = Column(VARCHAR(length=100), nullable=False)
 
 
+# 작업 목록
 class Work_list(Base):
     __tablename__ = "work_list"
 
     id = Column(VARCHAR(length=100), primary_key=True)
-    name = Column(VARCHAR(length=100))
+    name = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
     start_date = Column(Date, nullable=False)
@@ -98,6 +99,7 @@ class Work_list(Base):
     rel_work = relationship("Work", backref='work')
 
 
+# 작업 참가 내역
 class Work(Base):
     __tablename__ = "work"
 

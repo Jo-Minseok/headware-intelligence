@@ -31,9 +31,9 @@ def get_victim_name(db: Session, no: int):
     return victim_name
 
 # 사고 처리 데이터 갱신
-def update_accident_processing(db: Session, no: int, situation: str, detail: Accident_Processing_Detail):
+def update_accident_processing(db: Session, no: int, situationCode: str, detail: Accident_Processing_Detail):
     accident = db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
-    accident.situation = situation
+    accident.situation = {'0' : '처리 완료', '1' : '처리 중', '2' : '오작동', '3' : '119 신고'}[situationCode]
     accident.detail = detail.detail
     accident.date = datetime.date.today().strftime('%Y-%m-%d')
     accident.time = datetime.datetime.now().strftime('%H:%M:%S')
@@ -95,19 +95,19 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
                                             situation='처리 완료', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='TTT')
+                                            detail='TTT' + str(np.random.randint(1, 100)))
         elif idx == 1:
             processing = AccidentProcessing(no=accident.no, 
                                             situation='119 신고', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='')
+                                            detail='DDD')
         else:
             processing = AccidentProcessing(no=accident.no, 
                                             situation='처리 중', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='')
+                                            detail='AAA')
             
         db.add(processing)
     

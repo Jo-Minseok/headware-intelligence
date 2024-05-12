@@ -93,6 +93,10 @@ data class AccidentResponse(
     val victim: String
 )
 
+data class AccidentUpdateRequest(
+    val detail: String
+)
+
 class LocationViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
@@ -144,6 +148,8 @@ class AccidentViewModel : ViewModel() {
     private val _victim = mutableStateOf<String?>(null)
     val victim: State<String?> = _victim
 
+    var state: Boolean = true
+
     fun getAccidentData(no: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             val response = apiService.getAccidentData(no)
@@ -153,26 +159,28 @@ class AccidentViewModel : ViewModel() {
             _time.value = response.time
             _detail.value = response.detail
             _victim.value = response.victim
+            state = !state
         }
     }
 
-    fun emptyData(): Boolean {
-        return no.value == null || situation.value == null || date.value == null || time.value == null || detail.value == null || victim.value == null
-    }
+//    fun emptyData(): Boolean {
+//        return no.value == null || situation.value == null || date.value == null || time.value == null || detail.value == null || victim.value == null
+//    }
 }
 
 fun updateAccidentComplete(no: Int, detail: String) {
-    val call = RetrofitInstance.apiService.updateAccidentComplete(no, detail)
-    call.enqueue(object : Callback<Void> {
-        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+    val call = RetrofitInstance.apiService.updateAccidentComplete(no, AccidentUpdateRequest(detail))
+    call.enqueue(object : Callback<AccidentUpdateRequest> {
+        override fun onResponse(call: Call<AccidentUpdateRequest>, response: Response<AccidentUpdateRequest>) {
             if (response.isSuccessful) {
                 println("사고 상황 업데이트 성공(완료)")
             } else {
+                println(response.message())
                 println("서버에서 오류 응답을 받음")
             }
         }
 
-        override fun onFailure(call: Call<Void>, t: Throwable) {
+        override fun onFailure(call: Call<AccidentUpdateRequest>, t: Throwable) {
             println("네트워크 오류 또는 예외 발생: ${t.message}")
         }
     })
@@ -346,15 +354,15 @@ fun MapScreen(
                                         marker.icon = MarkerIcons.RED
                                     }
                                 }
-
                                 marker.onClickListener = Overlay.OnClickListener {
                                     CoroutineScope(Dispatchers.Main).launch {
                                         accidentNo.value = key.id
 
                                         LoadingState.show()
                                         CoroutineScope(Dispatchers.IO).async {
+                                            val state = accidentViewModel.state
                                             accidentViewModel.getAccidentData(key.id)
-                                            while (accidentViewModel.emptyData()) {
+                                            while (state == accidentViewModel.state) {
                                                 //
                                             }
                                         }.await()
@@ -362,6 +370,9 @@ fun MapScreen(
 
                                         if (code == 0) {
                                             detail.value = accidentViewModel.detail.value.toString()
+                                            println(key.id)
+                                            println(detail.value)
+                                            println(accidentViewModel.detail.value.toString())
                                             isDetailPrintVisible.value = true
                                         }
                                         else {
@@ -406,7 +417,7 @@ fun BottomSheetScreen(
     val sheetState = rememberModalBottomSheetState()
 
     if (isDetailInputVisible.value) {
-        DetailInput(onClose = { isDetailInputVisible.value = false })
+        DetailInput(onClose = { isDetailInputVisible.value = false }, accidentNo = accidentNo)
     }
 
     if (isBottomSheetVisible.value) {
@@ -490,8 +501,9 @@ fun BottomSheetScreen(
                         )
                     }
                     Button(
-                        onClick = { selectedMarker.value?.icon = MarkerIcons.YELLOW
-                            // DB 업데이트
+                        onClick = {
+                            selectedMarker.value?.icon = MarkerIcons.YELLOW
+                            updateAccidentSituation(accidentNo.value, "처리 중")
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
@@ -564,7 +576,7 @@ fun ClickableIcon(
 }
 
 @Composable
-fun DetailInput(onClose: () -> Unit) {
+fun DetailInput(onClose: () -> Unit, accidentNo: MutableState<Int>) {
     val detail = remember { mutableStateOf("") }
     Dialog(
         onDismissRequest = onClose,
@@ -590,7 +602,7 @@ fun DetailInput(onClose: () -> Unit) {
                     Row {
                         Button(onClick = {
                             println("작성 버튼 클릭")
-                            // DB 업데이트
+                            updateAccidentComplete(accidentNo.value, detail.value)
                             onClose()
                         }) {
                             Text(text = "작성")

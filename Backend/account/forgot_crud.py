@@ -10,11 +10,12 @@ def forgot_employee_id(db: Session, name: str, email: str):
 
 
 def forgot_employee_pw(db: Session, id: str, phone: str):
-    return db.query(UserEmployee).filter((UserEmployee.id == id) & (UserEmployee.phone_no == phone)).first()
+    return db.query(UserEmployee).filter((UserEmployee.employee_id == id) & (UserEmployee.phone_no == phone)).first()
 
 
 def update_employee_pw(db: Session, id: str, new_pw: str):
-    employee = db.query(UserEmployee).filter(UserEmployee.id == id).first()
+    employee = db.query(UserEmployee).filter(
+        UserEmployee.employee_id == id).first()
     employee.password = pwd_context.hash(new_pw)
     db.add(employee)
     db.commit()
@@ -25,11 +26,12 @@ def forgot_manager_id(db: Session, name: str, email: str):
 
 
 def forgot_manager_pw(db: Session, id: str, phone: str):
-    return db.query(UserManager).filter((UserManager.id == id) & (UserManager.phone_no == phone)).first()
+    return db.query(UserManager).filter((UserManager.manager_id == id) & (UserManager.phone_no == phone)).first()
 
 
 def update_manager_pw(db: Session, id: str, new_pw: str):
-    manager = db.query(UserManager).filter(UserManager.id == id).first()
+    manager = db.query(UserManager).filter(
+        UserManager.manager_id == id).first()
     manager.password = pwd_context.hash(new_pw)
     db.add(manager)
     db.commit()

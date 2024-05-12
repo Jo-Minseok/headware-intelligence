@@ -15,7 +15,7 @@ def get_employee_id(user_employee: account_schema.Employee_Forgot_Id, db: Sessio
     if not employee:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="존재하지 않는 계정")
-    return {'id': employee.id}
+    return {'id': employee.employee_id}
 
 
 @router.post('/employee/pw', status_code=status.HTTP_204_NO_CONTENT)
@@ -40,7 +40,7 @@ def get_manager_id(user_manager: account_schema.Manager_Forgot_Id, db: Session =
     if not manager:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="존재하지 않는 계정")
-    return {'id': manager.id}
+    return {'id': manager.manager_id}
 
 
 @router.post('/manager/pw', status_code=status.HTTP_204_NO_CONTENT)

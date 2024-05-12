@@ -15,7 +15,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # 근로자 계정 생성 함수
 def create_employee(db: Session, user_employee: Employee_Create):
     # ORM 근로자 객체 생성 + bcrypt 해쉬 알고리즘으로 비밀번호 암호화
-    db_employee = UserEmployee(id=user_employee.id,
+    db_employee = UserEmployee(employee_id=user_employee.id,
                                password=pwd_context.hash(
                                    user_employee.password),
                                name=user_employee.name,

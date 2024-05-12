@@ -41,6 +41,12 @@ class MainActivity : ComponentActivity() {
                         composable("menuScreen") {
                             Menu(navController)
                         }
+                        composable("findidScreen") {
+                            Findid(navController)
+                        }
+                        composable("findpwScreen") {
+                            Findpw(navController)
+                        }
                     }
                 }
             }

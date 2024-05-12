@@ -80,24 +80,14 @@ class Employee_Forgot_Id_Result(BaseModel):
     id: str
 
 
-# 근로자 비밀번호 찾기 스키마
+# 근로자 비밀번호 변경 스키마
 class Employee_Forgot_Pw(BaseModel):
     id: str
     phone_no: str
-
-    @field_validator('id', 'phone_no')
-    def not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('빈 값은 허용되지 않습니다.')
-        return v
-
-
-# 근로자 비밀번호 변경 스키마
-class Employee_Change_Pw(BaseModel):
     password: str
     re_password: str
 
-    @field_validator('password', 're_password')
+    @field_validator('id', 'phone_no', 'password', 're_password')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
@@ -127,24 +117,14 @@ class Manager_Forgot_Id_Result(BaseModel):
     id: str
 
 
-# 관리자 비밀번호 찾기 스키마
+# 관리자 비밀번호 변경 스키마
 class Manager_Forgot_Pw(BaseModel):
     id: str
     phone_no: str
-
-    @field_validator('id', 'phone_no')
-    def not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('빈 값은 허용되지 않습니다.')
-        return v
-
-
-# 관리자 비밀번호 변경 스키마
-class Manager_Change_Pw(BaseModel):
     password: str
     re_password: str
 
-    @field_validator('password', 're_password')
+    @field_validator('password', 're_password', 'id', 'phone_no')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')

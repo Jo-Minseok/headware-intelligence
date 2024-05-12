@@ -46,7 +46,6 @@ class UserEmployee(Base):
     alert_token = Column(VARCHAR(length=100), nullable=True)
     login_token = Column(VARCHAR(length=100), nullable=True)
 
-    rel_accident = relationship("Accident", backref="victim_employee")
     rel_work = relationship("Work", backref='work_employee')
 
 
@@ -111,3 +110,5 @@ class Work(Base):
         'work_list.id'), primary_key=True)
     user_id = Column(VARCHAR(length=100), ForeignKey(
         'user_employee.id'), primary_key=True)
+
+    rel_accident = relationship("Accident", backref='accident_work')

@@ -37,6 +37,7 @@ import retrofit2.Response
 
 
 
+
 data class EmployeeForgotPw(
     val id: String,
     val email: String
@@ -65,6 +66,7 @@ data class ManagerPasswordChangeRequest(
     @SerializedName("user_manager") val userManager: ManagerForgotPw,
     @SerializedName("pw_change") val pwChange: ManagerChangePw
 )
+
 data class RedirectResponse(
     @SerializedName("location") val location: String
 )
@@ -149,7 +151,6 @@ fun OnPasswordChangeButtonClick(id: String, email: String, password: String, re_
         println("새 비밀번호와 비밀번호 확인이 일치하지 않거나 비밀번호가 비어 있습니다.")
     }
 }
-
 
 
 

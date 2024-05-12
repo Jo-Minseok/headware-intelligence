@@ -1,7 +1,5 @@
 package com.headmetal.headwareintelligence
 
-
-import LocationResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -93,4 +91,7 @@ interface ApiService {
         @Path("no") no: Int,
         @Path("situation") situation: String
     ): Call<Void>
+
+    @GET("/company/list")
+    fun getCompanyList():Call<CompanyListResponse>
 }

@@ -23,7 +23,7 @@ class UserManager(Base):
     email = Column(VARCHAR(length=100), nullable=True)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
-
+    token = Column(VARCHAR(length=100), nullable=True)
     rel_employee = relationship("Work_list", backref="manager_work_list")
 
 
@@ -39,7 +39,7 @@ class UserEmployee(Base):
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
-
+    token = Column(VARCHAR(length=100), nullable=True)
     rel_accident = relationship("Accident", backref="victim_employee")
     rel_work = relationship("Work", backref='work_employee')
 
@@ -59,8 +59,10 @@ class Accident(Base):
         CheckConstraint(
             'latitude >= -90.000000 AND latitude <= 90.000000', name='ck_latitude')
     )
+    work_id = Column(VARCHAR(length=100), ForeignKey(
+        'work.work_id'), nullable=False)
     victim_id = Column(VARCHAR(length=100), ForeignKey(
-        'user_employee.id'), nullable=False)
+        'work.user_id'), nullable=False)
     category = Column(VARCHAR(length=100), nullable=False)
 
     rel_victim_id = relationship(
@@ -82,7 +84,8 @@ class AccidentProcessing(Base):
 class Work_list(Base):
     __tablename__ = "work_list"
 
-    name = Column(VARCHAR(length=100), primary_key=True)
+    id = Column(VARCHAR(length=100), primary_key=True)
+    name = Column(VARCHAR(length=100))
     company = Column(VARCHAR(length=100), ForeignKey(
         'company_list.company'), nullable=False)
     start_date = Column(Date, nullable=False)
@@ -96,7 +99,7 @@ class Work_list(Base):
 class Work(Base):
     __tablename__ = "work"
 
-    name = Column(VARCHAR(length=100), ForeignKey(
-        'work_list.name'), primary_key=True)
-    id = Column(VARCHAR(length=100), ForeignKey(
+    work_id = Column(VARCHAR(length=100), ForeignKey(
+        'work_list.id'), primary_key=True)
+    user_id = Column(VARCHAR(length=100), ForeignKey(
         'user_employee.id'), primary_key=True)

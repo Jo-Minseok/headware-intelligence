@@ -47,22 +47,12 @@ interface ApiService {
     @POST("/forgot/employee/pw")
     fun confirmEmployee(
         @Body userEmployee: EmployeeForgotPw
-    ): Call<RedirectResponse>
+    ): Call<EmployeeForgotPw>
 
     @POST("/forgot/manager/pw")
     fun confirmManager(
         @Body userManager: ManagerForgotPw
-    ): Call<RedirectResponse>
-
-    @POST("/forgot/employee/pw/change")
-    fun changeEmployeePassword(
-        @Body request: EmployeePasswordChangeRequest
-    ): Call<Unit>
-
-    @POST("/forgot/manager/pw/change")
-    fun changeManagerPassword(
-        @Body request: ManagerPasswordChangeRequest
-    ): Call<Unit>
+    ): Call<ManagerForgotPw>
 
 
     @GET("/trend/{start}/{end}")
@@ -93,5 +83,5 @@ interface ApiService {
     ): Call<Void>
 
     @GET("/company/list")
-    fun getCompanyList():Call<CompanyListResponse>
+    fun getCompanyList():Call<CompanyList>
 }

@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import android.app.AlertDialog
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,115 +32,66 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.google.gson.annotations.SerializedName
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 
-
-
 data class EmployeeForgotPw(
     val id: String,
-    val email: String
-)
-
-data class EmployeeChangePw(
+    val phone: String,
     val password: String,
     val re_password: String
 )
+
 
 data class ManagerForgotPw(
     val id: String,
-    val email: String
-)
-
-data class ManagerChangePw(
+    val phone: String,
     val password: String,
     val re_password: String
-)
-data class EmployeePasswordChangeRequest(
-    @SerializedName("user_employee") val userEmployee: EmployeeForgotPw,
-    @SerializedName("pw_change") val pwChange: EmployeeChangePw
-)
-
-data class ManagerPasswordChangeRequest(
-    @SerializedName("user_manager") val userManager: ManagerForgotPw,
-    @SerializedName("pw_change") val pwChange: ManagerChangePw
-)
-
-data class RedirectResponse(
-    @SerializedName("location") val location: String
 )
 
 fun sendPasswordChangeRequest(id: String, email: String, password: String, re_password: String,
                               isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
     val call = if (isManager) {
-        apiService.confirmManager(ManagerForgotPw(id, email))
+        apiService.confirmManager(ManagerForgotPw(id, email,password,re_password))
     } else {
-        apiService.confirmEmployee(EmployeeForgotPw(id, email))
+        apiService.confirmEmployee(EmployeeForgotPw(id, email,password,re_password))
     }
-
-    call.enqueue(object : Callback<RedirectResponse> {
-        override fun onResponse(call: Call<RedirectResponse>, response: Response<RedirectResponse>) {
+    call.enqueue(object : Callback<EmployeeForgotPw> {
+        override fun onResponse(call: Call<EmployeeForgotPw>, response: Response<EmployeeForgotPw>) {
             if (response.isSuccessful) {
-                val redirectUrl = response.body()?.location
-                if (!redirectUrl.isNullOrBlank()) {
-                    // 리디렉션된 주소를 받아온 경우 변경된 비밀번호를 서버에 보냄
-                    sendPasswordChangeRequestAfterRedirect(id, email, password, re_password,
-                        isManager, navController)
-                } else {
-                    println("리디렉션된 주소가 없습니다.")
-
-                }
-            } else {
-                println("비밀번호 변경 요청 실패: ${response.code()}")
+                showPasswordSuccessDialog(navController)
+            }
+            else {
+                Log.e("HEAD METAL","비밀번호 변경 요청 실패: ${response.code()}")
                 val errorBody = response.errorBody()?.string()
-                println("에러 응답 본문: $errorBody")
-
+                Log.e("HEAD METAL","에러 응답: $errorBody")
             }
         }
 
-        override fun onFailure(call: Call<RedirectResponse>, t: Throwable) {
-            println("서버 통신 실패: ${t.message}")
-
+        override fun onFailure(call: Call<EmployeeForgotPw>, t: Throwable) {
+            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
         }
-    })
+    } as Nothing)
 }
 
-// 리디렉션된 주소를 받아서 변경된 비밀번호를 서버에 보내는 함수
-fun sendPasswordChangeRequestAfterRedirect(id: String, email: String, password: String, re_password:String,
-                                          isManager: Boolean, navController: NavController) {
-    val apiService = RetrofitInstance.apiService
-    val call = if (isManager) {
-        apiService.changeManagerPassword(
-           ManagerPasswordChangeRequest(ManagerForgotPw(id,email),
-               ManagerChangePw(password, re_password)
-           )
-        )
-    } else {
-        apiService.changeEmployeePassword(
-            EmployeePasswordChangeRequest(EmployeeForgotPw(id, email),
-                EmployeeChangePw(password, re_password)
-            )
-        )
+fun showPasswordSuccessDialog(navController: NavController){
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("비밀번호 변경 성공")
+    builder.setMessage("로그인 화면으로 이동합니다.")
+
+    // 확인 버튼 설정
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+        navController.navigate("loginScreen")
     }
 
-    call.enqueue(object : Callback<Unit> {
-        override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-            if (response.isSuccessful) {
-                println("비밀번호가 성공적으로 변경되었습니다.")
-                navController.navigate("loginScreen")
-            } else {
-                println("비밀번호 변경에 실패했습니다.")
-            }
-        }
-
-        override fun onFailure(call: Call<Unit>, t: Throwable) {
-            println("서버 통신 실패: ${t.message}")
-        }
-    })
+    // 다이얼로그 표시
+    val dialog = builder.create()
+    dialog.show()
 }
 
 // 변경된 OnPasswordChangeButtonClick 함수
@@ -152,16 +105,13 @@ fun OnPasswordChangeButtonClick(id: String, email: String, password: String, re_
     }
 }
 
-
-
-
-
+// App UI 부분
 @Composable
 fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
     var id by remember {
         mutableStateOf("")
     }
-    var email by remember {
+    var phone by remember {
         mutableStateOf("")
     }
     var isManager by remember {
@@ -210,13 +160,13 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "이메일",
+                    text = "전화번호",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = phone,
+                    onValueChange = { phone = it },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
@@ -312,7 +262,7 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = {OnPasswordChangeButtonClick(id, email, password, re_password, isManager, navController)},
+                    onClick = {OnPasswordChangeButtonClick(id, phone, password, re_password, isManager, navController)},
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)
@@ -325,7 +275,7 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
             }
 
             Text(
-                text = "HeadWear - Intelligence",
+                text = "Head Buddy",
                 modifier = Modifier.padding(top = 20.dp),
                 fontWeight = FontWeight.Bold
             )

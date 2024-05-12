@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import android.app.AlertDialog
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,7 +77,7 @@ fun performFindId(name: String, email: String, isManager: Boolean, navController
 
         override fun onFailure(call: Call<Forgot_Id_Result>, t: Throwable) {
             // 서버 통신에 실패했을 때
-            println("서버 통신 실패: ${t.message}")
+            Log.e("HEAD METAL","서버 통신 실패: ${t.message}")
         }
     })
 }

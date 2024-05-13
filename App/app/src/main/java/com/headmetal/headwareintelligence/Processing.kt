@@ -50,7 +50,7 @@ import java.util.Locale
 
 
 @Composable
-fun Processing(navController: NavController, modifier: Modifier = Modifier) {
+fun Processing(modifier: Modifier = Modifier) {
     var searchText by remember {
         mutableStateOf("")
     }

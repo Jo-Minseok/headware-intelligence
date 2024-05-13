@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun Menu(navController: NavController) {
+fun Menu() {
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -270,8 +270,9 @@ fun Menu(navController: NavController) {
                         }
                     }
                 }
+                //NavigationBar(navController = navController)
             }
+
         }
-        NavigationBar(navController = navController)
     }
 }

@@ -89,4 +89,10 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose:1.6.3")
     implementation("com.patrykandpatrick.vico:compose-m2:1.6.3")
     implementation("com.patrykandpatrick.vico:compose-m3:1.6.3")
+
+
+    val nav_version = "2.7.7"
+    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
+    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
+
 }

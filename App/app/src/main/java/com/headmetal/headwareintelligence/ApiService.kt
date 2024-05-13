@@ -46,23 +46,13 @@ interface ApiService {
 
     @POST("/forgot/employee/pw")
     fun confirmEmployee(
-        @Body userEmployee: EmployeeForgotPw
-    ): Call<RedirectResponse>
+        @Body userEmployee: ForgotPw
+    ): Call<ForgotPw>
 
     @POST("/forgot/manager/pw")
     fun confirmManager(
-        @Body userManager: ManagerForgotPw
-    ): Call<RedirectResponse>
-
-    @POST("/forgot/employee/pw/change")
-    fun changeEmployeePassword(
-        @Body request: EmployeePasswordChangeRequest
-    ): Call<Unit>
-
-    @POST("/forgot/manager/pw/change")
-    fun changeManagerPassword(
-        @Body request: ManagerPasswordChangeRequest
-    ): Call<Unit>
+        @Body userManager: ForgotPw
+    ): Call<ForgotPw>
 
 
     @GET("/trend/{start}/{end}")
@@ -83,7 +73,9 @@ interface ApiService {
     @PUT("/map/marker/{no}/{situationCode}")
     fun updateAccidentSituation(
         @Path("no") no: Int,
-        @Path("situationCode") situationCode: String,
-        @Body requestBody: AccidentProcessingUpdateRequest
-    ): Call<AccidentProcessingUpdateRequest>
+        @Path("situation") situation: String
+    ): Call<Void>
+
+    @GET("/company/list")
+    fun getCompanyList():Call<CompanyList>
 }

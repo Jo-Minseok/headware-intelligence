@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 import uvicorn
 from weather import weather_api
 from account import register_router
@@ -17,7 +17,7 @@ app = FastAPI()
 
 
 # 백엔드 서버 접속 여부
-@app.get("/")
+@app.get("/", status_code=status.HTTP_200_OK)
 async def main():
     return 200
 

@@ -106,7 +106,7 @@ fun NavigationGraph(navController: NavHostController) {
             Processing()
         }
         composable("menuScreen") {
-            Menu()
+            Menu(navController)
         }
         composable("findidScreen") {
             Findid(navController)

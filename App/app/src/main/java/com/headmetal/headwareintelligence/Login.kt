@@ -1,8 +1,12 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -72,13 +78,33 @@ fun performLogin(username: String, password: String, isManager: Boolean, navCont
         }
         override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
             // 통신 실패 처리
-            println("서버 통신 실패: ${t.message}")
+            Log.e("HEAD METAL","서버 통신 실패: ${t.message}")
         }
     })
 }
 
 @Composable
+fun BackOnPressed() {
+    val context = LocalContext.current
+    var backPressedState by remember { mutableStateOf(true) }
+    var backPressedTime = 0L
+
+    BackHandler(enabled = backPressedState) {
+        if(System.currentTimeMillis() - backPressedTime <= 400L) {
+            // 앱 종료
+            (context as Activity).finish()
+        } else {
+            backPressedState = true
+            Toast.makeText(context, "한 번 더 누르시면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
+        }
+        backPressedTime = System.currentTimeMillis()
+    }
+}
+
+@Composable
 fun Login(navController: NavController, modifier: Modifier = Modifier) {
+    BackOnPressed()
+
     val idState = remember {
         mutableStateOf("")
     }
@@ -88,7 +114,6 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
     var isManager by remember {
         mutableStateOf(false)
     }
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -114,7 +139,9 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     onValueChange = { idState.value = it },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -133,7 +160,9 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     onValueChange = { pwState.value = it },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .width(350.dp),
                     visualTransformation = PasswordVisualTransformation(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -225,7 +254,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             }
 
             Text(
-                text = "HeadWear - Intelligence",
+                text = stringResource(id = R.string.app_name),
                 modifier = Modifier.padding(top = 20.dp),
                 fontWeight = FontWeight.Bold
             )
@@ -242,8 +271,6 @@ fun showLoginFailedDialog(navController: NavController,idState: MutableState<Str
     builder.setPositiveButton("확인") { dialog, _ ->
         dialog.dismiss()
         idState.value = ""
-        pwState.value = ""
-
     }
 
     // 다이얼로그 표시

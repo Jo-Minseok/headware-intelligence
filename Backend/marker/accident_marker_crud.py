@@ -41,7 +41,7 @@ def update_accident_processing(db: Session, no: int, situationCode: str, detail:
     db.commit()
 
 # 사고 발생 데이터 삽입(테스트 용도)
-def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2024, 6, 30), size=10, K=3):
+def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2024, 6, 30), size=40, K=3):
     # db 세션 연결
     db = db_session()
     

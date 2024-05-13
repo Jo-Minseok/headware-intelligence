@@ -31,7 +31,7 @@ def accident_data(db: Session = Depends(get_db)):
         'no' : no, 
         'latitude' : latitude, 
         'longitude' : longitude,
-        'processCode' : processCode
+        'situationCode' : processCode
     }
 
 @router.get('/marker/{no}')

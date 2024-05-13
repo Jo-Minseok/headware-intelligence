@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
+import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,7 +25,6 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
@@ -33,8 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -43,6 +43,8 @@ import androidx.navigation.NavController
 fun Menu(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
+        val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+        val autoLoginEdit: SharedPreferences.Editor = auto.edit()
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
@@ -248,7 +250,11 @@ fun Menu(navController: NavController) {
                         }
                     }
                     Button(
-                        onClick = {},
+                        onClick = {
+                            autoLoginEdit.clear()
+                            autoLoginEdit.apply()
+                            navController.navigate("loginScreen")
+                        },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 2.5.dp)
@@ -267,7 +273,7 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "로그 아웃",
+                                text = "로그아웃",
                                 color = Color(0xFFFF6600),
                                 fontSize = 20.sp
                             )
@@ -275,7 +281,6 @@ fun Menu(navController: NavController) {
                         }
                     }
                 }
-                //NavigationBar(navController = navController)
             }
 
         }

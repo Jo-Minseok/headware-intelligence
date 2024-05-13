@@ -237,36 +237,6 @@ fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() },
 }
 
 @Composable
-fun LoadingScreen() {
-    val isLoading = LoadingState.isLoading.collectAsState().value
-
-    if (isLoading) {
-        Dialog(
-            onDismissRequest = { LoadingState.hide() },
-            properties = DialogProperties(
-                dismissOnClickOutside = false,
-                dismissOnBackPress = false
-            )
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-}
-
-object LoadingState {
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    fun show() {
-        _isLoading.value = true
-    }
-
-    fun hide() {
-        _isLoading.value = false
-    }
-}
-
-@Composable
 fun MapScreen(
     locationViewModel: LocationViewModel,
     accidentViewModel: AccidentViewModel,

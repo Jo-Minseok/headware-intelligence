@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import android.app.AlertDialog
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import retrofit2.Call
@@ -49,7 +50,7 @@ data class RegisterEmployeeResponse(
     val name: String,
     val email: String,
     val phone_no: String,
-    val company: String
+    val company: String?
 )
 
 data class RegisterManagerResponse(
@@ -58,7 +59,11 @@ data class RegisterManagerResponse(
     val re_password: String,
     val name: String,
     val email: String,
-    val company: String
+    val company: String?
+)
+
+data class CompanyList(
+    val companies: List<String>
 )
 
 // 회원가입 함수
@@ -69,10 +74,11 @@ fun performSignup(id: String, password: String, re_password: String, name: Strin
         showPasswordMismatchDialog(navController)
         return
     }
+    val companyToSend = if(company=="없음") null else company
     if (isManager) {
-        performManagerSignup(id, password, re_password, name, email, company, navController)
+        performManagerSignup(id, password, re_password, name, email, companyToSend, navController)
     } else {
-        performEmployeeSignup(id, password, re_password, name, email, phone_no, company, navController)
+        performEmployeeSignup(id, password, re_password, name, email, phone_no, companyToSend, navController)
     }
 }
 
@@ -92,7 +98,7 @@ private fun showPasswordMismatchDialog(navController: NavController) {
 
 // 관리자 회원가입 함수
 private fun performManagerSignup(id: String, password: String, re_password: String, name: String,
-    email: String, company: String, navController: NavController
+    email: String, company: String?, navController: NavController
 ) {
     val apiService = RetrofitInstance.apiService
     val call = apiService.registerManager(
@@ -114,14 +120,14 @@ private fun performManagerSignup(id: String, password: String, re_password: Stri
         override fun onFailure(call: Call<RegisterManagerResponse>
                                , t: Throwable) {
             // 통신 실패 시 처리할 코드
-            println("서버 통신 실패: ${t.message}")
+            Log.e("HEAD METAL", t.message.toString())
         }
     })
 }
 
 // 직원 회원가입 함수
 private fun performEmployeeSignup(id: String, password: String, re_password: String, name: String,
-                                  email: String, phone_no: String, company: String, navController: NavController
+                                  email: String, phone_no: String, company: String?, navController: NavController
 ) {
     val apiService = RetrofitInstance.apiService
     val call = apiService.registerEmployee(
@@ -174,7 +180,6 @@ private fun performEmployeeSignup(id: String, password: String, re_password: Str
 // 회원가입 화면
 @Composable
 fun Signup(navController: NavController, modifier: Modifier = Modifier) {
-
     var id by remember {
         mutableStateOf("")
     }
@@ -196,11 +201,31 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
 
     var expanded by remember { mutableStateOf(false) }
     var Company by remember { mutableStateOf("") }
-    var companyList by remember{mutableStateOf<List<String>>(emptyList())}
+
 
     var isManager by remember {
         mutableStateOf(false)
     }
+
+    var companies:List<String> = listOf("없음")
+
+    val apiService = RetrofitInstance.apiService
+    val call = apiService.getCompanyList()
+    call.enqueue(object : Callback<CompanyList>
+    {
+        override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
+            if (response.isSuccessful) {
+                val companyList: CompanyList? = response.body()
+                companyList?.let{
+                    companies = companies + it.companies
+                }
+            }
+        }
+
+        override fun onFailure(p0: Call<CompanyList>, t: Throwable) {
+            println("서버 통신 실패: ${t.message}")
+        }
+    })
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -248,6 +273,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 )
                 TextField(
                     value = password,
+                    visualTransformation = PasswordVisualTransformation(),
                     onValueChange = { password = it },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
@@ -270,6 +296,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 TextField(
                     value = re_password,
                     onValueChange = { re_password = it },
+                    visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
                     modifier = Modifier
@@ -383,7 +410,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
                     ) {
-                        companyList.forEach { company ->
+                        companies.forEach { company ->
                             DropdownMenuItem(
                                 onClick = {
                                     Company = company

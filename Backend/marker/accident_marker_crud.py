@@ -6,15 +6,15 @@ from marker.accident_marker_schema import Accident_Processing_Detail
 import datetime
 import numpy as np
 
-# 사고 발생 데이터 조회
-def get_accidents(db: Session):
+# 사고 데이터 조회(모든 데이터)
+def get_all_accident(db: Session):
     return db.query(Accident).all()
 
-# 사고 처리 데이터 조회
-def get_accident_processings(db: Session):
+# 사고 처리 데이터 조회(모든 데이터)
+def get_all_accident_processing(db: Session):
     return db.query(AccidentProcessing).all()
 
-# 사고 처리 데이터 조회(단일)
+# 사고 처리 데이터 조회(단일 데이터)
 def get_accident_processing(db: Session, no: int):
     return db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
 
@@ -24,7 +24,7 @@ def get_victim_name(db: Session, no: int):
     accident_result = db.execute(accident_query).fetchone()
     victim_id = accident_result[0]
     
-    employee_query = select(UserEmployee.name).where(UserEmployee.id == victim_id)
+    employee_query = select(UserEmployee.name).where(UserEmployee.employee_id == victim_id)
     employee_result = db.execute(employee_query).fetchone()
     victim_name = employee_result[0]
     
@@ -41,7 +41,7 @@ def update_accident_processing(db: Session, no: int, situationCode: str, detail:
     db.commit()
 
 # 사고 발생 데이터 삽입(테스트 용도)
-def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2024, 6, 30), size=400, K=3):
+def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2024, 6, 30), size=40, K=3):
     # db 세션 연결
     db = db_session()
     
@@ -79,7 +79,8 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
                             latitude=lat, 
                             longitude=lon, 
-                            victim_id='test', 
+                            work_id='11', 
+                            victim_id=['1234', '5678'][np.random.randint(0, 2)], 
                             category='test')
         db.add(accident)
 
@@ -101,13 +102,13 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
                                             situation='119 신고', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='DDD')
+                                            detail='')
         else:
             processing = AccidentProcessing(no=accident.no, 
                                             situation='처리 중', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='AAA')
+                                            detail='')
             
         db.add(processing)
     

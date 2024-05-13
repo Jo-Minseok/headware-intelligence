@@ -2,8 +2,10 @@ package com.headmetal.headwareintelligence
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.material3.Surface
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
@@ -17,6 +19,18 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.headmetal.headwareintelligence.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
+    var backKeyPressedTime = 0L
+    val onBackPressedCallback: OnBackPressedCallback = object: OnBackPressedCallback(true){
+        override fun handleOnBackPressed(){
+            if(System.currentTimeMillis() > backKeyPressedTime + 2000){
+                backKeyPressedTime = System.currentTimeMillis()
+                Toast.makeText(this@MainActivity, "한번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+            }
+            else{
+                finish()
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         // 알림 토큰 생성
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task->

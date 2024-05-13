@@ -3,6 +3,8 @@ package com.headmetal.headwareintelligence
 import android.app.AlertDialog
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -88,7 +90,6 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
     var isManager by remember {
         mutableStateOf(false)
     }
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),

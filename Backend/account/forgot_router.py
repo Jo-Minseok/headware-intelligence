@@ -8,6 +8,7 @@ from account import forgot_crud
 router = APIRouter(prefix='/forgot')
 
 
+# 근로자 ID 찾기
 @router.post("/employee/id", response_model=account_schema.Employee_Forgot_Id_Result)
 def get_employee_id(user_employee: account_schema.Employee_Forgot_Id, db: Session = Depends(get_db)):
     employee = forgot_crud.forgot_employee_id(
@@ -18,6 +19,7 @@ def get_employee_id(user_employee: account_schema.Employee_Forgot_Id, db: Sessio
     return {'id': employee.employee_id}
 
 
+# 관리자 ID 찾기
 @router.post("/manager/id", response_model=account_schema.Manager_Forgot_Id_Result)
 def get_manager_id(user_manager: account_schema.Manager_Forgot_Id, db: Session = Depends(get_db)):
     manager = forgot_crud.forgot_manager_id(
@@ -28,7 +30,8 @@ def get_manager_id(user_manager: account_schema.Manager_Forgot_Id, db: Session =
     return {'id': manager.manager_id}
 
 
-@router.post("/employee/pw", status_code=status.HTTP_204_NO_CONTENT)
+# 근로자 비밀번호 변경
+@router.put("/employee/pw", status_code=status.HTTP_204_NO_CONTENT)
 def change_employee_pw(user_employee: account_schema.Employee_Forgot_Pw, db: Session = Depends(get_db)):
     employee = forgot_crud.forgot_employee_pw(
         db, user_employee.id, user_employee.phone_no)
@@ -39,7 +42,8 @@ def change_employee_pw(user_employee: account_schema.Employee_Forgot_Pw, db: Ses
         db, user_employee.id, user_employee.password)
 
 
-@router.post("/manager/pw", status_code=status.HTTP_204_NO_CONTENT)
+# 관리자 비밀번호 변경
+@router.put("/manager/pw", status_code=status.HTTP_204_NO_CONTENT)
 def change_manager_pw(user_manager: account_schema.Manager_Forgot_Pw, db: Session = Depends(get_db)):
     manager = forgot_crud.forgot_manager_pw(
         db, user_manager.id, user_manager.phone_no)

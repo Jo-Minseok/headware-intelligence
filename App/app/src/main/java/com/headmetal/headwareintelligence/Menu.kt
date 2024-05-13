@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,14 +40,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun Menu() {
+fun Menu(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.padding(20.dp)
+                modifier = Modifier.
+                padding(20.dp)
+                .clickable {navController.navigate("mainScreen")}
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -59,13 +62,13 @@ fun Menu() {
                     modifier = Modifier.padding(horizontal = 30.dp)
                 )
                 Spacer(modifier = Modifier.width(125.dp))
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .offset(x = 80.dp)
-                        .size(34.dp)
-                )
+//                Icon(
+//                    imageVector = Icons.Outlined.Settings,
+//                    contentDescription = null,
+//                    modifier = Modifier
+//                        .offset(x = 80.dp)
+//                        .size(34.dp)
+//                )
             }
 
             Column(
@@ -138,7 +141,8 @@ fun Menu() {
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null
+                                contentDescription = null,
+                                modifier = Modifier.clickable {  }
                             )
                         }
                     }
@@ -169,7 +173,8 @@ fun Menu() {
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null
+                                contentDescription = null,
+                                modifier = Modifier.clickable {  }
                             )
                         }
                     }
@@ -212,7 +217,7 @@ fun Menu() {
                         }
                     }
                     Button(
-                        onClick = {},
+                        onClick = {navController.navigate("etcScreen")},
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 2.5.dp)

@@ -46,13 +46,13 @@ interface ApiService {
 
     @POST("/forgot/employee/pw")
     fun confirmEmployee(
-        @Body userEmployee: EmployeeForgotPw
-    ): Call<EmployeeForgotPw>
+        @Body userEmployee: ForgotPw
+    ): Call<ForgotPw>
 
     @POST("/forgot/manager/pw")
     fun confirmManager(
-        @Body userManager: ManagerForgotPw
-    ): Call<ManagerForgotPw>
+        @Body userManager: ForgotPw
+    ): Call<ForgotPw>
 
 
     @GET("/trend/{start}/{end}")

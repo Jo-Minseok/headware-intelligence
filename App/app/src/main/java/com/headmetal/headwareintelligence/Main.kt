@@ -48,10 +48,13 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+
+
 @Composable
 fun Main(navController: NavController, modifier: Modifier = Modifier,
     interest: Int = 10,
     windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
+    BackOnPressed()
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)

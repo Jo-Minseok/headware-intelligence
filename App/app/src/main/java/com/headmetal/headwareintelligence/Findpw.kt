@@ -28,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -37,31 +39,38 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-data class EmployeeForgotPw(
+data class ForgotPw(
     val id: String,
-    val phone: String,
+    val phone_no: String,
     val password: String,
     val re_password: String
 )
 
+fun makeDialog(title:String,message:String,navController: NavController){
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle(title)
+    builder.setMessage(message)
 
-data class ManagerForgotPw(
-    val id: String,
-    val phone: String,
-    val password: String,
-    val re_password: String
-)
+    // 확인 버튼 설정
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+    }
+
+    // 다이얼로그 표시
+    val dialog = builder.create()
+    dialog.show()
+}
 
 fun sendPasswordChangeRequest(id: String, email: String, password: String, re_password: String,
                               isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
     val call = if (isManager) {
-        apiService.confirmManager(ManagerForgotPw(id, email,password,re_password))
+        apiService.confirmManager(ForgotPw(id, email,password,re_password))
     } else {
-        apiService.confirmEmployee(EmployeeForgotPw(id, email,password,re_password))
+        apiService.confirmEmployee(ForgotPw(id, email,password,re_password))
     }
-    call.enqueue(object : Callback<EmployeeForgotPw> {
-        override fun onResponse(call: Call<EmployeeForgotPw>, response: Response<EmployeeForgotPw>) {
+    call.enqueue(object : Callback<ForgotPw> {
+        override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
             if (response.isSuccessful) {
                 showPasswordSuccessDialog(navController)
             }
@@ -72,10 +81,10 @@ fun sendPasswordChangeRequest(id: String, email: String, password: String, re_pa
             }
         }
 
-        override fun onFailure(call: Call<EmployeeForgotPw>, t: Throwable) {
+        override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
             Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
         }
-    } as Nothing)
+    })
 }
 
 fun showPasswordSuccessDialog(navController: NavController){
@@ -101,7 +110,7 @@ fun OnPasswordChangeButtonClick(id: String, email: String, password: String, re_
         // 새 비밀번호와 비밀번호 확인 값이 일치하고 비밀번호가 비어 있지 않은 경우에만 서버로 요청을 보냄
         sendPasswordChangeRequest(id, email, password, re_password, isManager, navController)
     } else {
-        println("새 비밀번호와 비밀번호 확인이 일치하지 않거나 비밀번호가 비어 있습니다.")
+        makeDialog("비밀번호 변경 실패","정보나 새 비밀번호와 비밀번호 확인을 다시 확인하세요!",navController)
     }
 }
 
@@ -155,7 +164,7 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
                     )
                 )
             }
-            
+
             Column(
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
@@ -188,6 +197,7 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
                     value = password,
                     onValueChange = { password = it },
                     shape = RoundedCornerShape(8.dp),
+                    visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -208,6 +218,7 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
                     value = re_password,
                     onValueChange = { re_password = it },
                     shape = RoundedCornerShape(8.dp),
+                    visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -275,7 +286,7 @@ fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
             }
 
             Text(
-                text = "Head Buddy",
+                text = stringResource(id = R.string.app_name),
                 modifier = Modifier.padding(top = 20.dp),
                 fontWeight = FontWeight.Bold
             )

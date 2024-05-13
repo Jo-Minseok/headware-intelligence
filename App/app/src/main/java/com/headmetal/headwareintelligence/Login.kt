@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import android.app.AlertDialog
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +30,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import retrofit2.Call
@@ -45,15 +49,21 @@ data class LoginResponse(
     val token_type: String
 )
 
-fun performLogin(username: String, password: String, navController: NavController) {
-    RetrofitInstance.apiService.login(username, password).enqueue(object : Callback<LoginResponse> {
+fun performLogin(username: String, password: String, isManager: Boolean, navController: NavController, idState: MutableState<String>, pwState: MutableState<String>) {
+    val call = if (isManager) {
+        RetrofitInstance.apiService.loginmanager(username, password)
+    } else {
+        RetrofitInstance.apiService.loginemployee(username, password)
+    }
+    call.enqueue(object : Callback<LoginResponse>{
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             if (response.isSuccessful) {
                 val loginResponse = response.body()
                 navController.navigate("mainScreen")
-            } else {
-                // 서버 응답 실패 처리
-                println("서버 응답 실패")
+            }
+            else {
+                // 로그인 실패 처리
+                showLoginFailedDialog(navController, idState,pwState)
             }
         }
         override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
@@ -71,9 +81,12 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
     var pw by remember {
         mutableStateOf("")
     }
-    var part by remember {
-        mutableStateOf("None")
+    var isManager by remember {
+        mutableStateOf(false)
     }
+    val idState = remember { mutableStateOf("") }
+    val pwState = remember { mutableStateOf("") }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
@@ -94,9 +107,10 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = id,
-                    onValueChange = { id = it },
+                    value = idState.value,
+                    onValueChange = { idState.value = it },
                     shape = RoundedCornerShape(8.dp),
+                    singleLine = true,
                     modifier = Modifier.alpha(0.6f).width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -112,13 +126,16 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 TextField(
-                    value = pw,
-                    onValueChange = { pw = it },
+                    value = pwState.value,
+                    onValueChange = { pwState.value = it },
                     shape = RoundedCornerShape(8.dp),
+                    singleLine = true,
                     modifier = Modifier.alpha(0.6f).width(350.dp),
+                    visualTransformation = PasswordVisualTransformation(),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
+
                     )
                 )
             }
@@ -138,8 +155,8 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     ) {
                         Row {
                             RadioButton(
-                                selected = (part == "Normal"),
-                                onClick = { part = "Normal" }
+                                selected = !isManager,
+                                onClick = { isManager = false }
                             )
                             Text(
                                 text = "일반직",
@@ -153,8 +170,8 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
                     ) {
                         Row {
                             RadioButton(
-                                selected = (part == "Manage"),
-                                onClick = { part = "Manage" }
+                                selected = isManager,
+                                onClick = { isManager = true }
                             )
                             Text(
                                 text = "관리직",
@@ -169,7 +186,7 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { performLogin(id, pw, navController) },
+                    onClick = { performLogin(idState.value, pwState.value, isManager, navController,idState, pwState) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)
@@ -210,4 +227,22 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+fun showLoginFailedDialog(navController: NavController,idState: MutableState<String>, pwState: MutableState<String>) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("로그인 실패")
+    builder.setMessage("아이디나 비밀번호를 확인하세요")
+
+    // 확인 버튼 설정
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+        idState.value = ""
+        pwState.value = ""
+
+    }
+
+    // 다이얼로그 표시
+    val dialog = builder.create()
+    dialog.show()
 }

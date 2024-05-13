@@ -1,7 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.util.Log
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -12,185 +10,210 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import java.util.Calendar
-import java.util.Locale
-import retrofit2.http.GET
-import retrofit2.http.Path
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
+import com.patrykandpatrick.vico.compose.chart.Chart
+import com.patrykandpatrick.vico.compose.chart.column.columnChart
+import com.patrykandpatrick.vico.compose.component.lineComponent
+import com.patrykandpatrick.vico.compose.component.shapeComponent
+import com.patrykandpatrick.vico.compose.legend.verticalLegendItem
+import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
+import com.patrykandpatrick.vico.core.chart.composed.plus
+import com.patrykandpatrick.vico.core.chart.line.LineChart.LineSpec
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
+import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.component.text.textComponent
+import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
+import com.patrykandpatrick.vico.core.entry.FloatEntry
+import com.patrykandpatrick.vico.core.entry.composed.plus
+import com.patrykandpatrick.vico.core.legend.VerticalLegend
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
-class TrendViewModel : ViewModel() {
-    private val apiService = RetrofitInstance.apiService
-
-    // 기울기와 절편을 상태로 정의합니다.
-    private val _inclination = mutableStateOf(0.0)
-    val inclination: State<Double> = _inclination
-
-    private val _intercept = mutableStateOf(0.0)
-    val intercept: State<Double> = _intercept
-
-//    private val _month_data = mutableListOf(0)
-//    val month_data: List<Int> = _month_data
-
-    // API로부터 데이터를 가져오는 함수
-    fun getTrendData(start: String, end: String) {
-        viewModelScope.launch {
-            try {
-                val response = apiService.getTrendData(start, end)
-                // API에서 받은 기울기와 절편을 상태에 저장합니다.
-                _inclination.value = response.inclination
-                _intercept.value = response.intercept
-                Log.d("TrendViewModel", "Inclination: ${response.inclination}, Intercept: ${response.intercept}")
-            } catch (e: Exception) {
-                // 오류 처리
-                // 데이터를 가져오는 도중 오류가 발생한 경우에 대한 처리
-                Log.e("TrendViewModel", "데이터 가져오기 실패: ${e.message}", e)
-                // 예외 처리를 하고 사용자에게 적절한 안내를 제공하거나 기본값으로 설정할 수 있습니다.
-                // 여기에서는 기본값으로 0으로 설정합니다.
-                _inclination.value = 0.0
-                _intercept.value = 0.0
-            }
-        }
-    }
-}
 data class TrendResponse(
-    val month_data: List<Int>,
+    val monthData: List<Int>,
     val inclination: Double,
     val intercept: Double
 )
 
+class TrendViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    private val _monthData = mutableStateOf(emptyList<Int>())
+    val monthData: State<List<Int>> = _monthData
+
+    private val _inclination = mutableDoubleStateOf(0.0)
+    val inclination: State<Double> = _inclination
+
+    private val _intercept = mutableDoubleStateOf(0.0)
+    val intercept: State<Double> = _intercept
+
+    fun getTrendData(start: String, end: String) {
+        viewModelScope.launch {
+            val response = apiService.getTrendData(start, end)
+            _monthData.value = response.monthData
+            _inclination.doubleValue = response.inclination
+            _intercept.doubleValue = response.intercept
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: Int = 10) {
-    val interestColor = when {
-        interest < 10 -> Color.Red
-        interest < 20 -> Color(0xFFFF6600)
-        else -> Color.Green
-    }
-    val interestText = when {
-        interest < 10 -> "매우 높음"
-        interest < 20 -> "높음"
-        else -> "보통"
-    }
-    val interestTextDetail = when {
-        interest < 10 -> "각별한 안전 사고 주의가 필요해요"
-        interest < 20 -> "안전 사고 주의가 필요해요"
-        else -> "안전 관심은 항상 필요해요"
-    }
-    var current by remember {
-        mutableStateOf(Calendar.getInstance().time)
-    }
-    var interestChecked by remember {
-        mutableStateOf(false)
-    }
-    var accidentChecked by remember {
-        mutableStateOf(false)
-    }
-
+fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
+    val monthData by viewModel.monthData
     val inclination by viewModel.inclination
     val intercept by viewModel.intercept
 
+    val veryHighDangerLine = 3
+    val highDangerLine = 0
+
+    val dangerColor = when {
+        inclination > veryHighDangerLine -> Color.Red
+        inclination > highDangerLine -> Color(0xFFFF6600)
+        else -> Color.Green
+    }
+    val dangerText = when {
+        inclination > veryHighDangerLine -> "매우 높음"
+        inclination > highDangerLine -> "높음"
+        else -> "보통"
+    }
+    val dangerTextDetail = when {
+        inclination > veryHighDangerLine -> "각별한 안전 사고 주의가 필요해요"
+        inclination > highDangerLine -> "안전 사고 주의가 필요해요"
+        else -> "안전 관심은 항상 필요해요"
+    }
+
+    var expanded by remember { mutableStateOf(false) }
+    val options = generateOptions()
+    var selectedOption by remember { mutableStateOf(options[0]) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
-        LaunchedEffect(true) {
-            while (true) {
-                delay(1000)
-                current = Calendar.getInstance().time
-            }
+        LaunchedEffect(selectedOption) {
+            val (startMonth, endMonth) = getMonthsFromOption(selectedOption)
+            viewModel.getTrendData(startMonth, endMonth)
         }
-        LaunchedEffect(Unit) {
-            viewModel.getTrendData("2023-07", "2024-01")
-        }
-
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
             )
-            Box(
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 8.dp, top = 8.dp)
-                    .background(color = Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
+            Spacer(
+                modifier = Modifier.height(150.dp)
+            )
+            Box {
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "월별 사고 건수 및 사고 추세",
+                        fontSize = 20.sp
                     )
-                    .fillMaxWidth()
-
-            ) {
-                Column {
-                    Row {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 5.dp)
+                    ) {
                         Text(
-                            text = "일일 안전 알림",
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(start = 10.dp, top = 2.dp)
+                            text = "기간 ",
+                            fontSize = 16.sp
                         )
-                        Text(
-                            text = SimpleDateFormat(
-                                "EEEE, yyyy년 MM월 dd일",
-                                Locale.getDefault()
-                            ).format(current),
-                            style = TextStyle(textAlign = TextAlign.End),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 10.dp, top = 2.dp)
-                        )
-                    }
-                    Row {
                         Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, bottom = 5.dp)
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null
                         )
-                        Text(
-                            text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(current),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 5.dp, bottom = 5.dp)
+                        Spacer(
+                            modifier = Modifier.padding(horizontal = 10.dp)
                         )
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded }
+                        ) {
+                            TextField(
+                                value = selectedOption,
+                                onValueChange = {},
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .width(200.dp)
+                                    .height(50.dp)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                options.forEach { item ->
+                                    DropdownMenuItem(
+                                        text = { Text(text = item) },
+                                        onClick = {
+                                            selectedOption = item
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
-
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 30.dp)
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(5.dp)
+                        ) {
+                            if (!expanded) {
+                                ChartPrint(
+                                    monthData = monthData,
+                                    inclination = inclination,
+                                    intercept = intercept,
+                                    selectedOption = selectedOption,
+                                    dangerColor = dangerColor
+                                )
+                            }
+                        }
+                    }
                 }
-            } //여기서부터
+            }
+            Spacer(modifier = Modifier.height(20.dp))
             Box(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
@@ -201,25 +224,25 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: I
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
-
             ) {
                 Column {
                     Text(
-                        text = "안전 관심도",
+                        text = "$selectedOption 추세 위험도",
                         fontSize = 16.sp,
-                        modifier = Modifier.padding(start = 10.dp)
+                        modifier = Modifier
+                            .padding(start = 10.dp)
                     )
                     Row {
                         Icon(
                             imageVector = Icons.Default.Circle,
                             contentDescription = null,
-                            tint = interestColor,
+                            tint = dangerColor,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, top = 5.dp)
                         )
                         Text(
-                            text = interestText,
+                            text = dangerText,
                             fontSize = 16.sp,
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
@@ -227,120 +250,138 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }, interest: I
                         )
                     }
                     Text(
-                        text = interestTextDetail,
+                        text = dangerTextDetail,
                         modifier = Modifier
                             .padding(start = 40.dp, bottom = 5.dp)
                     )
                 }
-            } //여기까지 메인 화면에서 공통으로 사용되는 부분
-            Spacer(
-                modifier = Modifier.height(50.dp)
-            )
-            Box(
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "안전 추세선",
-                        fontSize = 20.sp
-                    )
-                    Row {
-                        Text(
-                            text = "기간 ",
-                            fontSize = 16.sp,
-                            modifier = Modifier
-                                .padding(end = 0.dp, top = 20.dp)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(end = 300.dp, top = 20.dp)
-                        )
-                        //DatePicker 구현
-                    }
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 30.dp)
-                            .fillMaxWidth()
-                            .height(200.dp)
-                    ) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            // X축
-                            drawLine(
-                                color = Color.Black,
-                                start = Offset(50f, size.height - 50f),
-                                end = Offset(size.width - 50f, size.height - 50f),
-                                strokeWidth = 2f
-                            )
-
-                            // Y축
-                            drawLine(
-                                color = Color.Black,
-                                start = Offset(50f, size.height - 50f),
-                                end = Offset(50f, 50f),
-                                strokeWidth = 2f
-                            )
-
-                            // 데이터가 유효한 경우에만 그래프 그리기
-                            if (inclination != 0.0 && intercept != 0.0) {
-                                println(inclination)
-                                println(intercept)
-                                val startX = 0f
-                                val startY = startX * inclination + intercept // 시작점의 y 좌표 계산
-                                val endX = size.width
-                                val endY = endX * inclination + intercept // 끝점의 y 좌표 계산
-
-                                drawLine(
-                                    color = Color.Black,
-                                    start = Offset(startX, startY.toFloat()),
-                                    end = Offset(endX, endY.toFloat()),
-                                    strokeWidth = 10f
-                                )
-                            }
-                        }
-                    }
-                    Row (
-                        modifier = Modifier
-                        .padding(top = 30.dp)
-                    ){
-                        Checkbox(
-                            checked = interestChecked,
-                            onCheckedChange = { checked ->
-                                interestChecked = checked
-                                if (checked) {
-                                    //
-                                } else {
-                                    //
-                                }
-                            })
-                        Text(
-                            text = "관심도",
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
-                        Spacer(
-                            modifier = Modifier.width(20.dp)
-                        )
-                        Checkbox(
-                            checked = accidentChecked,
-                            onCheckedChange = { checked ->
-                                accidentChecked = checked
-                                if (checked) {
-                                    //
-                                } else {
-                                    //
-                                }
-                            })
-                        Text(
-                            text = "사고 발생",
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        )
-                    }
-                }
             }
         }
     }
+}
+
+@Composable
+fun ChartPrint(monthData: List<Int>, inclination: Double, intercept: Double, selectedOption: String, dangerColor: Color) {
+    val trendData = mutableListOf<Double>()
+    for (x in monthData.indices) { // 기울기와 절편 값으로 사고 추세 직선 구하기
+        trendData.add(x * inclination + intercept)
+    }
+    val monthDataProducer = ChartEntryModelProducer( // 월별 사고 건수 데이터 모델
+        monthData.mapIndexed { index, value ->
+            FloatEntry(index.toFloat(), value.toFloat())
+        }
+    )
+    val trendDataProducer = ChartEntryModelProducer( // 사고 추세 모델
+        trendData.mapIndexed { index, value ->
+            FloatEntry(index.toFloat(), value.toFloat())
+        }
+    )
+
+    Chart(
+        chart = columnChart( // 월별 사고 데이터 차트 부분
+            columns = listOf(
+                lineComponent( // 막대 그래프 속성 지정
+                    color = Color(0xFF000080),
+                    thickness = 10.dp,
+                    shape = Shapes.cutCornerShape(topRightPercent = 20, topLeftPercent = 20)
+                )
+            ),
+            axisValuesOverrider = AxisValuesOverrider.fixed( // y축 범위 지정
+                minY = 0f,
+                maxY = monthData.maxOrNull()?.toFloat()?.times(1.1f) ?: Float.MIN_VALUE
+            )
+        ).plus(
+            com.patrykandpatrick.vico.compose.chart.line.lineChart( // 추세선 차트 부분
+                lines = listOf(
+                    LineSpec( // 추세선 속성 지정
+                        lineColor = when(dangerColor) { // 선 색상 지정
+                            Color.Red -> android.graphics.Color.RED
+                            Color(0xFFFF6600) -> android.graphics.Color.rgb(255, 102, 0)
+                            else -> android.graphics.Color.GREEN
+                        },
+                        pointConnector = DefaultPointConnector( // 직선 형태 지정
+                            cubicStrength = 0f
+                        ),
+                    )
+                ),
+                axisValuesOverrider = AxisValuesOverrider.fixed( // y축 범위 지정
+                    minY = 0f,
+                    maxY = trendData.maxOrNull()?.toFloat()?.times(1.1f) ?: Float.MIN_VALUE
+                )
+            )
+        ),
+        chartModelProducer = monthDataProducer.plus(trendDataProducer), // 그래프 데이터 모델 선정
+        startAxis = startAxis( // y축 label
+            valueFormatter = { value, _ ->
+                String.format("%.1f", value)
+            }
+        ),
+        bottomAxis = bottomAxis( // x축 label
+            valueFormatter = { value, _ ->
+                val startMonth = if (selectedOption.contains("상반기")) 1 else 7
+                val month = (startMonth + value.toInt()) % 12
+                String.format("%02d", if (month == 0) 12 else month)
+            }
+        ),
+        runInitialAnimation = true, // 그래프 출력 시 애니메이션 동작
+        legend = rememberLegend( // 그래프 범례
+            listOf(
+                Color(0xFF000080),
+                dangerColor
+            )
+        )
+    )
+}
+
+// 그래프 범례
+@Composable
+fun rememberLegend(colors: List<Color>) : VerticalLegend {
+    val labelTextList = listOf("월별 사고 건수", "사고 추세")
+
+    return VerticalLegend(
+        items = List(labelTextList.size) { index ->
+            verticalLegendItem(
+                icon = shapeComponent(
+                    shape = Shapes.pillShape,
+                    color = colors[index],
+                ),
+                label = textComponent(),
+                labelText = labelTextList[index]
+            )
+        },
+        iconSizeDp = 10f,
+        iconPaddingDp = 8f
+    )
+}
+
+// 드롭다운 메뉴박스 각 항목 이름
+fun getMonthsFromOption(option: String): Pair<String, String> {
+    val year = option.substringBefore("년").toInt()
+    val half = option.substringAfter("년 ").substringBefore("반기")
+    val startMonth = if (half == "상") "01" else "07"
+    val endMonth = if (half == "상") "06" else "12"
+    return Pair("$year-${startMonth.padStart(2, '0')}", "$year-${endMonth.padStart(2, '0')}")
+}
+
+// 드롭다운 메뉴박스 항목 추가
+fun generateOptions(): List<String> {
+    val startDate = Calendar.getInstance()
+    startDate.set(2023, Calendar.JANUARY, 1)
+    val endDate = Calendar.getInstance()
+    val options = mutableListOf<String>()
+    val currentDate = startDate.clone() as Calendar
+
+    while (currentDate.before(endDate) || currentDate == endDate) {
+        val halfYear = if (currentDate.get(Calendar.MONTH) < Calendar.JUNE) "상반기" else "하반기"
+        options.add("${currentDate.get(Calendar.YEAR)}년 $halfYear")
+        if (currentDate.get(Calendar.MONTH) < Calendar.JUNE) {
+            currentDate.set(currentDate.get(Calendar.YEAR), Calendar.JULY, 1)
+        } else {
+            currentDate.set(currentDate.get(Calendar.YEAR) + 1, Calendar.JANUARY, 1)
+        }
+    }
+
+    options[options.lastIndex] += "(현재)"
+
+    return options
 }

@@ -1,7 +1,6 @@
 import base64
 import io
 from fastapi import APIRouter, WebSocket, Depends, UploadFile, File, Form
-from fastapi.responses import JSONResponse
 import os
 from pydantic import BaseModel
 from typing import List
@@ -10,8 +9,6 @@ from sqlalchemy.orm import Session
 import datetime
 from db.db_connection import get_db
 from db.models import Accident
-from io import BytesIO
-from PIL import Image
 
 router = APIRouter(prefix="/accident")
 
@@ -62,28 +59,31 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
     return 200
 
 
-# @router.post("/upload_image")
-# async def upload_image(file: UploadFile = File(...)):
-#     try:
-#         # 파일을 업로드할 경로 설정
-#         save_path = "./accident/uploaded_images/"
-
-#         if not os.path.exists(save_path):
-#             os.makedirs(save_path)
-
-#         # 이미지 파일을 서버에 저장
-#         file_path = os.path.join(save_path, file.filename)
-#         with open(file_path, "wb") as f:
-#             f.write(await file.read())
-
-#         # 성공적으로 저장되었다는 응답 반환
-#         return JSONResponse(content={"message": "File uploaded successfully", "filename": file.filename})
-#     except Exception as e:
-#         # 오류 발생 시 오류 메시지 반환
-#         return JSONResponse(content={"message": str(e)}, status_code=500)
-
-
 @router.post("/upload_image")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        # 이미지를 저장할 디렉토리 경로 설정
+        save_path = "./accident/uploaded_images/"
+
+        # 저장할 디렉토리가 존재하지 않는 경우 생성
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        # 파일 경로 설정
+        file_path = os.path.join(save_path, file.filename)
+
+        # 이미지 파일을 서버에 저장
+        with open(file_path, "wb") as image_file:
+            image_file.write(await file.read())
+
+        # 성공적으로 저장되었다는 응답 반환
+        return {"message": "File uploaded successfully", "filename": file.filename}
+    except Exception as e:
+        # 오류 발생 시 오류 메시지 반환
+        return {"message": str(e)}
+
+'''
+@router.post("/upload_image_encoding")
 async def upload_image(file: UploadFile = File(...)):
     try:
         # 파일을 업로드할 경로 설정
@@ -104,7 +104,7 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         # 오류 발생 시 오류 메시지 반환
         return JSONResponse(content={"message": str(e)}, status_code=500)
-
+'''
 
 manager = ConnectionManager()
 

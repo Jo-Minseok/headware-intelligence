@@ -1,5 +1,5 @@
 from db.db_connection import Base
-from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Double, Time, Float, ForeignKey, Date
+from sqlalchemy import CheckConstraint, Column, BigInteger, VARCHAR, Double, Time, ForeignKey, Date
 from sqlalchemy.orm import relationship
 
 

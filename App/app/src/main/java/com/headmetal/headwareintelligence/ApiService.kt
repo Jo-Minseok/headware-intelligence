@@ -92,6 +92,6 @@ interface ApiService {
         @Path("situation") situation: String
     ): Call<Void>
 
-//    @GET("/company/list")
-//    fun getCompanyList():Call<CompanyListResponse>
+    @GET("/company/list")
+    fun getCompanyList():Call<CompanyListResponse>
 }

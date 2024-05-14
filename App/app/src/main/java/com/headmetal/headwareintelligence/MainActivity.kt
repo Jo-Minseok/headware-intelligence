@@ -25,7 +25,6 @@ import android.Manifest
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET), 0)
         // 알림 토큰 생성
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task->
             if(!task.isSuccessful){

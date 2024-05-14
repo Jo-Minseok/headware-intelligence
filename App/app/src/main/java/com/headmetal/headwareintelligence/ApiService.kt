@@ -79,9 +79,8 @@ interface ApiService {
     @GET("/company/list")
     fun getCompanyList():Call<CompanyList>
 
-    @GET("/accident/processing")
-    suspend fun getAllAccidentProcessingData(): AllAccidentProcessingResponse
-
-    @GET("/accident/malfunction")
-    suspend fun getAllAccidentProcessingMalfunctionData(): AllAccidentProcessingMalfunctionResponse
+    @GET("/accident/processing/{situationCode}")
+    suspend fun getAllAccidentProcessingData(
+        @Path("situationCode") situationCode: String
+    ): AllAccidentProcessingResponse
 }

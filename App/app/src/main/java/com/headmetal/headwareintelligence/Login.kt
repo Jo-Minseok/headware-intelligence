@@ -56,6 +56,7 @@ import retrofit2.http.POST
 // 서버로부터 받는 로그인 응답 데이터 모델 정의
 data class LoginResponse(
     val id: String,
+    val name:String,
     val access_token: String,
     val token_type: String
 )
@@ -70,6 +71,7 @@ fun performLogin(username: String, password: String, isManager: Boolean, navCont
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             if (response.isSuccessful) {
                 autoLoginEdit.putString("userid",response.body()?.id)
+                autoLoginEdit.putString("name",response.body()?.name)
                 autoLoginEdit.putString("token",response.body()?.access_token)
                 autoLoginEdit.putString("token_type",response.body()?.token_type)
                 autoLoginEdit.apply()

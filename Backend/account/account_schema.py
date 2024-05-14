@@ -5,6 +5,7 @@ from pydantic_core.core_schema import FieldValidationInfo
 # 근로자 로그인 스키마
 class Employee_Login(BaseModel):
     id: str
+    name: str
     access_token: str
     token_type: str
 
@@ -35,6 +36,7 @@ class Employee_Create(BaseModel):
 # 관리자 로그인 스키마
 class Manager_Login(BaseModel):
     id: str
+    name: str
     access_token: str
     token_type: str
 

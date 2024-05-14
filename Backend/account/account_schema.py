@@ -8,6 +8,7 @@ class Employee_Login(BaseModel):
     name: str
     access_token: str
     token_type: str
+    type: str
 
 
 # 근로자 계정 생성 스키마
@@ -39,6 +40,7 @@ class Manager_Login(BaseModel):
     name: str
     access_token: str
     token_type: str
+    type: str
 
 
 # 관리자 계정 생성 스키마

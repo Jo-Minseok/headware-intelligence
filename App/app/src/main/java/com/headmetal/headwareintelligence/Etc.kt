@@ -156,7 +156,7 @@ fun Etc(navController: NavController) {
                                 title = { Text(text = "Developers") },
                                 text = {
                                     Column {
-                                        Text(text = "조민석 (PM, APP, BE, HW")
+                                        Text(text = "조민석 (PM, APP, BE, HW)")
                                         HyperlinkText("https://github.com/Jo-Minseok") { uriHandler.openUri("https://github.com/Jo-Minseok") }
                                         Text(text = "")
                                         Text(text = "전진호 (BE, APP)")

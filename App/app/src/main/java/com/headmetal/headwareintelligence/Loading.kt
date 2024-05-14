@@ -1,14 +1,8 @@
 package com.headmetal.headwareintelligence
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.os.Build
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,17 +17,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 @Composable
 fun Loading(navController: NavController) {
     var autoLogin by remember { mutableStateOf(false) }
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val context = LocalContext.current
+    val auto: SharedPreferences = context.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val userId = auto.getString("userid", null)
     val accessToken = auto.getString("token", null)
 
@@ -41,18 +42,12 @@ fun Loading(navController: NavController) {
         autoLogin = true
     }
 
-    var showDialog by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-    val permissionsToRequest = remember { mutableListOf<String>() }
-    val permissions = mutableListOf(
-        Manifest.permission.ACCESS_NETWORK_STATE,
+    val permissionsToRequest = mutableListOf<String>()
+    val permissions = mutableListOf<String>(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.INTERNET
+        Manifest.permission.POST_NOTIFICATIONS
     )
-
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
         permissions.add(Manifest.permission.BLUETOOTH)
         permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
@@ -62,17 +57,23 @@ fun Loading(navController: NavController) {
         permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
     }
 
-    val launcherMultiplePermissions = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissionsMap -> val areGranted = permissionsMap.values.reduce{acc,next -> acc && next}
-        if(areGranted){
-            Log.d("HEAD METAL","권한이 동의되었습니다.")
+    permissions.forEach { permission ->
+        if (ContextCompat.checkSelfPermission(LocalContext.current, permission) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(permission)
         }
-        else{
-            Log.d("HEAD METAL", "권한이 거부되었습니다.")
-        }
-
     }
+
+    if (permissionsToRequest.isNotEmpty()) {
+        ActivityCompat.requestPermissions(
+            LocalContext.current as Activity, permissionsToRequest.toTypedArray(),
+            MainActivity.REQUEST_PERMISSIONS_CODE
+        )
+        Log.d("HEAD METAL", "권한을 요청하였습니다.")
+    } else {
+        Log.d("HEAD METAL", "권한이 이미 존재합니다.")
+    }
+    
+    var showDialog by remember { mutableStateOf(false) }
 
     // 서버 상태 확인
     val apiService = RetrofitInstance.apiService

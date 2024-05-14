@@ -53,7 +53,7 @@ import java.util.Locale
 
 
 @Composable
-fun Main(modifier: Modifier = Modifier,
+fun Main(navController: NavController, modifier: Modifier = Modifier,
     interest: Int = 10,
     windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
     BackOnPressed()

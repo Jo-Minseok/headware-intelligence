@@ -100,19 +100,25 @@ fun NavigationGraph(navController: NavHostController) {
             Signup(navController)
         }
         composable("mainScreen") {
-            Main()
+            Main(navController)
         }
         composable("processingScreen") {
             Processing()
         }
         composable("menuScreen") {
-            Menu()
+            Menu(navController)
         }
         composable("findidScreen") {
             Findid(navController)
         }
         composable("findpwScreen") {
             Findpw(navController)
+        }
+        composable("etcScreen") {
+            Etc(navController)
+        }
+        composable("licenseScreen") {
+            License(navController)
         }
     }
 }

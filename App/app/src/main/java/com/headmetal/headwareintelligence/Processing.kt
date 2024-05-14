@@ -302,16 +302,16 @@ fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = rem
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ProcessingHistoryScreen(accidentProcessingViewModel: AllAccidentProcessingViewModel) {
-//    LaunchedEffect(Unit) {
-//        accidentProcessingViewModel.getAllAccidentProcessingData()
-//    }
-    CoroutineScope(Dispatchers.Main).launch {
-        LoadingState.show()
-        CoroutineScope(Dispatchers.IO).async {
-            accidentProcessingViewModel.getAllAccidentProcessingData()
-        }.await()
-        LoadingState.hide()
+    LaunchedEffect(Unit) {
+        accidentProcessingViewModel.getAllAccidentProcessingData()
     }
+//    CoroutineScope(Dispatchers.Main).launch {
+//        LoadingState.show()
+//        CoroutineScope(Dispatchers.IO).async {
+//            accidentProcessingViewModel.getAllAccidentProcessingData()
+//        }.await()
+//        LoadingState.hide()
+//    }
 
     val no by accidentProcessingViewModel.no
     val date by accidentProcessingViewModel.date
@@ -327,8 +327,36 @@ fun ProcessingHistoryScreen(accidentProcessingViewModel: AllAccidentProcessingVi
 
     val itemList = mutableListOf<Item>()
 
+    println(no.size)
+
     for (i in no.indices) {
-        itemList.add(Item(no[i], date[i], time[i], latitude[i], longitude[i], category[i], victim[i], situation[i], processingDate[i], processingTime[i], detail[i]))
+        println(no[i])
+        println(date[i])
+        println(time[i])
+        println(latitude[i])
+        println(longitude[i])
+        println(category[i])
+        println(victim[i])
+        println(situation[i])
+        println(processingDate[i])
+        println(processingTime[i])
+        println(detail[i])
+        val item = Item(
+            no = no[i],
+            date = date[i],
+            time = time[i],
+            latitude = latitude[i],
+            longitude = longitude[i],
+            category = category[i],
+            victim = victim[i],
+            situation = situation[i],
+            processingDate = processingDate[i],
+            processingTime = processingTime[i],
+            detail = detail[i]
+        )
+        println(item.no)
+        Thread.sleep(5000)
+        itemList.add(item)
         println(no[i])
     }
 
@@ -349,7 +377,7 @@ fun ProcessingHistoryScreen(accidentProcessingViewModel: AllAccidentProcessingVi
                 Column {
                     Row {
                         Text(
-                            text = "# 사건번호 {$item.no}", //사건 번호는 #2024040101 양식 날짜와 사건 발생 순의 번호
+                            text = "# 사건번호 {${item.no}}", //사건 번호는 #2024040101 양식 날짜와 사건 발생 순의 번호
                             fontSize = 16.sp,
                             modifier = Modifier.padding(start = 10.dp, top = 10.dp)
                         )

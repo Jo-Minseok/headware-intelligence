@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import android.bluetooth.BluetoothAdapter
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,10 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,18 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
-import androidx.compose.material.AlertDialog
-import androidx.compose.ui.window.Dialog
-import androidx.compose.material.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
@@ -48,8 +38,8 @@ import androidx.compose.ui.draw.alpha
 
 @Preview(showBackground = true)
 @Composable
-
 fun Helmet() {
+    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     var helmetid by remember {
         mutableStateOf("")
     }
@@ -60,6 +50,9 @@ fun Helmet() {
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(20.dp)
+                    .clickable{
+
+                    }
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -147,7 +140,9 @@ fun Helmet() {
                         
                         Row {
                             Button(
-                                onClick = {},
+                                onClick = {
+
+                                },
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                                 colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
                                 shape = RoundedCornerShape(8.dp)

@@ -53,6 +53,7 @@ def get_employee_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Ses
     # Employee_Login 스키마 반환
     return {
         "id": user_row.employee_id,
+        "name": user_row.name,
         "access_token": access_token,
         "token_type": "bearer"
     }

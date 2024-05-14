@@ -1,7 +1,6 @@
 package com.headmetal.headwareintelligence
 
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -79,4 +78,10 @@ interface ApiService {
 
     @GET("/company/list")
     fun getCompanyList():Call<CompanyList>
+
+    @GET("/accident/processing")
+    suspend fun getAllAccidentProcessingData(): AllAccidentProcessingResponse
+
+    @GET("/accident/malfunction")
+    suspend fun getAllAccidentProcessingMalfunctionData(): AllAccidentProcessingMalfunctionResponse
 }

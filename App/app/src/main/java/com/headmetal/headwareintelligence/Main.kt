@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -53,9 +56,9 @@ import java.util.Locale
 
 
 @Composable
-fun Main(navController: NavController, modifier: Modifier = Modifier,
-    interest: Int = 10,
-    windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
+fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val username = auto.getString("name", null)
     BackOnPressed()
     val interestColor = when {
         interest < 10 -> Color.Red
@@ -121,10 +124,11 @@ fun Main(navController: NavController, modifier: Modifier = Modifier,
 
         Column(modifier = Modifier.fillMaxSize()
             .verticalScroll(rememberScrollState())) {
-            Icon(
-                imageVector = Icons.Default.ArrowBackIosNew,
-                contentDescription = null,
-                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
+            Text(
+                text="안녕하세요 " + username + "님"
+            )
+            Text(
+                text = "오늘도 안전한 근무 되시길 바랍니다!"
             )
             Box(
                 modifier = Modifier

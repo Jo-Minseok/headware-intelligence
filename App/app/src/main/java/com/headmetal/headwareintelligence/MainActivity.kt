@@ -21,44 +21,44 @@ import com.google.firebase.messaging.Constants
 import com.google.firebase.messaging.FirebaseMessaging
 import com.headmetal.headwareintelligence.ui.theme.MyApplicationTheme
 import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
-
+    companion object{
+        const val REQUEST_PERMISSIONS_CODE = 1
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         // 알림 토큰 생성
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task->
-            if(!task.isSuccessful){
-                Log.w(Constants.MessageNotificationKeys.TAG,"Fetching FCM registration token failed", task.exception)
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(
+                    Constants.MessageNotificationKeys.TAG,
+                    "Fetching FCM registration token failed",
+                    task.exception
+                )
                 return@OnCompleteListener
             }
             val token = task.result
-            Log.d("FCM MESSAGE","token $token")
+            Log.d("FCM MESSAGE", "token $token")
         })
 
         super.onCreate(savedInstanceState)
         setContent {
-            MyApplicationTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFFF9F9F9)
+            val navController: NavHostController = rememberNavController()
+            var buttonsVisible = remember { mutableStateOf(true) }
+            Scaffold(
+                bottomBar = {
+                    BottomBar(
+                        navController = navController,
+                        state = buttonsVisible,
+                        modifier = Modifier
+                    )
+                }) { paddingValues ->
+                Box(
+                    modifier = Modifier.padding(paddingValues)
                 ) {
-                    val navController: NavHostController = rememberNavController()
-                    var buttonsVisible = remember { mutableStateOf(true) }
-
-                    Scaffold(
-                        bottomBar = {
-                            BottomBar(
-                                navController = navController,
-                                state = buttonsVisible,
-                                modifier = Modifier
-                            )
-                        }) { paddingValues ->
-                        Box(
-                            modifier = Modifier.padding(paddingValues)
-                        ) {
-                            NavigationGraph(navController = navController)
-                        }
-                    }
+                    NavigationGraph(navController = navController)
                 }
             }
         }

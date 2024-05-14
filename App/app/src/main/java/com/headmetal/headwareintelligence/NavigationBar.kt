@@ -1,8 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -15,15 +12,11 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.Navigation
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -100,19 +93,28 @@ fun NavigationGraph(navController: NavHostController) {
             Signup(navController)
         }
         composable("mainScreen") {
-            Main()
+            Main(navController)
         }
         composable("processingScreen") {
             Processing()
         }
         composable("menuScreen") {
-            Menu()
+            Menu(navController)
         }
         composable("findidScreen") {
             Findid(navController)
         }
         composable("findpwScreen") {
             Findpw(navController)
+        }
+        composable("etcScreen") {
+            Etc(navController)
+        }
+        composable("licenseScreen") {
+            License(navController)
+        }
+        composable("helmetScreen") {
+            Helmet(navController)
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.headmetal.headwareintelligence
 
 import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -27,13 +26,13 @@ interface ApiService {
 
     @POST("/register/employee")
     fun registerEmployee(
-        @Body requestBody: RegisterEmployeeResponse
-    ): Call<RegisterEmployeeResponse>
+        @Body requestBody: RegisterResponse
+    ): Call<RegisterResponse>
 
     @POST("/register/manager")
     fun registerManager(
-        @Body requestBody: RegisterManagerResponse
-    ): Call<RegisterManagerResponse>
+        @Body requestBody: RegisterResponse
+    ): Call<RegisterResponse>
 
     @POST("/forgot/employee/id")
     fun findemployeeId(
@@ -79,4 +78,9 @@ interface ApiService {
 
     @GET("/company/list")
     fun getCompanyList():Call<CompanyList>
+
+    @GET("/accident/processing/{situationCode}")
+    suspend fun getAllAccidentProcessingData(
+        @Path("situationCode") situationCode: String
+    ): AllAccidentProcessingResponse
 }

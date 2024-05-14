@@ -2,11 +2,9 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -41,17 +39,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.Constants.MessageNotificationKeys.TAG
-import com.google.firebase.messaging.FirebaseMessaging
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.POST
 
 // 서버로부터 받는 로그인 응답 데이터 모델 정의
 data class LoginResponse(
@@ -87,6 +77,22 @@ fun performLogin(username: String, password: String, isManager: Boolean, navCont
             Log.e("HEAD METAL","서버 통신 실패: ${t.message}")
         }
     })
+}
+
+fun showLoginFailedDialog(navController: NavController, pwState: MutableState<String>) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("로그인 실패")
+    builder.setMessage("아이디나 비밀번호를 확인하세요")
+
+    // 확인 버튼 설정
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+        pwState.value = ""
+    }
+
+    // 다이얼로그 표시
+    val dialog = builder.create()
+    dialog.show()
 }
 
 @Composable
@@ -266,20 +272,4 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
             )
         }
     }
-}
-
-fun showLoginFailedDialog(navController: NavController, pwState: MutableState<String>) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("로그인 실패")
-    builder.setMessage("아이디나 비밀번호를 확인하세요")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-        pwState.value = ""
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
 }

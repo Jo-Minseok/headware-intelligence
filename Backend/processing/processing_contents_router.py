@@ -23,8 +23,8 @@ def processing_data(db: Session = Depends(get_db), sit: str = Path(...)):
     category = []
     victim = []
     situation = []
-    processing_date = []
-    processing_time = []
+    processingDate = []
+    processingTime = []
     detail = []
     for accidentProcessing in accidentProcessings:
         accident = processing_contents_crud.get_accident(db=db, no=accidentProcessing.no)
@@ -36,8 +36,8 @@ def processing_data(db: Session = Depends(get_db), sit: str = Path(...)):
         category.append(accident.category)
         victim.append(processing_contents_crud.get_victim_name(db=db, no=accidentProcessing.no))
         situation.append(accidentProcessing.situation)
-        processing_date.append(accidentProcessing.date)
-        processing_time.append(accidentProcessing.time)
+        processingDate.append(accidentProcessing.date)
+        processingTime.append(accidentProcessing.time)
         detail.append(accidentProcessing.detail)
     
     # 결과 반환
@@ -50,7 +50,7 @@ def processing_data(db: Session = Depends(get_db), sit: str = Path(...)):
         'category' : category, 
         'victim' : victim, 
         'situation' : situation, 
-        'processing_date' : processing_date, 
-        'processing_time' : processing_time, 
+        'processingDate' : processingDate, 
+        'processingTime' : processingTime, 
         'detail' : detail
     }

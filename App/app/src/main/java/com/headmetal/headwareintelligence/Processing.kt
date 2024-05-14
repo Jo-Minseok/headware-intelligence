@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Tab
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -47,7 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.patrykandpatrick.vico.core.extension.mutableListOf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 data class AllAccidentProcessingResponse(
@@ -130,9 +134,66 @@ class AllAccidentProcessingViewModel : ViewModel() {
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
-    fun getAllAccidentProcessingData(situation: String) {
+    fun getAllAccidentProcessingData() {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getAllAccidentProcessingData(situation)
+            val response = apiService.getAllAccidentProcessingData()
+            _no.value = response.no
+            _date.value = response.date
+            _time.value = response.time
+            _latitude.value = response.latitude
+            _longitude.value = response.longitude
+            _category.value = response.category
+            _victim.value = response.victim
+            _situation.value = response.situation
+            _processingDate.value = response.processingDate
+            _processingTime.value = response.processingTime
+            _detail.value = response.detail
+            state = !state // 모든 데이터를 수신한 뒤 상태를 전환
+        }
+    }
+}
+
+class AllAccidentProcessingMalfunctionViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    private val _no = mutableStateOf<List<Int>>(emptyList())
+    val no: State<List<Int>> = _no
+
+    private val _date = mutableStateOf<List<String>>(emptyList())
+    val date: State<List<String>> = _date
+
+    private val _time = mutableStateOf<List<String>>(emptyList())
+    val time: State<List<String>> = _time
+
+    private val _latitude = mutableStateOf<List<Double>>(emptyList())
+    val latitude: State<List<Double>> = _latitude
+
+    private val _longitude = mutableStateOf<List<Double>>(emptyList())
+    val longitude: State<List<Double>> = _longitude
+
+    private val _category = mutableStateOf<List<String>>(emptyList())
+    val category: State<List<String>> = _category
+
+    private val _victim = mutableStateOf<List<String>>(emptyList())
+    val victim: State<List<String>> = _victim
+
+    private val _situation = mutableStateOf<List<String>>(emptyList())
+    val situation: State<List<String>> = _situation
+
+    private val _processingDate = mutableStateOf<List<String>>(emptyList())
+    val processingDate: State<List<String>> = _processingDate
+
+    private val _processingTime = mutableStateOf<List<String>>(emptyList())
+    val processingTime: State<List<String>> = _processingTime
+
+    private val _detail = mutableStateOf<List<String>>(emptyList())
+    val detail: State<List<String>> = _detail
+
+    var state: Boolean = false // 데이터 수신 상태 확인
+
+    fun getAllAccidentProcessingMalfunctionData() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = apiService.getAllAccidentProcessingMalfunctionData()
             _no.value = response.no
             _date.value = response.date
             _time.value = response.time
@@ -151,7 +212,7 @@ class AllAccidentProcessingViewModel : ViewModel() {
 
 @Preview(showBackground = true)
 @Composable
-fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
+fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }, accidentProcessingMalfunctionViewModel: AllAccidentProcessingMalfunctionViewModel = remember { AllAccidentProcessingMalfunctionViewModel() }) {
     var searchText by remember { mutableStateOf("") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
@@ -230,7 +291,7 @@ fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = rem
             }
             Box(modifier = Modifier.weight(1f)) {
                 when (selectedTabIndex) {
-                    0 -> ProcessingHistoryScreen(accidentProcessingViewModel, "etc")
+                    0 -> ProcessingHistoryScreen(accidentProcessingViewModel)
                     1 -> MalfunctionHistoryScreen()
                 }
             }
@@ -240,18 +301,14 @@ fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = rem
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun ProcessingHistoryScreen(
-    accidentProcessingViewModel: AllAccidentProcessingViewModel,
-    s: String
-) {
+fun ProcessingHistoryScreen(accidentProcessingViewModel: AllAccidentProcessingViewModel) {
     LaunchedEffect(Unit) {
-        accidentProcessingViewModel.getAllAccidentProcessingData(s)
+        accidentProcessingViewModel.getAllAccidentProcessingData()
     }
-
 //    CoroutineScope(Dispatchers.Main).launch {
 //        LoadingState.show()
 //        CoroutineScope(Dispatchers.IO).async {
-//            accidentProcessingViewModel.getAllAccidentProcessingData(situation)
+//            accidentProcessingViewModel.getAllAccidentProcessingData()
 //        }.await()
 //        LoadingState.hide()
 //    }
@@ -269,6 +326,8 @@ fun ProcessingHistoryScreen(
     val detail by accidentProcessingViewModel.detail
 
     val itemList = mutableListOf<Item>()
+
+    println(no.size)
 
     for (i in no.indices) {
         println(no[i])

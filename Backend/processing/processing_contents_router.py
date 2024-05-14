@@ -7,12 +7,8 @@ router = APIRouter(prefix='/accident')
 
 @router.get('/processing/{situationCode}')
 def processing_data(db: Session = Depends(get_db), situationCode: str = Path(...)):
-    if {'0' : '처리 완료', '1' : '처리 중', '2' : '오작동', '3' : '119 신고'}[situationCode] != '오작동':
-        # 사고 처리 데이터 조회(처리 완료, 처리 중, 119 신고)
-        accidentProcessings = processing_contents_crud.get_accident_processing(db=db)
-    else:
-        # 사고 처리 데이터 조회(오작동)
-        accidentProcessings = processing_contents_crud.get_accident_processing_malfunction(db=db)
+    # 사고 처리 데이터 조회
+    accidents = processing_contents_crud.get_all_accident_processing(db=db, situationCode=situationCode)
     
     # 사고 처리 데이터 처리
     no = []
@@ -21,24 +17,23 @@ def processing_data(db: Session = Depends(get_db), situationCode: str = Path(...
     latitude = []
     longitude = []
     category = []
-    victim = []
+    victimName = []
     situation = []
     processingDate = []
     processingTime = []
     detail = []
-    for accidentProcessing in accidentProcessings:
-        accident = processing_contents_crud.get_accident(db=db, no=accidentProcessing.no)
+    for accident in accidents:
         no.append(accident.no)
         date.append(accident.date)
         time.append(accident.time)
         latitude.append(accident.latitude)
         longitude.append(accident.longitude)
         category.append(accident.category)
-        victim.append(processing_contents_crud.get_victim_name(db=db, no=accidentProcessing.no))
-        situation.append(accidentProcessing.situation)
-        processingDate.append(accidentProcessing.date)
-        processingTime.append(accidentProcessing.time)
-        detail.append(accidentProcessing.detail)
+        victimName.append(accident.name)
+        situation.append(accident.situation)
+        processingDate.append(accident.date)
+        processingTime.append(accident.time)
+        detail.append(accident.detail)
     
     # 결과 반환
     return {
@@ -48,7 +43,7 @@ def processing_data(db: Session = Depends(get_db), situationCode: str = Path(...
         'latitude' : latitude, 
         'longitude' : longitude,
         'category' : category, 
-        'victim' : victim, 
+        'victimName' : victimName, 
         'situation' : situation, 
         'processingDate' : processingDate, 
         'processingTime' : processingTime, 

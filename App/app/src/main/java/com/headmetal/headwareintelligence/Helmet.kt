@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Surface
@@ -39,7 +40,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @Composable
 fun Helmet(navController: NavController) {
@@ -48,9 +48,28 @@ fun Helmet(navController: NavController) {
     var helmetid by remember {
         mutableStateOf("")
     }
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (mBluetoothAdapter == null) {
+        // Bluetooth가 지원되지 않을 경우 다이얼로그를 표시
+        showDialog = true
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
-        
+        if (showDialog) {
+            // 다이얼로그 표시
+            AlertDialog.Builder(LocalContext.current)
+                .setTitle("오류")
+                .setMessage("설명")
+                .setPositiveButton("확인") { dialog, which ->
+                    // 긍정 버튼 클릭 동작 처리
+                }
+                .setNegativeButton("취소") { dialog, which ->
+                    // 부정 버튼 클릭 동작 처리
+                }
+                .show()
+        }
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,

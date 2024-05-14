@@ -43,22 +43,13 @@ import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-data class RegisterEmployeeResponse(
+data class RegisterResponse(
     val id: String,
     val password: String,
     val re_password: String,
     val name: String,
     val email: String,
     val phone_no: String,
-    val company: String?
-)
-
-data class RegisterManagerResponse(
-    val id: String,
-    val password: String,
-    val re_password: String,
-    val name: String,
-    val email: String,
     val company: String?
 )
 
@@ -76,7 +67,7 @@ fun performSignup(id: String, password: String, re_password: String, name: Strin
     }
     val companyToSend = if(company=="없음") null else company
     if (isManager) {
-        performManagerSignup(id, password, re_password, name, email, companyToSend, navController)
+        performManagerSignup(id, password, re_password, name, email, phone_no, companyToSend, navController)
     } else {
         performEmployeeSignup(id, password, re_password, name, email, phone_no, companyToSend, navController)
     }
@@ -98,15 +89,15 @@ private fun showPasswordMismatchDialog(navController: NavController) {
 
 // 관리자 회원가입 함수
 private fun performManagerSignup(id: String, password: String, re_password: String, name: String,
-    email: String, company: String?, navController: NavController
+    email: String, phone_no:String, company: String?, navController: NavController
 ) {
     val apiService = RetrofitInstance.apiService
     val call = apiService.registerManager(
-        RegisterManagerResponse(id, password, re_password, name, email, company)
+        RegisterResponse(id, password, re_password, name, email, phone_no,company)
     )
-    call.enqueue(object : Callback<RegisterManagerResponse>
+    call.enqueue(object : Callback<RegisterResponse>
     {
-        override fun onResponse(call: Call<RegisterManagerResponse>, response: Response<RegisterManagerResponse>
+        override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>
         ) {
             if (response.isSuccessful) {
                 // 회원 가입 성공 시
@@ -117,7 +108,7 @@ private fun performManagerSignup(id: String, password: String, re_password: Stri
             }
         }
 
-        override fun onFailure(call: Call<RegisterManagerResponse>
+        override fun onFailure(call: Call<RegisterResponse>
                                , t: Throwable) {
             // 통신 실패 시 처리할 코드
             Log.e("HEAD METAL", t.message.toString())
@@ -131,10 +122,10 @@ private fun performEmployeeSignup(id: String, password: String, re_password: Str
 ) {
     val apiService = RetrofitInstance.apiService
     val call = apiService.registerEmployee(
-        RegisterEmployeeResponse(id, password, re_password, name, email, phone_no, company)
+        RegisterResponse(id, password, re_password, name, email, phone_no, company)
     )
-    call.enqueue(object : Callback<RegisterEmployeeResponse> {
-        override fun onResponse(call: Call<RegisterEmployeeResponse>, response: Response<RegisterEmployeeResponse>) {
+    call.enqueue(object : Callback<RegisterResponse> {
+        override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
             if (response.isSuccessful) {
                 // 회원 가입 성공 시
                 showSignupSuccessDialog(navController)
@@ -144,38 +135,45 @@ private fun performEmployeeSignup(id: String, password: String, re_password: Str
             }
         }
 
-        override fun onFailure(call: Call<RegisterEmployeeResponse>, t: Throwable) {
+        override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
             // 통신 실패 시 처리할 코드
             println("서버 통신 실패: ${t.message}")
         }
     })
 }
 
-//private fun showIdDuplicateDialog(navController: NavController) {
-//    val builder = AlertDialog.Builder(navController.context)
-//    builder.setTitle("아이디 중복")
-//    builder.setMessage("이미 사용 중인 아이디입니다.")
-//
-//    builder.setPositiveButton("확인") { dialog, _ ->
-//        dialog.dismiss()
-//    }
-//
-//    val dialog = builder.create()
-//    dialog.show()
-//}
-//
-//private fun showEmailDuplicateDialog(navController: NavController) {
-//    val builder = AlertDialog.Builder(navController.context)
-//    builder.setTitle("이메일 중복")
-//    builder.setMessage("이미 사용 중인 이메일입니다.")
-//
-//    builder.setPositiveButton("확인") { dialog, _ ->
-//        dialog.dismiss()
-//    }
-//
-//    val dialog = builder.create()
-//    dialog.show()
-//}
+//회원가입 실패 다이얼로그
+fun showSignupFailedDialog(navController: NavController) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("회원가입 실패")
+    builder.setMessage("이미 존재하는 회원 또는 잘못된 정보입니다.")
+
+    // 확인 버튼 설정
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+    }
+
+    // 다이얼로그 표시
+    val dialog = builder.create()
+    dialog.show()
+}
+
+// 회원가입 성공 다이얼로그
+fun showSignupSuccessDialog(navController: NavController) {
+    val builder = AlertDialog.Builder(navController.context)
+    builder.setTitle("회원가입 성공")
+    builder.setMessage("로그인 화면으로 이동합니다.")
+
+    // 확인 버튼 설정
+    builder.setPositiveButton("확인") { dialog, _ ->
+        dialog.dismiss()
+        navController.navigate("loginScreen")
+    }
+
+    // 다이얼로그 표시
+    val dialog = builder.create()
+    dialog.show()
+}
 
 // 회원가입 화면
 @Composable
@@ -484,37 +482,4 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
             }
         }
     }
-}
-
-//회원가입 실패 다이얼로그
-fun showSignupFailedDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("회원가입 실패")
-    builder.setMessage("이미 존재하는 회원 또는 잘못된 정보입니다.")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
-}
-
-// 회원가입 성공 다이얼로그
-fun showSignupSuccessDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("회원가입 성공")
-    builder.setMessage("로그인 화면으로 이동합니다.")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-        navController.navigate("loginScreen")
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
 }

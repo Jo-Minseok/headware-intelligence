@@ -26,13 +26,13 @@ interface ApiService {
 
     @POST("/register/employee")
     fun registerEmployee(
-        @Body requestBody: RegisterEmployeeResponse
-    ): Call<RegisterEmployeeResponse>
+        @Body requestBody: RegisterResponse
+    ): Call<RegisterResponse>
 
     @POST("/register/manager")
     fun registerManager(
-        @Body requestBody: RegisterManagerResponse
-    ): Call<RegisterManagerResponse>
+        @Body requestBody: RegisterResponse
+    ): Call<RegisterResponse>
 
     @POST("/forgot/employee/id")
     fun findemployeeId(

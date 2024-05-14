@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -54,7 +55,6 @@ interface ApiService {
         @Body userManager: ForgotPw
     ): Call<ForgotPw>
 
-
     @GET("/trend/{start}/{end}")
     suspend fun getTrendData(
         @Path("start") start: String,
@@ -73,8 +73,9 @@ interface ApiService {
     @PUT("/map/marker/{no}/{situationCode}")
     fun updateAccidentSituation(
         @Path("no") no: Int,
-        @Path("situation") situation: String
-    ): Call<Void>
+        @Path("situationCode") situationCode: String,
+        @Body requestBody: AccidentProcessingUpdateRequest
+    ): Call<AccidentProcessingUpdateRequest>
 
     @GET("/company/list")
     fun getCompanyList():Call<CompanyList>

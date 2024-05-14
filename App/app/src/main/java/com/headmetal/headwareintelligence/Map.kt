@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,27 +78,25 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-data class LocationResponse(
-    val no: List<Int>,
-    val latitude: List<Double>,
-    val longitude: List<Double>,
-    val processCode: List<Int>
-)
-
 data class AccidentResponse(
-    val no: Int,
-    val situation: String,
-    val date: String,
-    val time: String,
-    val detail: String,
-    val victim: String
+    val no: List<Int>, // 사고 번호 리스트
+    val latitude: List<Double>, // 위도 리스트
+    val longitude: List<Double>, // 경도 리스트
+    val situationCode: List<Int> // 처리 상황 코드 리스트
 )
 
-data class AccidentUpdateRequest(
-    val detail: String
+data class AccidentProcessingResponse(
+    val no: Int, // 사고 번호
+    val situation: String, // 처리 상황
+    val detail: String, // 사고 처리 세부 내역
+    val victim: String // 사고자 이름
 )
 
-class LocationViewModel : ViewModel() {
+data class AccidentProcessingUpdateRequest(
+    val detail: String // 사고 처리 세부 내역
+)
+
+class AccidentViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
     private val _no = mutableStateOf<List<Int>>(emptyList())
@@ -109,38 +108,29 @@ class LocationViewModel : ViewModel() {
     private val _longitude = mutableStateOf<List<Double>>(emptyList())
     val longitude: State<List<Double>> = _longitude
 
-    private val _processCode = mutableStateOf<List<Int>>(emptyList())
-    val processCode: State<List<Int>> = _processCode
+    private val _situationCode = mutableStateOf<List<Int>>(emptyList())
+    val situationCode: State<List<Int>> = _situationCode
 
-    fun getLocationData() {
+    var state: Boolean = false // 데이터 수신 상태 확인
+
+    fun getAccidentData() {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getLocationData()
+            val response = apiService.getAccidentData()
             _no.value = response.no
             _latitude.value = response.latitude
             _longitude.value = response.longitude
-            _processCode.value = response.processCode
+            _situationCode.value = response.situationCode
+            state = !state // 모든 데이터를 수신한 뒤 상태를 전환
         }
-    }
-
-    fun emptyData(): Boolean {
-        return no.value.isEmpty() || latitude.value.isEmpty() || longitude.value.isEmpty() || processCode.value.isEmpty()
     }
 }
 
-class AccidentViewModel : ViewModel() {
+class AccidentProcessingViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
     private val _no = mutableStateOf<Int?>(null)
-    private val no: State<Int?> = _no
 
     private val _situation = mutableStateOf<String?>(null)
-    private val situation: State<String?> = _situation
-
-    private val _date = mutableStateOf<String?>(null)
-    private val date: State<String?> = _date
-
-    private val _time = mutableStateOf<String?>(null)
-    private val time: State<String?> = _time
 
     private val _detail = mutableStateOf<String?>(null)
     val detail: State<String?> = _detail
@@ -148,57 +138,33 @@ class AccidentViewModel : ViewModel() {
     private val _victim = mutableStateOf<String?>(null)
     val victim: State<String?> = _victim
 
-    var state: Boolean = true
+    var state: Boolean = false // 데이터 수신 상태 확인
 
-    fun getAccidentData(no: Int) {
+    fun getAccidentProcessingData(no: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getAccidentData(no)
+            val response = apiService.getAccidentProcessingData(no)
             _no.value = response.no
             _situation.value = response.situation
-            _date.value = response.date
-            _time.value = response.time
             _detail.value = response.detail
             _victim.value = response.victim
-            state = !state
+            state = !state // 모든 데이터를 수신한 뒤 상태를 전환
         }
     }
-
-//    fun emptyData(): Boolean {
-//        return no.value == null || situation.value == null || date.value == null || time.value == null || detail.value == null || victim.value == null
-//    }
 }
 
-fun updateAccidentComplete(no: Int, detail: String) {
-    val call = RetrofitInstance.apiService.updateAccidentComplete(no, AccidentUpdateRequest(detail))
-    call.enqueue(object : Callback<AccidentUpdateRequest> {
-        override fun onResponse(call: Call<AccidentUpdateRequest>, response: Response<AccidentUpdateRequest>) {
+fun updateAccidentSituation(no: Int, situationCode: String, detail: String) {
+    val call = RetrofitInstance.apiService.updateAccidentSituation(no, situationCode, AccidentProcessingUpdateRequest(detail))
+    call.enqueue(object : Callback<AccidentProcessingUpdateRequest> {
+        override fun onResponse(call: Call<AccidentProcessingUpdateRequest>, response: Response<AccidentProcessingUpdateRequest>) {
             if (response.isSuccessful) {
-                println("사고 상황 업데이트 성공(완료)")
+                Log.i("HEAD METAL", "사고 상황 업데이트 성공")
             } else {
-                println(response.message())
-                println("서버에서 오류 응답을 받음")
+                Log.e("HEAD METAL", "서버에서 오류 응답을 받음")
             }
         }
 
-        override fun onFailure(call: Call<AccidentUpdateRequest>, t: Throwable) {
-            println("네트워크 오류 또는 예외 발생: ${t.message}")
-        }
-    })
-}
-
-fun updateAccidentSituation(no: Int, situation: String) {
-    val call = RetrofitInstance.apiService.updateAccidentSituation(no, situation)
-    call.enqueue(object : Callback<Void> {
-        override fun onResponse(call: Call<Void>, response: Response<Void>) {
-            if (response.isSuccessful) {
-                println("사고 상황 업데이트 성공")
-            } else {
-                println("서버에서 오류 응답을 받음")
-            }
-        }
-
-        override fun onFailure(call: Call<Void>, t: Throwable) {
-            println("네트워크 오류 또는 예외 발생: ${t.message}")
+        override fun onFailure(call: Call<AccidentProcessingUpdateRequest>, t: Throwable) {
+            Log.e("HEAD METAL", "네트워크 오류 또는 예외 발생: ${t.message}")
         }
     })
 }
@@ -207,7 +173,7 @@ fun updateAccidentSituation(no: Int, situation: String) {
 @Preview(showBackground = true)
 @Composable
 @ExperimentalNaverMapApi
-fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() }, accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }) {
+fun Map(accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }, accidentProcessingViewModel: AccidentProcessingViewModel = remember { AccidentProcessingViewModel() }) {
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val isDetailInputVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val isDetailPrintVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -216,10 +182,9 @@ fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() },
     val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
-        LoadingScreen()
         MapScreen(
-            locationViewModel,
             accidentViewModel,
+            accidentProcessingViewModel,
             isBottomSheetVisible,
             isDetailPrintVisible,
             accidentNo,
@@ -237,39 +202,9 @@ fun Map(locationViewModel: LocationViewModel = remember { LocationViewModel() },
 }
 
 @Composable
-fun LoadingScreen() {
-    val isLoading = LoadingState.isLoading.collectAsState().value
-
-    if (isLoading) {
-        Dialog(
-            onDismissRequest = { LoadingState.hide() },
-            properties = DialogProperties(
-                dismissOnClickOutside = false,
-                dismissOnBackPress = false
-            )
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-}
-
-object LoadingState {
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    fun show() {
-        _isLoading.value = true
-    }
-
-    fun hide() {
-        _isLoading.value = false
-    }
-}
-
-@Composable
 fun MapScreen(
-    locationViewModel: LocationViewModel,
     accidentViewModel: AccidentViewModel,
+    accidentProcessingViewModel: AccidentProcessingViewModel,
     isBottomSheetVisible: MutableState<Boolean>,
     isDetailPrintVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
@@ -305,17 +240,14 @@ fun MapScreen(
                     CoroutineScope(Dispatchers.Main).launch {
                         LoadingState.show()
                         CoroutineScope(Dispatchers.IO).async {
-                            locationViewModel.getLocationData()
-                            while (locationViewModel.emptyData()) {
-                                //
-                            }
+                            accidentViewModel.getAccidentData()
                         }.await()
                         LoadingState.hide()
 
-                        val no by locationViewModel.no
-                        val latitude by locationViewModel.latitude
-                        val longitude by locationViewModel.longitude
-                        val processCode by locationViewModel.processCode
+                        val no by accidentViewModel.no
+                        val latitude by accidentViewModel.latitude
+                        val longitude by accidentViewModel.longitude
+                        val processCode by accidentViewModel.situationCode
 
                         // 초기 위치 설정(GPS 사용)
                         val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
@@ -360,23 +292,23 @@ fun MapScreen(
 
                                         LoadingState.show()
                                         CoroutineScope(Dispatchers.IO).async {
-                                            val state = accidentViewModel.state
-                                            accidentViewModel.getAccidentData(key.id)
-                                            while (state == accidentViewModel.state) {
+                                            val state = accidentProcessingViewModel.state
+                                            accidentProcessingViewModel.getAccidentProcessingData(key.id)
+                                            while (state == accidentProcessingViewModel.state) {
                                                 //
                                             }
                                         }.await()
                                         LoadingState.hide()
 
                                         if (code == 0) {
-                                            detail.value = accidentViewModel.detail.value.toString()
+                                            detail.value = accidentProcessingViewModel.detail.value.toString()
                                             println(key.id)
                                             println(detail.value)
-                                            println(accidentViewModel.detail.value.toString())
+                                            println(accidentProcessingViewModel.detail.value.toString())
                                             isDetailPrintVisible.value = true
                                         }
                                         else {
-                                            val victim by accidentViewModel.victim
+                                            val victim by accidentProcessingViewModel.victim
                                             victimName.value = victim.toString()
                                             selectedMarker.value = marker
                                             isBottomSheetVisible.value = true
@@ -503,7 +435,7 @@ fun BottomSheetScreen(
                     Button(
                         onClick = {
                             selectedMarker.value?.icon = MarkerIcons.YELLOW
-                            updateAccidentSituation(accidentNo.value, "처리 중")
+                            //updateAccidentSituation(accidentNo.value, "처리 중")
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
@@ -602,7 +534,7 @@ fun DetailInput(onClose: () -> Unit, accidentNo: MutableState<Int>) {
                     Row {
                         Button(onClick = {
                             println("작성 버튼 클릭")
-                            updateAccidentComplete(accidentNo.value, detail.value)
+                            //updateAccidentComplete(accidentNo.value, detail.value)
                             onClose()
                         }) {
                             Text(text = "작성")

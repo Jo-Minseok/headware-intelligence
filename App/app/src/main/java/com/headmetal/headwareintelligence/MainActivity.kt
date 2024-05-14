@@ -8,26 +8,24 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.Constants
 import com.google.firebase.messaging.FirebaseMessaging
 import com.headmetal.headwareintelligence.ui.theme.MyApplicationTheme
+import android.Manifest
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.INTERNET), 0)
         // 알림 토큰 생성
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task->
             if(!task.isSuccessful){
@@ -37,7 +35,6 @@ class MainActivity : ComponentActivity() {
             val token = task.result
             Log.d("FCM MESSAGE","token $token")
         })
-
 
         super.onCreate(savedInstanceState)
         setContent {

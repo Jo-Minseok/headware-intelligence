@@ -1,16 +1,21 @@
 package com.headmetal.headwareintelligence
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,41 +23,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
 
 @Composable
 fun Loading(navController: NavController) {
-    var autoLogin: Boolean = false
+    var autoLogin by remember { mutableStateOf(false) }
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val user_id = auto.getString("userid", null)
-    val access_token = auto.getString("token", null)
+    val userId = auto.getString("userid", null)
+    val accessToken = auto.getString("token", null)
 
-    if (user_id != null && access_token != null) {
+    if (userId != null && accessToken != null) {
         autoLogin = true
     }
 
     var showDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
 
+    val context = LocalContext.current
     val permissionsToRequest = remember { mutableListOf<String>() }
     val permissions = mutableListOf(
-        Manifest.permission.INTERNET,
         Manifest.permission.ACCESS_NETWORK_STATE,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.POST_NOTIFICATIONS
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.INTERNET
     )
 
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
@@ -64,25 +62,16 @@ fun Loading(navController: NavController) {
         permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
     }
 
-    // 권한 요청 런처 설정
-    val launcher = rememberLauncherForActivityResult(
+    val launcherMultiplePermissions = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        permissions.forEach { (permission, isGranted) ->
-            if (!isGranted) {
-                showDialog = true
-            }
+    ) { permissionsMap -> val areGranted = permissionsMap.values.reduce{acc,next -> acc && next}
+        if(areGranted){
+            Log.d("HEAD METAL","권한이 동의되었습니다.")
         }
-    }
+        else{
+            Log.d("HEAD METAL", "권한이 거부되었습니다.")
+        }
 
-    // 필요한 권한 확인 및 요청
-    permissions.forEach { permission ->
-        if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(permission)
-        }
-    }
-    if (permissionsToRequest.isNotEmpty()) {
-        launcher.launch(permissionsToRequest.toTypedArray())
     }
 
     // 서버 상태 확인

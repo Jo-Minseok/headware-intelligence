@@ -1,6 +1,9 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Button
@@ -35,16 +37,20 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-@Preview(showBackground = true)
 @Composable
-fun Helmet() {
+fun Helmet(navController: NavController) {
     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var helmetid by remember {
         mutableStateOf("")
     }
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
+        
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
@@ -102,7 +108,7 @@ fun Helmet() {
                             )
 
                             Text(// 로그인 정보 연동 작업자 ID 출력
-                                text = "gildong123",
+                                text = auto.getString("userid",null).toString(),
                                 color = Color.Black,
                                 fontSize = 16.sp
                             )
@@ -117,7 +123,7 @@ fun Helmet() {
                             )
 
                             Text(// 로그인 정보 연동 작업자 이름 출력
-                                text = "홍길동",
+                                text = auto.getString("name",null).toString(),
                                 color = Color.Black,
                                 fontSize = 16.sp
                             )

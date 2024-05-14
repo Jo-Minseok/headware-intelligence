@@ -252,7 +252,9 @@ fun Main(navController: NavController, modifier: Modifier = Modifier,
             )
 
             Button(
-                onClick = {},
+                onClick = {
+                    navController.navigate("helmetScreen")
+                },
                 modifier = Modifier.padding(horizontal = 16.dp),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                 colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),

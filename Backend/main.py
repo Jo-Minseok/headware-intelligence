@@ -9,6 +9,7 @@ from account import company_list
 from clustering import accident_clustering_router
 from marker import accident_marker_router
 from trend import accident_trend_router
+from processing import processing_contents_router
 from db import models
 from db.db_connection import engine
 
@@ -30,6 +31,7 @@ app.include_router(forgot_router.router)
 app.include_router(accident_clustering_router.router)
 app.include_router(accident_marker_router.router)
 app.include_router(accident_trend_router.router)
+app.include_router(processing_contents_router.router)
 app.include_router(accident_api.router)
 app.include_router(company_list.router)
 

@@ -55,7 +55,8 @@ def get_employee_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Ses
         "id": user_row.employee_id,
         "name": user_row.name,
         "access_token": access_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "type": "employee"
     }
 
 
@@ -86,5 +87,6 @@ def get_manager_login(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
         "id": user_row.manager_id,
         "name": user_row.name,
         "access_token": access_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "type": "manager"
     }

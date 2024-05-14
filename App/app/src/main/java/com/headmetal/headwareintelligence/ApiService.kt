@@ -83,4 +83,7 @@ interface ApiService {
     suspend fun getAllAccidentProcessingData(
         @Path("situationCode") situationCode: String
     ): AllAccidentProcessingResponse
+
+    @GET("/")
+    fun getStatus():Call<Void>
 }

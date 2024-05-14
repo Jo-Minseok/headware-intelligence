@@ -238,11 +238,11 @@ fun MapScreen(
             MapView(context).apply {
                 getMapAsync { map ->
                     CoroutineScope(Dispatchers.Main).launch {
-                        //LoadingState.show()
+                        LoadingState.show()
                         CoroutineScope(Dispatchers.IO).async {
                             accidentViewModel.getAccidentData()
                         }.await()
-                        //LoadingState.hide()
+                        LoadingState.hide()
 
                         val no by accidentViewModel.no
                         val latitude by accidentViewModel.latitude
@@ -290,7 +290,7 @@ fun MapScreen(
                                     CoroutineScope(Dispatchers.Main).launch {
                                         accidentNo.value = key.id
 
-                                        //LoadingState.show()
+                                        LoadingState.show()
                                         CoroutineScope(Dispatchers.IO).async {
                                             val state = accidentProcessingViewModel.state
                                             accidentProcessingViewModel.getAccidentProcessingData(key.id)
@@ -298,7 +298,7 @@ fun MapScreen(
                                                 //
                                             }
                                         }.await()
-                                        //LoadingState.hide()
+                                        LoadingState.hide()
 
                                         if (code == 0) {
                                             detail.value = accidentProcessingViewModel.detail.value.toString()

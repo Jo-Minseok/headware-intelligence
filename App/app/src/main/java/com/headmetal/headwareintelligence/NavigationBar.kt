@@ -84,7 +84,7 @@ sealed class Destinations(
 fun NavigationGraph(navController: NavHostController) {
     NavHost(navController, startDestination = "loadingScreen") {
         composable("loadingScreen") {
-            //Loading(navController)
+            Loading(navController)
         }
         composable("loginScreen") {
             Login(navController)

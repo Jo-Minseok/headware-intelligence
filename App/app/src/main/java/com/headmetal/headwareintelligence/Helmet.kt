@@ -39,10 +39,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 
+@Preview(showBackground = true)
 @Composable
-fun Helmet(navController: NavController) {
+fun Helmet() {
     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var helmetid by remember {
@@ -54,29 +56,26 @@ fun Helmet(navController: NavController) {
         // Bluetooth가 지원되지 않을 경우 다이얼로그를 표시
         showDialog = true
     }
+    if (showDialog) {
+        // 다이얼로그 표시
+        AlertDialog.Builder(LocalContext.current)
+            .setTitle("블루투스 연결 실패")
+            .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
+            .setPositiveButton("확인") { dialog, which ->
+                // 긍정 버튼 클릭 동작 처리
+            }
+            .show()
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
-        if (showDialog) {
-            // 다이얼로그 표시
-            AlertDialog.Builder(LocalContext.current)
-                .setTitle("오류")
-                .setMessage("설명")
-                .setPositiveButton("확인") { dialog, which ->
-                    // 긍정 버튼 클릭 동작 처리
-                }
-                .setNegativeButton("취소") { dialog, which ->
-                    // 부정 버튼 클릭 동작 처리
-                }
-                .show()
-        }
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(20.dp)
                     .clickable{
-
+//                        navController.navigate("mainScreen")
                     }
             )
             Row(

@@ -48,7 +48,8 @@ data class LoginResponse(
     val id: String,
     val name:String,
     val access_token: String,
-    val token_type: String
+    val token_type: String,
+    val type: String
 )
 
 fun performLogin(username: String, password: String, isManager: Boolean, navController: NavController, pwState: MutableState<String>,autoLoginEdit:SharedPreferences.Editor) {
@@ -64,6 +65,7 @@ fun performLogin(username: String, password: String, isManager: Boolean, navCont
                 autoLoginEdit.putString("name",response.body()?.name)
                 autoLoginEdit.putString("token",response.body()?.access_token)
                 autoLoginEdit.putString("token_type",response.body()?.token_type)
+                autoLoginEdit.putString("type",response.body()?.type)
                 autoLoginEdit.apply()
                 navController.navigate("mainScreen")
             }
@@ -93,24 +95,6 @@ fun showLoginFailedDialog(navController: NavController, pwState: MutableState<St
     // 다이얼로그 표시
     val dialog = builder.create()
     dialog.show()
-}
-
-@Composable
-fun BackOnPressed() {
-    val context = LocalContext.current
-    var backPressedState by remember { mutableStateOf(true) }
-    var backPressedTime = 0L
-
-    BackHandler(enabled = backPressedState) {
-        if(System.currentTimeMillis() - backPressedTime <= 400L) {
-            // 앱 종료
-            (context as Activity).finish()
-        } else {
-            backPressedState = true
-            Toast.makeText(context, "한 번 더 누르시면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
-        }
-        backPressedTime = System.currentTimeMillis()
-    }
 }
 
 @Composable

@@ -84,4 +84,7 @@ interface ApiService {
 
     @GET("/accident/malfunction")
     suspend fun getAllAccidentProcessingMalfunctionData(): AllAccidentProcessingMalfunctionResponse
+
+    @GET("/")
+    fun getStatus():Call<Void>
 }

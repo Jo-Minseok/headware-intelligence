@@ -2,7 +2,10 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.os.Bundle
 import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,79 +26,91 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import com.google.firebase.messaging.Constants
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-@Composable
-fun Loading(navController: NavController) {
-    var autoLogin:Boolean = false
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val user_id = auto.getString("userid",null)
-    val access_token = auto.getString("token",null)
-    Log.d("HEAD METAL",user_id.toString())
-    Log.d("HEAD METAL",access_token.toString())
-    if(user_id != null && access_token != null){
-        autoLogin = true
-    }
-    LaunchedEffect(true) {
-        LoadingState.show()
-        LoadingState.hide()
-        if(autoLogin){
-            navController.navigate("mainScreen")
-        }
-        else {
-            navController.navigate("loginScreen")
+
+class LoadingActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            Loading()
         }
     }
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9C94C)
-    ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+
+    @Composable
+    fun Loading() {
+        var autoLogin:Boolean = false
+        val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+        val user_id = auto.getString("userid",null)
+        val access_token = auto.getString("token",null)
+        Log.d("HEAD METAL",user_id.toString())
+        Log.d("HEAD METAL",access_token.toString())
+        if(user_id != null && access_token != null){
+            autoLogin = true
+        }
+        LaunchedEffect(true) {
+            LoadingState.show()
+            LoadingState.hide()
+//            if(autoLogin){
+//                navController.navigate("mainScreen")
+//            }
+//            else {
+//                navController.navigate("loginScreen")
+//            }
+        }
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFFF9C94C)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.helmet),
-                contentDescription = null
-            )
-            Text(
-                text = stringResource(id = R.string.app_name),
-                fontWeight = FontWeight.Bold
-            )
-            LoadingScreen()
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.helmet),
+                    contentDescription = null
+                )
+                Text(
+                    text = stringResource(id = R.string.app_name),
+                    fontWeight = FontWeight.Bold
+                )
+                LoadingScreen()
+            }
         }
     }
-}
 
-@Composable
-fun LoadingScreen() {
-    val isLoading = LoadingState.isLoading.collectAsState().value
+    @Composable
+    fun LoadingScreen() {
+        val isLoading = LoadingState.isLoading.collectAsState().value
 
-    if (isLoading) {
-        Dialog(
-            onDismissRequest = { LoadingState.hide() },
-            properties = DialogProperties(
-                dismissOnClickOutside = false,
-                dismissOnBackPress = false
-            )
-        ) {
-            CircularProgressIndicator()
+        if (isLoading) {
+            Dialog(
+                onDismissRequest = { LoadingState.hide() },
+                properties = DialogProperties(
+                    dismissOnClickOutside = false,
+                    dismissOnBackPress = false
+                )
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
-}
 
-object LoadingState {
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    object LoadingState {
+        private val _isLoading = MutableStateFlow(false)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    fun show() {
-        _isLoading.value = true
-    }
+        fun show() {
+            _isLoading.value = true
+        }
 
-    fun hide() {
-        _isLoading.value = false
+        fun hide() {
+            _isLoading.value = false
+        }
     }
 }

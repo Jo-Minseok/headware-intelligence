@@ -306,11 +306,11 @@ fun ProcessingHistoryScreen(accidentProcessingViewModel: AllAccidentProcessingVi
 //        accidentProcessingViewModel.getAllAccidentProcessingData()
 //    }
     CoroutineScope(Dispatchers.Main).launch {
-        LoadingState.show()
+        //LoadingState.show()
         CoroutineScope(Dispatchers.IO).async {
             accidentProcessingViewModel.getAllAccidentProcessingData()
         }.await()
-        LoadingState.hide()
+        //LoadingState.hide()
     }
 
     val no by accidentProcessingViewModel.no

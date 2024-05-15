@@ -197,10 +197,10 @@ fun Main(navController: NavController) {
                         }
 
                 }
-            } //여기서부터
+            }
             Box(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
+                    .padding()
                     .background(color = Color.White)
                     .clickable { navController.navigate("trendScreen") }
                     .border(

@@ -23,18 +23,15 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +48,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.naver.maps.geometry.LatLng
@@ -70,14 +66,13 @@ import com.naver.maps.map.util.MarkerIcons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// Accident 테이블의 데이터를 수신하는 데이터 클래스(Response)
 data class AccidentResponse(
     val no: List<Int>, // 사고 번호 리스트
     val latitude: List<Double>, // 위도 리스트
@@ -85,6 +80,7 @@ data class AccidentResponse(
     val situationCode: List<Int> // 처리 상황 코드 리스트
 )
 
+// Accident_Processing 테이블의 데이터를 수신하는 데이터 클래스(Response)
 data class AccidentProcessingResponse(
     val no: Int, // 사고 번호
     val situation: String, // 처리 상황
@@ -92,10 +88,12 @@ data class AccidentProcessingResponse(
     val victim: String // 사고자 이름
 )
 
+// Accident_Processing 테이블 데이터를 갱신하기 위한 데이터 클래스(Request)
 data class AccidentProcessingUpdateRequest(
     val detail: String // 사고 처리 세부 내역
 )
 
+// Accident 테이블의 뷰 모델
 class AccidentViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
@@ -125,6 +123,7 @@ class AccidentViewModel : ViewModel() {
     }
 }
 
+// Accident_Processing 테이블의 뷰 모델
 class AccidentProcessingViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
@@ -152,6 +151,21 @@ class AccidentProcessingViewModel : ViewModel() {
     }
 }
 
+// 클러스터에 사용할 아이템 키 클래스
+class ItemKey(val id: Int, private val position: LatLng = LatLng(0.0, 0.0)) : ClusteringKey {
+    override fun getPosition() = position
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val itemKey = other as ItemKey
+        return id == itemKey.id
+    }
+
+    override fun hashCode() = id
+}
+
+// Accident_Processing 테이블의 사고 상황과 세부 처리 내역 데이터를 업데이트
 fun updateAccidentSituation(no: Int, situationCode: String, detail: String) {
     val call = RetrofitInstance.apiService.updateAccidentSituation(no, situationCode, AccidentProcessingUpdateRequest(detail))
     call.enqueue(object : Callback<AccidentProcessingUpdateRequest> {
@@ -170,33 +184,42 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String) {
 }
 
 @SuppressLint("UnrememberedMutableState")
-@Preview(showBackground = true)
 @Composable
+@Preview(showBackground = true)
 @ExperimentalNaverMapApi
-fun Map(accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }, accidentProcessingViewModel: AccidentProcessingViewModel = remember { AccidentProcessingViewModel() }) {
-    val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val isDetailInputVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val isDetailPrintVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) }
-    val victimName: MutableState<String> = remember { mutableStateOf("") }
-    val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) }
+fun Map(
+    accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
+    accidentProcessingViewModel: AccidentProcessingViewModel = remember { AccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
+) {
+    val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
+    val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
+    val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
+    val cluster: MutableState<Clusterer<ItemKey>?> = remember { mutableStateOf(null) } // 클러스터
+    val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) } // 마지막으로 선택된 마커
+    val situationCode: MutableList<Int> = remember { mutableListOf() } // 처리 상황 코드 리스트
+    val situationCodeIdx: MutableState<Int> = remember { mutableIntStateOf(0) } // 처리 완료 등으로 처리 상황 코드 리스트 값의 갱신을 위한 인덱스(마지막으로 선택한 마커의 사고 번호에 해당하는 인덱스)
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
+    Surface(modifier = Modifier.fillMaxSize()) {
+        LoadingScreen()
         MapScreen(
             accidentViewModel,
             accidentProcessingViewModel,
             isBottomSheetVisible,
-            isDetailPrintVisible,
             accidentNo,
             victimName,
-            selectedMarker
+            cluster,
+            selectedMarker,
+            situationCode,
+            situationCodeIdx
         )
         BottomSheetScreen(
             isBottomSheetVisible,
-            isDetailInputVisible,
             accidentNo,
             victimName,
-            selectedMarker
+            cluster,
+            selectedMarker,
+            situationCode,
+            situationCodeIdx
         )
     }
 }
@@ -206,28 +229,24 @@ fun MapScreen(
     accidentViewModel: AccidentViewModel,
     accidentProcessingViewModel: AccidentProcessingViewModel,
     isBottomSheetVisible: MutableState<Boolean>,
-    isDetailPrintVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
     victimName: MutableState<String>,
-    selectedMarker: MutableState<Marker?>
+    cluster: MutableState<Clusterer<ItemKey>?>,
+    selectedMarker: MutableState<Marker?>,
+    situationCode: MutableList<Int>,
+    situationCodeIdx: MutableState<Int>
 ) {
-    class ItemKey(val id: Int, private val position: LatLng) : ClusteringKey {
-        override fun getPosition() = position
+    val detail: MutableState<String> = remember { mutableStateOf("") } // 사고 처리 세부 내역
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || javaClass != other.javaClass) return false
-            val itemKey = other as ItemKey
-            return id == itemKey.id
-        }
+    val isDetailPrintDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 사고 처리 세부 내역 출력창 스위치
+    val isEndDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 종료 알림창 스위치
 
-        override fun hashCode() = id
+    if (isDetailPrintDialogVisible.value) { // 스위치가 on이 될 경우 사고 처리 세부 내역 출력창 출력
+        DetailPrintDialog(onClose = { isDetailPrintDialogVisible.value = false }, detail = detail.value)
     }
 
-    val detail: MutableState<String> = remember { mutableStateOf("") }
-
-    if (isDetailPrintVisible.value) {
-        DetailPrint(onClose = { isDetailPrintVisible.value = false }, detail = detail.value)
+    if (isEndDialogVisible.value) { // 스위치가 on이 될 경우 종료 알림창 출력
+        EndDialog(onEnd = { android.os.Process.killProcess(android.os.Process.myPid()) })
     }
 
     val context = LocalContext.current
@@ -237,99 +256,101 @@ fun MapScreen(
         factory = { _ ->
             MapView(context).apply {
                 getMapAsync { map ->
-                    CoroutineScope(Dispatchers.Main).launch {
-                        LoadingState.show()
-                        CoroutineScope(Dispatchers.IO).async {
-                            accidentViewModel.getAccidentData()
-                        }.await()
-                        LoadingState.hide()
+                    CoroutineScope(Dispatchers.Main).launch { // 코루틴 Main 진입
+                        LoadingState.show() // 로딩 창 출력
+                        val accidentResponseResult = withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
+                            CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
+                                val state = accidentViewModel.state // 현재 상태 값을 받아옴
+                                accidentViewModel.getAccidentData() // Accident 테이블 데이터 수신
+                                while (state == accidentViewModel.state) {
+                                    // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
+                                }
+                            }.await() // 데이터를 받아올 때까지 대기
+                        }
+                        LoadingState.hide() // 로딩 창 숨김
 
+                        if (accidentResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
+                            Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                            isEndDialogVisible.value = true // 종료 알림창 on
+                        }
+
+                        // 수신한 Accident 테이블 데이터를 캡쳐
                         val no by accidentViewModel.no
                         val latitude by accidentViewModel.latitude
                         val longitude by accidentViewModel.longitude
-                        val processCode by accidentViewModel.situationCode
+                        situationCode.addAll(accidentViewModel.situationCode.value)
 
-                        // 초기 위치 설정(GPS 사용)
+                        // 지도의 초기 위치 설정(GPS 사용 필요)
                         val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
                         map.moveCamera(initialCameraPosition)
-                        //
 
-                        // 클러스터 및 마커 설정
-                        val builder = Clusterer.Builder<ItemKey>()
-
-                        builder.clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() {
+                        // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성
+                        cluster.value = Clusterer.Builder<ItemKey>().clusterMarkerUpdater(object : DefaultClusterMarkerUpdater() { // 클러스터 마커를 불러올 때마다 실행되는 이벤트
                             override fun updateClusterMarker(info: ClusterMarkerInfo, marker: Marker) {
                                 super.updateClusterMarker(info, marker)
-                                marker.icon = if (info.size < 3) {
-                                    MarkerIcons.CLUSTER_LOW_DENSITY
-                                } else {
-                                    MarkerIcons.CLUSTER_MEDIUM_DENSITY
+                                marker.icon = if (info.size < 3) { // 클러스터 내에 존재하는 단말 마커가 3개 미만일 경우
+                                    MarkerIcons.CLUSTER_LOW_DENSITY // 연한 주황색 클러스터 아이콘 출력
+                                } else { // 클러스터 내에 존재하는 단말 마커가 3개 이상일 경우
+                                    MarkerIcons.CLUSTER_MEDIUM_DENSITY // 진한 주황색 클러스터 아이콘 출력
                                 }
                             }
-                        }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() {
+                        }).leafMarkerUpdater(object : DefaultLeafMarkerUpdater() { // 클러스터 내의 단말 마커를 불러올 때마다 실행되는 이벤트
                             override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
                                 super.updateLeafMarker(info, marker)
-                                val key = info.key as ItemKey
-                                val code = processCode[no.indexOf(key.id)]
+                                val key = info.key as ItemKey // 단말 마커의 id 값(사고 번호)
 
-                                when (code) {
-                                    0 -> {
-                                        marker.icon = MarkerIcons.GREEN
-                                    }
-                                    1 -> {
-                                        marker.icon = MarkerIcons.YELLOW
-                                    }
-                                    2 -> {
-                                        marker.map = null
-                                    }
-                                    else -> {
-                                        marker.icon = MarkerIcons.RED
-                                    }
+                                when (situationCode[no.indexOf(key.id)]) { // 사고 번호에 해당하는 사고의 처리 상황 코드에 따라 마커 아이콘 지정 및 마커 숨김
+                                    SituationCode.COMPLETE.ordinal -> { marker.icon = MarkerIcons.GREEN } // 처리 상황 코드가 COMPLETE일 때 초록색 마커 출력(처리 완료)
+                                    SituationCode.PROCESSING.ordinal -> { marker.icon = MarkerIcons.YELLOW } // 처리 상황 코드가 PROCESSING일 때 노란색 마커 출력(처리 중)
+                                    SituationCode.MALFUNCTION.ordinal -> { marker.map = null } // 처리 상황 코드가 MALFUNCTION일 때 마커를 숨김(오작동)
+                                    else -> { marker.icon = MarkerIcons.RED } // 처리 상황 코드가 REPORT119일 때 빨간색 마커 출력(119 신고)
                                 }
-                                marker.onClickListener = Overlay.OnClickListener {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        accidentNo.value = key.id
 
-                                        LoadingState.show()
-                                        CoroutineScope(Dispatchers.IO).async {
-                                            val state = accidentProcessingViewModel.state
-                                            accidentProcessingViewModel.getAccidentProcessingData(key.id)
-                                            while (state == accidentProcessingViewModel.state) {
-                                                //
-                                            }
-                                        }.await()
-                                        LoadingState.hide()
+                                marker.onClickListener = Overlay.OnClickListener { // 단말 마커 클릭 시 발생하는 이벤트
+                                    CoroutineScope(Dispatchers.Main).launch { // 코루틴 Main 진입
+                                        accidentNo.value = key.id // 이벤트 함수 외부에서 마지막에 선택한 마커의 사고 번호를 사용하기 위해 캡처
 
-                                        if (code == 0) {
-                                            detail.value = accidentProcessingViewModel.detail.value.toString()
-                                            println(key.id)
-                                            println(detail.value)
-                                            println(accidentProcessingViewModel.detail.value.toString())
-                                            isDetailPrintVisible.value = true
+                                        LoadingState.show() // 로딩 창 출력
+                                        val accidentProcessingResponseResult = withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
+                                            CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
+                                                val state = accidentProcessingViewModel.state // 현재 상태 값을 받아옴
+                                                accidentProcessingViewModel.getAccidentProcessingData(key.id) // Accident Processing 테이블 데이터 수신
+                                                while (state == accidentProcessingViewModel.state) {
+                                                    // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
+                                                }
+                                            }.await() // 데이터를 받아올 때까지 대기
                                         }
-                                        else {
-                                            val victim by accidentProcessingViewModel.victim
-                                            victimName.value = victim.toString()
-                                            selectedMarker.value = marker
-                                            isBottomSheetVisible.value = true
+                                        LoadingState.hide() // 로딩 창 숨김
+
+                                        if (accidentProcessingResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
+                                            Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                            isEndDialogVisible.value = true // 종료 알림창 on
+                                        }
+
+                                        situationCodeIdx.value = no.indexOf(key.id) // 이벤트 함수 외부에서 마지막에 선택한 마커의 사고 번호에 해당하는 인덱스를 사용하기 위해 캡처
+                                        selectedMarker.value = marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
+
+                                        if (situationCode[situationCodeIdx.value] == SituationCode.COMPLETE.ordinal) { // 클릭한 단말 마커의 처리 상황 코드가 COMPLETE일 경우
+                                            detail.value = accidentProcessingViewModel.detail.value.toString() // 사고 처리 세부 내역 업데이트
+                                            isDetailPrintDialogVisible.value = true // 사고 처리 세부 내역 출력창 on
+                                        }
+                                        else { // 클릭한 단말 마커의 처리 상황 코드가 PROCESSING, MALFUNCTION, REPORT119일 경우
+                                            victimName.value = accidentProcessingViewModel.victim.value.toString() // 사고자 이름 업데이트
+                                            isBottomSheetVisible.value = true // 바텀 시트 on
                                         }
                                     }
-
                                     true
                                 }
                             }
-                        })
-                        //
+                        }).build() // 클러스터 마커 및 단말 마커를 설정하기 위한 빌더 구성 후 빌드
 
-                        // 클러스터
-                        val cluster = builder.build()
-
-                        for (i in latitude.indices) {
-                            cluster.add(ItemKey(no[i], LatLng(latitude[i], longitude[i])), null)
+                        for (i in no.indices) { // 수신한 사고 건수만큼 반복
+                            if (situationCode[i] != SituationCode.MALFUNCTION.ordinal) { // 처리 상황 코드가 MALFUNCTION인 경우 지도에 나타내지 않고 클러스터로 구성하지 않음
+                                cluster.value!!.add(ItemKey(no[i], LatLng(latitude[i], longitude[i])), null) // 사고 번호, 위도, 경도 값을 사용하여 클러스터를 구성
+                            }
                         }
 
-                        cluster.map = map
-                        //
+                        cluster.value!!.map = map // 구성한 클러스터를 지도에 표현
                     }
                 }
             }
@@ -341,24 +362,30 @@ fun MapScreen(
 @Composable
 fun BottomSheetScreen(
     isBottomSheetVisible: MutableState<Boolean>,
-    isDetailInputVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
     victimName: MutableState<String>,
-    selectedMarker: MutableState<Marker?>
+    cluster: MutableState<Clusterer<ItemKey>?>,
+    selectedMarker: MutableState<Marker?>,
+    situationCode: MutableList<Int>,
+    situationCodeIdx: MutableState<Int>
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val isDetailInputDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
 
-    if (isDetailInputVisible.value) {
-        DetailInput(onClose = { isDetailInputVisible.value = false }, accidentNo = accidentNo)
+    if (isDetailInputDialogVisible.value) { // 스위치가 on이 될 경우 사고 처리 세부 내역 입력창 출력
+        DetailInputDialog(
+            onClose = { isDetailInputDialogVisible.value = false },
+            isBottomSheetVisible = isBottomSheetVisible,
+            accidentNo = accidentNo,
+            selectedMarker = selectedMarker,
+            situationCode = situationCode,
+            situationCodeIdx = situationCodeIdx
+        )
     }
 
-    if (isBottomSheetVisible.value) {
+    if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
         ModalBottomSheet(
             modifier = Modifier.height(270.dp),
-            onDismissRequest = {
-                isBottomSheetVisible.value = false
-            },
-            sheetState = sheetState,
+            onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = Color.White,
             dragHandle = { BottomSheetDefaults.DragHandle() }
@@ -373,18 +400,18 @@ fun BottomSheetScreen(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "사고 발생지 ${accidentNo.value}", fontSize = 20.sp)
-                    Spacer(modifier = Modifier.width(160.dp))
                     Text(
-                        text = "0.0KM", // 현재 위치로부터 선택한 마커까지의 거리(차후 수정 필요)
+                        text = "사고 발생지 ${accidentNo.value}",
+                        fontSize = 20.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "0.0KM", // 현재 위치로부터 선택한 마커까지의 거리(차후 기능 추가 필요)
                         color = Color(0xFFFF6600),
-                        modifier = Modifier
-                            .background(Color(0x26FF6600), RoundedCornerShape(4.dp))
-                            .width(100.dp),
-                        textAlign = TextAlign.Center
+                        modifier = Modifier.background(Color(0x26FF6600), RoundedCornerShape(4.dp)),
+                        textAlign = TextAlign.End
                     )
                 }
                 Row(modifier = Modifier.fillMaxWidth()) {
@@ -394,19 +421,32 @@ fun BottomSheetScreen(
                         modifier = Modifier.size(40.dp),
                         tint = Color.Black
                     )
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(text = "작업자", color = Color.Gray)
-                        Text(text = victimName.value)
+                        Text(victimName.value)
                     }
-                    Spacer(modifier = Modifier.width(205.dp))
-                    ClickableIcon(
-                        imageVector = Icons.Default.VideoCameraFront,
-                        onClick = { println("영상통화 아이콘 클릭") } // 안전모의 카메라 연결(차후 수정 필요)
-                    )
-                    ClickableIcon(
-                        imageVector = Icons.Default.Campaign,
-                        onClick = { println("스피커 아이콘 클릭") } // 안전모의 스피커 출력(차후 수정 필요)
-                    )
+                    IconButton(
+                        onClick = { Log.i("IconClick", "영상통화 아이콘 클릭") } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VideoCameraFront,
+                            contentDescription = null,
+                            tint = Color(0xFFFF6600),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = { Log.i("IconClick", "스피커 아이콘 클릭") } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Campaign,
+                            contentDescription = null,
+                            tint = Color(0xFFFF6600),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Divider(
@@ -417,8 +457,11 @@ fun BottomSheetScreen(
                 )
                 Spacer(Modifier.height(10.dp))
                 Row {
-                    Button(
-                        onClick = { isDetailInputVisible.value = true },
+                    Button( // 바텀 시트의 '처리 완료' 버튼
+                        onClick = {
+                            Log.i("ButtonClick", "처리 완료 버튼 클릭")
+                            isDetailInputDialogVisible.value = true // 사고 처리 세부 내역 입력창 on
+                        },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
                         modifier = Modifier.weight(1f)
@@ -429,13 +472,15 @@ fun BottomSheetScreen(
                             softWrap = false,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            fontSize = 11.sp
+                            fontSize = 9.sp
                         )
                     }
-                    Button(
+                    Button( // 바텀 시트의 '처리 중' 버튼
                         onClick = {
-                            selectedMarker.value?.icon = MarkerIcons.YELLOW
-                            //updateAccidentSituation(accidentNo.value, "처리 중")
+                            Log.i("ButtonClick", "처리 중 버튼 클릭")
+                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), "") // 처리 상황을 '처리 중'으로 갱신(DB 반영)
+                            situationCode[situationCodeIdx.value] = SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
+                            selectedMarker.value?.icon = MarkerIcons.YELLOW // 단말 마커 아이콘을 노란색 마커로 갱신
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
@@ -447,12 +492,17 @@ fun BottomSheetScreen(
                             softWrap = false,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            fontSize = 11.sp
+                            fontSize = 9.sp
                         )
                     }
-                    Button(
-                        onClick = { selectedMarker.value?.map = null
-                            // DB 업데이트
+                    Button( // 바텀 시트의 '오작동' 버튼
+                        onClick = {
+                            Log.i("ButtonClick", "오작동 버튼 클릭")
+                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), "") // 처리 상황을 '오작동'으로 갱신(DB 반영)
+                            situationCode[situationCodeIdx.value] = SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
+                            selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
+                            cluster.value!!.remove(ItemKey(accidentNo.value)) // 삭제된 마커를 클러스터에서 제외
+                            isBottomSheetVisible.value = false // 바텀 시트 off
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color.Gray),
@@ -464,12 +514,15 @@ fun BottomSheetScreen(
                             softWrap = false,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            fontSize = 11.sp
+                            fontSize = 9.sp
                         )
                     }
-                    Button(
-                        onClick = { selectedMarker.value?.icon = MarkerIcons.RED
-                            // DB 업데이트
+                    Button( // 바텀 시트의 '119 신고' 버튼
+                        onClick = {
+                            Log.i("ButtonClick", "119 신고 버튼 클릭")
+                            updateAccidentSituation(accidentNo.value, SituationCode.REPORT119.ordinal.toString(), "") // 처리 상황을 '119 신고'로 갱신(DB 반영)
+                            situationCode[situationCodeIdx.value] = SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
+                            selectedMarker.value?.icon = MarkerIcons.RED // 단말 마커 아이콘을 빨간색 마커로 갱신
                         },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
                         modifier = Modifier.weight(1f),
@@ -481,7 +534,7 @@ fun BottomSheetScreen(
                             softWrap = false,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            fontSize = 11.sp
+                            fontSize = 9.sp
                         )
                     }
                 }
@@ -491,25 +544,24 @@ fun BottomSheetScreen(
     }
 }
 
+// 사고 처리 세부 내역 입력창 Composable
 @Composable
-fun ClickableIcon(
-    imageVector: ImageVector,
-    onClick: () -> Unit
+fun DetailInputDialog(
+    onClose: () -> Unit,
+    isBottomSheetVisible: MutableState<Boolean>,
+    accidentNo: MutableState<Int>,
+    selectedMarker: MutableState<Marker?>,
+    situationCode: MutableList<Int>,
+    situationCodeIdx: MutableState<Int>
 ) {
-    IconButton(onClick = onClick) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            tint = Color(0xFFFF6600),
-            modifier = Modifier
-                .size(40.dp)
-        )
-    }
-}
+    val detail = remember { mutableStateOf("") } // 사고 처리 세부 내역(입력)
 
-@Composable
-fun DetailInput(onClose: () -> Unit, accidentNo: MutableState<Int>) {
-    val detail = remember { mutableStateOf("") }
+    val isAlertDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 알림창 스위치
+
+    if (isAlertDialogVisible.value) { // 스위치가 on이 될 경우 알림창 출력
+        AlertDialog(onClose = { isAlertDialogVisible.value = false })
+    }
+
     Dialog(
         onDismissRequest = onClose,
         content = {
@@ -528,21 +580,30 @@ fun DetailInput(onClose: () -> Unit, accidentNo: MutableState<Int>) {
                     Spacer(modifier = Modifier.height(10.dp))
                     TextField(
                         value = detail.value,
-                        onValueChange = { detail.value = it },
+                        onValueChange = { detail.value = it }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    Row {
-                        Button(onClick = {
-                            println("작성 버튼 클릭")
-                            //updateAccidentComplete(accidentNo.value, detail.value)
-                            onClose()
-                        }) {
-                            Text(text = "작성")
-                        }
-                        Spacer(modifier = Modifier.weight(0.001f))
-                        Button(onClick = onClose) {
-                            Text(text = "닫기")
-                        }
+                    Row(horizontalArrangement = Arrangement.spacedBy(44.dp)) {
+                        Button( // 사고 처리 세부 내역 입력창의 '처리' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "처리 버튼 클릭")
+                                if (detail.value == "") {
+                                    isAlertDialogVisible.value = true
+                                }
+                                else {
+                                    updateAccidentSituation(accidentNo.value, SituationCode.COMPLETE.ordinal.toString(), detail.value) // 처리 상황을 '처리 완료'로 갱신(DB 반영)
+                                    situationCode[situationCodeIdx.value] = SituationCode.COMPLETE.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 COMPLETE로 갱신
+                                    selectedMarker.value?.icon = MarkerIcons.GREEN // 단말 마커 아이콘을 초록색 마커로 갱신
+                                    isBottomSheetVisible.value = false // 바텀 시트 off
+                                    onClose() // 사고 처리 세부 내역 입력창 off
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E))
+                        ) { Text(text = "처리") }
+                        Button(
+                            onClick = onClose,
+                            colors = ButtonDefaults.buttonColors(Color.Gray)
+                        ) { Text(text = "닫기") }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                 }
@@ -551,8 +612,9 @@ fun DetailInput(onClose: () -> Unit, accidentNo: MutableState<Int>) {
     )
 }
 
+// 사고 처리 세부 내역 출력창 Composable
 @Composable
-fun DetailPrint(onClose: () -> Unit, detail: String) {
+fun DetailPrintDialog(onClose: () -> Unit, detail: String) {
     Dialog(
         onDismissRequest = onClose,
         content = {
@@ -567,13 +629,78 @@ fun DetailPrint(onClose: () -> Unit, detail: String) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text("사고 처리 세부 내역")
+                    Text(text = "사고 처리 세부 내역")
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(detail)
+                    Text(text = detail)
                     Spacer(modifier = Modifier.height(10.dp))
-                    Button(onClick = onClose) {
-                        Text(text = "닫기")
-                    }
+                    Button(
+                        onClick = onClose,
+                        colors = ButtonDefaults.buttonColors(Color.Gray)
+                    ) { Text(text = "닫기") }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }
+    )
+}
+
+// 알림창 Composable
+@Composable
+fun AlertDialog(onClose: () -> Unit) {
+    Dialog(
+        onDismissRequest = onClose,
+        content = {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color.White,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = "알림")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = "사고 처리 세부 내역은 최소\n한 글자 이상 입력해야 합니다.", textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onClose,
+                        colors = ButtonDefaults.buttonColors(Color.Gray)
+                    ) { Text(text = "닫기") }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }
+    )
+}
+
+// 종료 알림창 Composable
+@Composable
+fun EndDialog(onEnd: () -> Unit) {
+    Dialog(
+        onDismissRequest = onEnd,
+        content = {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color.White,
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = "알림")
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(text = "데이터 로딩에 실패하여\n앱을 종료합니다.", textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onEnd, // 앱 종료
+                        colors = ButtonDefaults.buttonColors(Color.Gray)
+                    ) { Text(text = "종료") }
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }

@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -138,9 +140,8 @@ class AllAccidentProcessingViewModel : ViewModel() {
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
+fun Processing(navController: NavController,accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
     var searchText by remember { mutableStateOf("") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
@@ -154,6 +155,8 @@ fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = rem
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(20.dp)
+                    .clickable {navController.navigateUp()}
+
             )
             Row {
                 Text(

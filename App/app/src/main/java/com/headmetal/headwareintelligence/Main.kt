@@ -482,6 +482,7 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .background(color = Color.White)
+                    .clickable { navController.navigate("processingScreen") }
                     .border(
                         width = 1.dp,
                         color = Color(0xFFE0E0E0),

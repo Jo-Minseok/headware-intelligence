@@ -10,13 +10,9 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface ApiService {
-    @FormUrlEncoded
     @POST("/login")
     fun API_login(
-        @Field("username") username: String?,
-        @Field("password") password: String?,
-        @Field("alert_token") alert_token: String,
-        @Field("type") type:String
+        @Body requestBody: LoginInput
     ): Call<LoginResponse>
 
     @POST("/register")
@@ -30,7 +26,7 @@ interface ApiService {
         @Body request: Forgot_Id_Request
     ): Call<Forgot_Id_Result>
 
-    @POST("/forgot/pw")
+    @PUT("/forgot/pw")
     fun API_changepw(
         @Body userEmployee: ForgotPw
     ): Call<ForgotPw>

@@ -14,7 +14,7 @@ deprecated = 이 설정이 자동으로 폐기될 때 경고 표시 여부
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def create_account(input_data: Account_Input_Create, db: Session = Depends(get_db)):
+def create_account(input_data: Account_Input_Create, db: Session):
     if (input_data.type == "employee"):
         db_data = UserEmployee(employee_id=input_data.id,
                                password=pwd_context.hash(
@@ -34,8 +34,8 @@ def create_account(input_data: Account_Input_Create, db: Session = Depends(get_d
     db.commit()
 
 
-# 근로자 계정 존재 여부 확인 함수
-def get_existing_account(input_data: Account_Input_Create, db: Session = Depends(get_db)):
+# 정 존재 여부 확인 함수
+def get_existing_account(input_data: Account_Input_Create, db: Session):
     # DB SELECT 이용. ID 또는 Email 존재 여부 확인
     if (input_data.type == "employee"):
         return db.query(UserEmployee).filter(

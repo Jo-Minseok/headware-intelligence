@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Path
 from db.db_connection import get_db
 from sqlalchemy.orm import Session
 from marker import accident_marker_crud, accident_marker_schema
+from common import ReverseSituationCode
 
 router = APIRouter(prefix='/map')
     
@@ -10,7 +11,7 @@ def accident_data(db: Session = Depends(get_db)):
     # 사고 데이터 조회
     accidents = accident_marker_crud.get_all_accident(db=db)
     
-    # 사고 번호, 위도, 경도 값 지정
+    # 데이터 처리
     no = []
     latitude = []
     longitude = []
@@ -22,16 +23,15 @@ def accident_data(db: Session = Depends(get_db)):
     # 사고 처리 데이터 조회
     accidents = accident_marker_crud.get_all_accident_processing(db=db)
     
-    # 프로세스 코드 지정
-    codeDict = {'처리 완료' : 0, '처리 중' : 1, '오작동' : 2, '119 신고' : 3}
-    processCode = [codeDict[accident.situation] for accident in accidents]
+    # 처리 상황 코드 지정
+    situationCode = [ReverseSituationCode[accident.situation] for accident in accidents]
 
     # 결과 반환
     return {
         'no' : no, 
         'latitude' : latitude, 
         'longitude' : longitude,
-        'situationCode' : processCode
+        'situationCode' : situationCode
     }
 
 @router.get('/marker/{no}')

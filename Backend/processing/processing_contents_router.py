@@ -5,14 +5,9 @@ from processing import processing_contents_crud
 
 router = APIRouter(prefix='/accident')
 
-@router.get('/processing/{situationCode}')
+@router.get('/processing/{manager}/{situationCode}')
 def processing_data(db: Session = Depends(get_db), situationCode: str = Path(...)):
-    if {'0' : '처리 완료', '1' : '처리 중', '2' : '오작동', '3' : '119 신고'}[situationCode] != '오작동':
-        # 사고 처리 데이터 조회(처리 완료, 처리 중, 119 신고)
-        accidentProcessings = processing_contents_crud.get_accident_processing(db=db)
-    else:
-        # 사고 처리 데이터 조회(오작동)
-        accidentProcessings = processing_contents_crud.get_accident_processing_malfunction(db=db)
+    accidentProcessings = processing_contents_crud.get_accident_processing(db=db, situationCode=situationCode)
     
     # 데이터 처리
     no = []

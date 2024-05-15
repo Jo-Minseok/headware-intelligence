@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -440,6 +441,7 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
+                    .clickable { navController.navigate("countermeasuresScreen") }
 
             ) {
                 Column {

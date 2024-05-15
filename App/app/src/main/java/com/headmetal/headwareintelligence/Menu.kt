@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.ui.navigateUp
 
 @Composable
 fun Menu(navController: NavController) {
@@ -51,7 +52,7 @@ fun Menu(navController: NavController) {
                 contentDescription = null,
                 modifier = Modifier.
                 padding(20.dp)
-                .clickable {navController.navigate("mainScreen")}
+                .clickable {navController.navigateUp()}
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),

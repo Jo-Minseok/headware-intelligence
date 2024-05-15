@@ -116,7 +116,6 @@ fun NavigationGraph(navController: NavHostController) {
         composable("helmetScreen") {
             Helmet()
         }
-<<<<<<< HEAD
         composable("privacyScreen") {
             Privacy(navController)
         }
@@ -128,10 +127,9 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable("trendScreen") {
             Trend(navController)
-=======
+        }
         composable("countermeasuresScreen") {
             Countermeasures(navController)
->>>>>>> feature/-Countermeasures
         }
     }
 }

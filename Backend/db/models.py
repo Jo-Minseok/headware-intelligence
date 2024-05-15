@@ -42,7 +42,7 @@ class Work_list(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
     manager = Column(VARCHAR(length=100), ForeignKey(
-        "user_manager.manager_id"), nullable=False)
+        "user_manager.id"), nullable=False)
 
     rel_work = relationship("Work", backref="work_list_work")
     rel_accident = relationship("Accident", backref="work_list_accident")
@@ -75,7 +75,7 @@ class Work(Base):
     work_id = Column(VARCHAR(length=100), ForeignKey(
         "work_list.work_id"), primary_key=True)
     worker_id = Column(VARCHAR(length=100), ForeignKey(
-        "user_employee.employee_id"), primary_key=True)
+        "user_employee.id"), primary_key=True)
 
 
 # 사고 발생 테이블
@@ -96,7 +96,7 @@ class Accident(Base):
     work_id = Column(VARCHAR(length=100), ForeignKey(
         "work_list.work_id"), nullable=False)
     victim_id = Column(VARCHAR(length=100), ForeignKey(
-        "user_employee.employee_id"), nullable=False)
+        "user_employee.id"), nullable=False)
     category = Column(VARCHAR(length=100), nullable=False)
 
     rel_victim_id = relationship(

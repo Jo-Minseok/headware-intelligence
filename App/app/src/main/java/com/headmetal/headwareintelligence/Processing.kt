@@ -172,7 +172,6 @@ fun Processing(accidentProcessingViewModel: AllAccidentProcessingViewModel = rem
                         modifier = Modifier
                             .size(24.dp)
                             .padding(end = 3.dp, top = 5.dp)
-                            .size(10.dp)
                     )
                 }
             }

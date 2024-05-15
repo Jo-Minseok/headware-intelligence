@@ -54,9 +54,7 @@ fun Menu(navController: NavController) {
         val autoLoginEdit: SharedPreferences.Editor = auto.edit()
         val userrank = auto.getString("type", null)
         val username = auto.getString("name", null)
-        val usercompny = auto.getString("company", null)
 
-        var companyinfoDialog by remember { mutableStateOf(false) }
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
@@ -133,7 +131,7 @@ fun Menu(navController: NavController) {
 
                 Column(modifier = Modifier.padding(vertical = 10.dp)) {
                     Button(
-                        onClick = {companyinfoDialog=true},
+                        onClick = {navController.navigate("companyinfoScreen")},
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 2.5.dp)
@@ -152,29 +150,16 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "건설 업체 정보",
+                                text = "참여 건설 업체",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null,
-                                modifier = Modifier.clickable {  }
+                                contentDescription = null
                             )
                         }
-                    }
-                    if (companyinfoDialog) {
-                        AlertDialogWithHyperlinks(
-                            onDismissRequest = { companyinfoDialog = false },
-                            title = { Text(text = "건설업체 정보") },
-                            text = {usercompny},
-                            confirmButton = {
-                                TextButton(onClick = { companyinfoDialog = false }) {
-                                    Text(text = "확인")
-                                }
-                            }
-                        )
                     }
                     Button(
                         onClick = {},

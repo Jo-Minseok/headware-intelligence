@@ -223,7 +223,7 @@ fun Privacy(navController: NavController) {
 
                     Button(
                         onClick = {
-                            navController.navigate("")
+                            navController.navigate("privacychangeScreen")
                         },
                         modifier = Modifier.padding(horizontal = 16.dp),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),

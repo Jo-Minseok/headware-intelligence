@@ -119,6 +119,12 @@ fun NavigationGraph(navController: NavHostController) {
         composable("privacyScreen") {
             Privacy(navController)
         }
+        composable("privacychangeScreen") {
+            PrivacyChange(navController)
+        }
+        composable("companyinfoScreen") {
+            CompanyInfo(navController)
+        }
     }
 }
 

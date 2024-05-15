@@ -28,7 +28,7 @@ secure_object = SecureSettings(
 router = APIRouter()
 
 
-# employee 라우터 연결, 입력 모델은 OAuth2PasswordRequestForm + DB, 반환 모델은 Employee_Login 스키마
+# employee 라우터 연결, 반환 모델은 Employee_Login 스키마
 @router.post("/login", response_model=Login_Output)
 def get_employee_login(input_data: Login_Input, db: Session = Depends(get_db)):
     user_row = login_crud.get_employee(input_data, db)

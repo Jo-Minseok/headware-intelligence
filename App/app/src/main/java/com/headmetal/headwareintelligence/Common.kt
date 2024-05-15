@@ -84,11 +84,8 @@ fun BackOnPressed() {
 fun performLogin(username: String?, password: String?, isManager: Boolean, auto: SharedPreferences): Int {
     val autoLoginEdit: SharedPreferences.Editor = auto.edit()
     val call=RetrofitInstance.apiService.API_login(
-            username = username,
-            password = password,
-            alert_token = auto.getString("alert_token", null).toString(),
-            type = if(isManager) "manager" else "employee"
-        )
+            LoginInput( id= username, password = password, alert_token = auto.getString("alert_token", null).toString(), type = if(isManager) "manager" else "employee")
+    )
     var loginSuccess: Int = 0
     call.enqueue(object : Callback<LoginResponse> {
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {

@@ -51,6 +51,13 @@ data class LoginResponse(
     val token_type: String,
 )
 
+data class LoginInput(
+    val id:String?,
+    val password:String?,
+    val alert_token:String,
+    val type:String
+)
+
 @Composable
 fun Login(navController: NavController) {
     BackOnPressed()

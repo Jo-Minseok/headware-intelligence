@@ -39,7 +39,8 @@ import retrofit2.Response
 
 data class Forgot_Id_Request(
     val name: String,
-    val email: String
+    val email: String,
+    val type: String
 )
 
 data class Forgot_Id_Result(
@@ -48,14 +49,18 @@ data class Forgot_Id_Result(
 
 fun performFindId(name: String, email: String, isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
-    val call = if (isManager) {
-        apiService.findmanagerId(Forgot_Id_Request(name, email))
-    } else {
-        apiService.findemployeeId(Forgot_Id_Request(name, email))
-    }
-
+    val call = apiService.API_findid(
+        Forgot_Id_Request(
+            name,
+            email,
+            if (isManager) "manager" else "employee"
+        )
+    )
     call.enqueue(object : Callback<Forgot_Id_Result> {
-        override fun onResponse(call: Call<Forgot_Id_Result>, response: Response<Forgot_Id_Result>) {
+        override fun onResponse(
+            call: Call<Forgot_Id_Result>,
+            response: Response<Forgot_Id_Result>
+        ) {
             // 서버로부터 응답을 받았을 때
 
             if (response.isSuccessful) {
@@ -77,11 +82,10 @@ fun performFindId(name: String, email: String, isManager: Boolean, navController
 
         override fun onFailure(call: Call<Forgot_Id_Result>, t: Throwable) {
             // 서버 통신에 실패했을 때
-            Log.e("HEAD METAL","서버 통신 실패: ${t.message}")
+            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
         }
     })
 }
-
 
 
 private fun showFindIdFailedDialog(navController: NavController) {
@@ -109,6 +113,7 @@ fun showAccessFailedDialog(navController: NavController) {
     val dialog = builder.create()
     dialog.show()
 }
+
 private fun showIdDialog(navController: NavController, id: String) {
     val builder = AlertDialog.Builder(navController.context)
     builder.setTitle("아이디")
@@ -157,7 +162,9 @@ fun Findid(navController: NavController, modifier: Modifier = Modifier) {
                     value = name,
                     onValueChange = { name = it },
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -177,7 +184,9 @@ fun Findid(navController: NavController, modifier: Modifier = Modifier) {
                     value = email,
                     onValueChange = { email = it },
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    modifier = Modifier
+                        .alpha(0.6f)
+                        .width(350.dp),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -231,7 +240,7 @@ fun Findid(navController: NavController, modifier: Modifier = Modifier) {
             Row {
 
                 Button(
-                    onClick = { performFindId(name, email, isManager, navController)},
+                    onClick = { performFindId(name, email, isManager, navController) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)
@@ -243,7 +252,7 @@ fun Findid(navController: NavController, modifier: Modifier = Modifier) {
                 }
 
                 Button(
-                    onClick = {navController.navigate("findpwScreen")},
+                    onClick = { navController.navigate("findpwScreen") },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

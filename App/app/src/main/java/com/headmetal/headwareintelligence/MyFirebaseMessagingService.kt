@@ -18,6 +18,7 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
+        // 작업 표시줄 알림으로 왔을 경우 Foreground
         val notificationManager = NotificationManagerCompat.from(getApplicationContext())
         var builder:NotificationCompat.Builder?=null
         var CHANNEL_ID:String = remoteMessage.messageId.toString()
@@ -33,7 +34,7 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
         }
         val title:String = remoteMessage.notification?.title.toString()
         val message:String = remoteMessage.notification?.body.toString()
-        builder.setSmallIcon(R.drawable.ic_launcher_foreground)
+        builder.setSmallIcon(R.drawable.helmet)
         builder.setContentTitle(title)
         builder.setContentText(message)
         val notification = builder.build()
@@ -51,7 +52,7 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
             // for ActivityCompat#requestPermissions for more details.
             return
         }
-        notificationManager.notify(1,notification)
+        notificationManager.notify((System.currentTimeMillis()/1000).toInt(),notification)
 
         // 수신한 데이터 처리
         remoteMessage.data.isNotEmpty().let{

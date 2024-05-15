@@ -2,33 +2,29 @@ package com.headmetal.headwareintelligence
 
 import android.os.Bundle
 import android.util.Log
-import androidx.compose.material3.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.core.app.ActivityCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.Constants
 import com.google.firebase.messaging.FirebaseMessaging
-import com.headmetal.headwareintelligence.ui.theme.MyApplicationTheme
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import android.app.Activity
+import android.content.SharedPreferences
 
 class MainActivity : ComponentActivity() {
     companion object{
         const val REQUEST_PERMISSIONS_CODE = 1
     }
     override fun onCreate(savedInstanceState: Bundle?) {
+        val auto: SharedPreferences = this.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+        val autoLoginEdit: SharedPreferences.Editor = auto.edit()
         // 알림 토큰 생성
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -40,6 +36,7 @@ class MainActivity : ComponentActivity() {
                 return@OnCompleteListener
             }
             val token = task.result
+            autoLoginEdit.putString("alert_token",token)
             Log.d("FCM MESSAGE", "token $token")
         })
 

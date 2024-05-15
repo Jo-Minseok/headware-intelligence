@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import android.app.AlertDialog
+import android.content.SharedPreferences
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.getValue
@@ -19,12 +20,16 @@ import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 // 처리 상황 코드를 나타내는 열거형 클래스
 enum class SituationCode {
     COMPLETE, PROCESSING, MALFUNCTION, REPORT119 // 처리 완료 : 0, 처리 중 : 1, 오작동 : 2, 119 신고 : 3
 }
 
+// 로딩 상태
 object LoadingState {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -37,6 +42,8 @@ object LoadingState {
         _isLoading.value = false
     }
 }
+
+// 로딩 화면
 @Composable
 fun LoadingScreen() {
     val isLoading = LoadingState.isLoading.collectAsState().value
@@ -54,6 +61,7 @@ fun LoadingScreen() {
     }
 }
 
+// 두 번 뒤로 갈 경우 애플리케이션 종료
 @Composable
 fun BackOnPressed() {
     val context = LocalContext.current
@@ -70,4 +78,37 @@ fun BackOnPressed() {
         }
         backPressedTime = System.currentTimeMillis()
     }
+}
+
+// 로그인 수행 함수
+fun performLogin(username: String?, password: String?, isManager: Boolean, auto: SharedPreferences): Int {
+    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+    val call=RetrofitInstance.apiService.API_login(
+            username = username,
+            password = password,
+            alert_token = auto.getString("alert_token", null).toString(),
+            type = if(isManager) "manager" else "employee"
+        )
+    var loginSuccess: Int = 0
+    call.enqueue(object : Callback<LoginResponse> {
+        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+            if (response.isSuccessful) {
+                autoLoginEdit.putString("userid", response.body()?.id)
+                autoLoginEdit.putString("password",password)
+                autoLoginEdit.putString("name", response.body()?.name)
+                autoLoginEdit.putString("token", response.body()?.access_token)
+                autoLoginEdit.putString("token_type", response.body()?.token_type)
+                autoLoginEdit.putString("type", if(isManager)"manager" else "employee")
+                autoLoginEdit.apply()
+                loginSuccess = 0
+            } else {
+                loginSuccess = 1
+            }
+        }
+
+        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+            loginSuccess = 2
+        }
+    })
+    return loginSuccess
 }

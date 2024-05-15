@@ -43,7 +43,8 @@ data class ForgotPw(
     val id: String,
     val phone_no: String,
     val password: String,
-    val re_password: String
+    val re_password: String,
+    val type:String
 )
 
 fun makeDialog(title:String,message:String,navController: NavController){
@@ -61,14 +62,9 @@ fun makeDialog(title:String,message:String,navController: NavController){
     dialog.show()
 }
 
-fun sendPasswordChangeRequest(id: String, email: String, password: String, re_password: String,
-                              isManager: Boolean, navController: NavController) {
+fun sendPasswordChangeRequest(id: String, phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
-    val call = if (isManager) {
-        apiService.confirmManager(ForgotPw(id, email,password,re_password))
-    } else {
-        apiService.confirmEmployee(ForgotPw(id, email,password,re_password))
-    }
+    val call = apiService.API_changepw(ForgotPw(id, phone,password,re_password,if(isManager)"manager" else "employee"))
     call.enqueue(object : Callback<ForgotPw> {
         override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
             if (response.isSuccessful) {
@@ -104,11 +100,10 @@ fun showPasswordSuccessDialog(navController: NavController){
 }
 
 // 변경된 OnPasswordChangeButtonClick 함수
-fun OnPasswordChangeButtonClick(id: String, email: String, password: String, re_password: String,
-                                isManager: Boolean, navController: NavController) {
+fun OnPasswordChangeButtonClick(id: String,phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
     if (password == re_password && password.isNotEmpty()) {
         // 새 비밀번호와 비밀번호 확인 값이 일치하고 비밀번호가 비어 있지 않은 경우에만 서버로 요청을 보냄
-        sendPasswordChangeRequest(id, email, password, re_password, isManager, navController)
+        sendPasswordChangeRequest(id, phone, password,re_password, isManager, navController)
     } else {
         makeDialog("비밀번호 변경 실패","정보나 새 비밀번호와 비밀번호 확인을 다시 확인하세요!",navController)
     }
@@ -116,7 +111,7 @@ fun OnPasswordChangeButtonClick(id: String, email: String, password: String, re_
 
 // App UI 부분
 @Composable
-fun Findpw(navController: NavController, modifier: Modifier = Modifier) {
+fun Findpw(navController: NavController) {
     var id by remember {
         mutableStateOf("")
     }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -42,40 +43,32 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 
-@Preview(showBackground = true)
 @Composable
-fun Helmet() {
+fun Helmet(navController: NavController) {
     val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var helmetid by remember {
         mutableStateOf("")
     }
-    var showDialog by remember { mutableStateOf(false) }
-
-    if (mBluetoothAdapter == null) {
-        // Bluetooth가 지원되지 않을 경우 다이얼로그를 표시
-        showDialog = true
-    }
-    if (showDialog) {
-        // 다이얼로그 표시
-        AlertDialog.Builder(LocalContext.current)
-            .setTitle("블루투스 연결 실패")
-            .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
-            .setPositiveButton("확인") { dialog, which ->
-                // 긍정 버튼 클릭 동작 처리
-            }
-            .show()
-    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
+        if (mBluetoothAdapter == null) {
+            AlertDialog.Builder(LocalContext.current)
+                .setTitle("블루투스 연결 실패")
+                .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
+                .setPositiveButton("확인") { dialog, which ->
+                    navController.navigate("mainScreen")
+                }
+                .show()
+        }
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(20.dp)
                     .clickable{
-//                        navController.navigate("mainScreen")
+                        navController.navigate("mainScreen")
                     }
             )
             Row(
@@ -109,7 +102,6 @@ fun Helmet() {
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
-
                             Spacer(modifier = Modifier.weight(1f))
                         }
 
@@ -156,12 +148,12 @@ fun Helmet() {
                             modifier = Modifier.padding(bottom = 16.dp)
                         ) {
                             Text(
-                                text = "블루투스 연결",
+                                text = "블루투스 켜기",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
                         }
-                        
+
                         Row {
                             Button(
                                 onClick = {

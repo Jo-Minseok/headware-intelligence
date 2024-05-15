@@ -42,8 +42,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,10 +58,14 @@ import java.util.Locale
 
 
 @Composable
-fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rainy: Int = 10, temp: Int = 10, /*dust:Int = 10*/) {
+fun Main(navController: NavController) {
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val username = auto.getString("name", null)
+    val username:String = auto.getString("name", null).toString()
     BackOnPressed()
+    var interest = 10
+    var windy = 10
+    var rainy = 10
+    var temp = 10
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)
@@ -104,12 +110,6 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
     var current by remember {
         mutableStateOf(Calendar.getInstance().time)
     }
-    var interestChecked by remember {
-        mutableStateOf(false)
-    }
-    var accidentChecked by remember {
-        mutableStateOf(false)
-    }
 
    Surface(
         modifier = Modifier.fillMaxSize(),
@@ -122,172 +122,180 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
             }
         }
 
-        Column(modifier = Modifier.fillMaxSize()
+        Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp)
             .verticalScroll(rememberScrollState())) {
-            Text(
-                text="안녕하세요 " + username + "님"
-            )
-            Text(
-                text = "오늘도 안전한 근무 되시길 바랍니다!"
-            )
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                    .background(color = Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .fillMaxWidth()
-
-            ) {
-                Column {
-                    Row {
-                        Text(
-                            text = "일일 안전 알림",
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(start = 10.dp, top = 2.dp)
-                        )
-                        Text(
-                            text = SimpleDateFormat(
-                                "EEEE, yyyy년 MM월 dd일",
-                                Locale.getDefault()
-                            ).format(current),
-                            style = TextStyle(textAlign = TextAlign.End),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 10.dp, top = 2.dp)
-                        )
-                    }
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, bottom = 5.dp)
-                        )
-                        Text(
-                            text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(current),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 5.dp, bottom = 5.dp)
-                        )
-                    }
-
-                }
-            } //여기서부터
-            Box(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp)
-                    .background(color = Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .fillMaxWidth()
-
-            ) {
-                Column {
+            Column(modifier = Modifier.padding(top = 30.dp)) {
+                Row() {
                     Text(
-                        text = "안전 관심도",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(start = 10.dp)
+                        text = "안녕하세요 ",
+                        fontSize = 30.sp
                     )
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.Circle,
-                            contentDescription = null,
-                            tint = interestColor,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, top = 5.dp)
-                        )
-                        Text(
-                            text = interestText,
-                            fontSize = 16.sp,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 5.dp, top = 5.dp)
-                        )
-                    }
                     Text(
-                        text = interestTextDetail,
-                        modifier = Modifier
-                            .padding(start = 40.dp, bottom = 5.dp)
+                        text = username,
+                        textDecoration = TextDecoration.Underline,
+                        fontStyle=FontStyle.Italic,
+                        fontSize = 30.sp
+                    )
+                    Text(
+                        text = "님!",
+                        fontSize = 30.sp
                     )
                 }
+                Text(
+                    text = "오늘도 안전한 근무 되시길 바랍니다!",
+                    fontSize = 15.sp
+                )
             }
-
-            Spacer(
-                modifier = Modifier.height(30.dp)
-            )
-
-            Button(
-                onClick = {},
-                modifier = Modifier.padding(horizontal = 16.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+            Column(modifier= Modifier.padding(top = 15.dp)) {
+                Box(
+                    modifier = Modifier
+                        .background(color = Color.White)
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xFFE0E0E0),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .fillMaxWidth()
                 ) {
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.Center
-                    )  {
+                    Column {
+                        Row {
+                            Text(
+                                text = "일일 안전 알림",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, top = 2.dp)
+                            )
+                            Text(
+                                text = SimpleDateFormat(
+                                    "EEEE, yyyy년 MM월 dd일",
+                                    Locale.getDefault()
+                                ).format(current),
+                                style = TextStyle(textAlign = TextAlign.End),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 10.dp, top = 2.dp)
+                            )
+                        }
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.AccessTime,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 10.dp, bottom = 5.dp)
+                            )
+                            Text(
+                                text = SimpleDateFormat(
+                                    "HH:mm",
+                                    Locale.getDefault()
+                                ).format(current),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 5.dp, bottom = 5.dp)
+                            )
+                        }
+
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                        .background(color = Color.White)
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xFFE0E0E0),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .fillMaxWidth()
+
+                ) {
+                    Column {
                         Text(
-                            text = "작업 현장 확인",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black,
-                            fontSize = 16.sp
+                            text = "안전 관심도",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.Circle,
+                                contentDescription = null,
+                                tint = interestColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 10.dp, top = 5.dp)
+                            )
+                            Text(
+                                text = interestText,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 5.dp, top = 5.dp)
+                            )
+                        }
+                        Text(
+                            text = interestTextDetail,
+                            modifier = Modifier
+                                .padding(start = 40.dp, bottom = 5.dp)
                         )
                     }
                 }
             }
-
-            Spacer(
-                modifier = Modifier.height(15.dp)
-            )
-
-            Button(
-                onClick = {
-                    navController.navigate("helmetScreen")
-                },
-                modifier = Modifier.padding(horizontal = 16.dp),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+            Column() {
+                Button(
+                    onClick = {},
+                    modifier = Modifier.padding(),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier.weight(1f),
-                        contentAlignment = Alignment.Center
-                    )  {
-                        Text(
-                            text = "안전모 등록",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black,
-                            fontSize = 16.sp
-                        )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "작업 현장 확인",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
-
+                Button(
+                    onClick = {
+                        navController.navigate("helmetScreen")
+                    },
+                    modifier = Modifier.padding(),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "안전모 등록",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
             }
 
-            Spacer(
-                modifier = Modifier.height(20.dp)
-            )
-            Box(
-                modifier = Modifier.padding(start = 16.dp)
+            Column(
+                modifier = Modifier.padding(top = 30.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -310,14 +318,9 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                 }
             }
 
-
-            Spacer(
-                modifier = Modifier.height(10.dp)
-            )
-
             Box(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                    .padding(top = 8.dp)
                     .background(color = Color.White)
                     .border(
                         width = 1.dp,
@@ -325,11 +328,8 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
-
             ) {
-
                 Column {
-
                     Row {
                             //아이콘은 날시에 따라 바뀌게
                         Icon(
@@ -343,7 +343,6 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
 
                         )
                         Column {
-                            
                             Text(
                                 text = "기상 정보 : 우천",
                                 fontSize = 16.sp,
@@ -367,7 +366,6 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 5.dp)
                                 )
-
                             }
                             Row {
                                 Text(
@@ -381,11 +379,9 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 5.dp, bottom = 10.dp)
                                 )
-
                             }
                         }
                         Column {
-
                             Text(
                                 text = "풍속",
                                 fontSize = 16.sp,
@@ -404,7 +400,6 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                                         .fillMaxWidth()
                                         .padding(end = 10.dp)
                                 )
-
                             }
                             Row {
                                 Text(
@@ -416,23 +411,15 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                                         .fillMaxWidth()
                                         .padding(end = 10.dp)
                                 )
-
                             }
                         }
-
-
                     }
-
                 }
             }
 
-            Spacer(
-                modifier = Modifier.height(10.dp)
-            )
-
             Box(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                    .padding(top = 8.dp)
                     .background(color = Color.White)
                     .border(
                         width = 1.dp,
@@ -440,10 +427,8 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
-
             ) {
                 Column {
-
                     Row {
                         Icon(
                             imageVector = Icons.Default.Report,
@@ -453,32 +438,23 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
                                 .size(40.dp)
-
                         )
                         Column {
-
                             Row {
                                 Text(
                                     text = "주의 행동 요령",
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 10.dp, top = 30.dp)
                                 )
-
                             }
-
                         }
-
                     }
                 }
             }
 
-            Spacer(
-                modifier = Modifier.height(10.dp)
-            )
-
             Box(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                    .padding(top = 8.dp)
                     .background(color = Color.White)
                     .border(
                         width = 1.dp,
@@ -488,9 +464,7 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                     .fillMaxWidth()
 
             ) {
-
                 Column {
-
                     Row {
                         Icon(
                             imageVector = Icons.Default.Inventory,
@@ -503,21 +477,17 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
 
                         )
                         Column {
-
                             Row {
                                 Text(
                                     text = "사고 처리 내역",
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 10.dp, top = 30.dp)
                                 )
-
                             }
-
                         }
                     }
                 }
             }
-         //   NavigationBar(navController = navController)
         }
     }
 }

@@ -46,62 +46,16 @@ import retrofit2.Response
 // 서버로부터 받는 로그인 응답 데이터 모델 정의
 data class LoginResponse(
     val id: String,
-    val name:String,
+    val name: String,
     val access_token: String,
     val token_type: String,
-    val type: String
 )
 
-fun performLogin(username: String, password: String, isManager: Boolean, navController: NavController, pwState: MutableState<String>,autoLoginEdit:SharedPreferences.Editor) {
-    val call = if (isManager) {
-        RetrofitInstance.apiService.loginmanager(username, password)
-    } else {
-        RetrofitInstance.apiService.loginemployee(username, password)
-    }
-    call.enqueue(object : Callback<LoginResponse>{
-        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-            if (response.isSuccessful) {
-                autoLoginEdit.putString("userid",response.body()?.id)
-                autoLoginEdit.putString("name",response.body()?.name)
-                autoLoginEdit.putString("token",response.body()?.access_token)
-                autoLoginEdit.putString("token_type",response.body()?.token_type)
-                autoLoginEdit.putString("type",response.body()?.type)
-                autoLoginEdit.apply()
-                navController.navigate("mainScreen")
-            }
-            else {
-                // 로그인 실패 처리
-                showLoginFailedDialog(navController, pwState)
-            }
-        }
-        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-            // 통신 실패 처리
-            Log.e("HEAD METAL","서버 통신 실패: ${t.message}")
-        }
-    })
-}
-
-fun showLoginFailedDialog(navController: NavController, pwState: MutableState<String>) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("로그인 실패")
-    builder.setMessage("아이디나 비밀번호를 확인하세요")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-        pwState.value = ""
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
-}
-
 @Composable
-fun Login(navController: NavController, modifier: Modifier = Modifier) {
+fun Login(navController: NavController) {
     BackOnPressed()
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val idState = remember {
         mutableStateOf("")
     }
@@ -111,7 +65,6 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
     var isManager by remember {
         mutableStateOf(false)
     }
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
@@ -214,8 +167,38 @@ fun Login(navController: NavController, modifier: Modifier = Modifier) {
 
             Row {
                 Button(
-                    onClick = { performLogin(idState.value, pwState.value, isManager,
-                        navController,pwState,autoLoginEdit) },
+                    onClick = {
+                        var builder: AlertDialog.Builder? = null
+                        val result = performLogin(idState.value, pwState.value, isManager, auto)
+                        // 로그인 성공시
+                        when (result) {
+                            0 -> navController.navigate("mainScreen")
+                            1 -> {
+                                builder = AlertDialog.Builder(navController.context)
+                                builder.setTitle("로그인 실패")
+                                builder.setMessage("아이디나 비밀번호를 확인하세요")
+                                builder.setPositiveButton("확인") { dialog, _ ->
+                                    dialog.dismiss()
+                                    pwState.value = ""
+                                }
+
+                                val dialog = builder.create()
+                                dialog.show()
+                            }
+
+                            2 -> {
+                                builder = AlertDialog.Builder(navController.context)
+                                builder.setTitle("서버 통신 실패")
+                                builder.setMessage("네트워크나 서버 상태를 확인하세요")
+                                builder.setPositiveButton("확인") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                val dialog = builder.create()
+                                dialog.show()
+                            }
+                        }
+
+                    },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

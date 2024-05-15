@@ -18,7 +18,7 @@ class CompanyList(Base):
 class UserManager(Base):
     __tablename__ = "user_manager"
 
-    manager_id = Column(VARCHAR(length=100), primary_key=True)
+    id = Column(VARCHAR(length=100), primary_key=True)
     password = Column(VARCHAR(length=100), nullable=False)
     name = Column(VARCHAR(length=4), nullable=False)
     email = Column(VARCHAR(length=100), nullable=False)
@@ -52,7 +52,7 @@ class Work_list(Base):
 class UserEmployee(Base):
     __tablename__ = "user_employee"
 
-    employee_id = Column(VARCHAR(length=100), primary_key=True)
+    id = Column(VARCHAR(length=100), primary_key=True)
     password = Column(VARCHAR(length=100), nullable=False)
     name = Column(VARCHAR(length=4), nullable=False)
     email = Column(VARCHAR(length=100), nullable=False)

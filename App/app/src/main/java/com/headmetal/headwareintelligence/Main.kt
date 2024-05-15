@@ -442,6 +442,7 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                         shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
+                    .clickable { navController.navigate("countermeasuresScreen") }
 
             ) {
                 Column {

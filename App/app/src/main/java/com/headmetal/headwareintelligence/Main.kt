@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -183,6 +184,7 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp)
                     .background(color = Color.White)
+                    .clickable { navController.navigate("trendScreen") }
                     .border(
                         width = 1.dp,
                         color = Color(0xFFE0E0E0),
@@ -480,6 +482,7 @@ fun Main(navController: NavController, interest: Int = 10, windy: Int = 10, rain
                 modifier = Modifier
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                     .background(color = Color.White)
+                    .clickable { navController.navigate("processingScreen") }
                     .border(
                         width = 1.dp,
                         color = Color(0xFFE0E0E0),

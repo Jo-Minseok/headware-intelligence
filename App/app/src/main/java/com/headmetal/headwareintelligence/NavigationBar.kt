@@ -96,7 +96,7 @@ fun NavigationGraph(navController: NavHostController) {
             Main(navController)
         }
         composable("processingScreen") {
-            Processing()
+            Processing(navController)
         }
         composable("menuScreen") {
             Menu(navController)
@@ -116,6 +116,18 @@ fun NavigationGraph(navController: NavHostController) {
         composable("helmetScreen") {
             Helmet()
         }
+        composable("privacyScreen") {
+            Privacy(navController)
+        }
+        composable("privacychangeScreen") {
+            PrivacyChange(navController)
+        }
+        composable("companyinfoScreen") {
+            CompanyInfo(navController)
+        }
+        composable("trendScreen") {
+            Trend(navController)
+        }
     }
 }
 
@@ -132,32 +144,33 @@ fun BottomBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    if (currentRoute in screens.map { it.route }) {
-        NavigationBar(
-            modifier = modifier,
-            containerColor = Color.Transparent,
-        ) {
-            screens.forEach { screen ->
-                NavigationBarItem(
-                    label = { Text(text = screen.title!!) },
-                    icon = { Icon(imageVector = screen.icon!!, contentDescription = "") },
-                    selected = currentRoute == screen.route,
-                    onClick = {
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+    NavigationBar(
+        modifier = modifier,
+        containerColor = Color.White,
+    ) {
+        screens.forEach { screen ->
+            NavigationBarItem(
+                label = { Text(text = screen.title!!) },
+                icon = { Icon(imageVector = screen.icon!!, contentDescription = "") },
+                selected = currentRoute == screen.route,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            inclusive = false
                         }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedTextColor = Color.Gray, selectedTextColor = Color.White
-                    )
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    unselectedTextColor = Color.White, selectedTextColor = Color.LightGray
                 )
-            }
+            )
         }
     }
 }
+
+
+
 
 

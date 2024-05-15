@@ -125,6 +125,9 @@ fun NavigationGraph(navController: NavHostController) {
         composable("companyinfoScreen") {
             CompanyInfo(navController)
         }
+        composable("trendScreen") {
+            Trend(navController)
+        }
     }
 }
 

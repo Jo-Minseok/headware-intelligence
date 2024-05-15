@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import java.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -90,9 +92,8 @@ class TrendViewModel : ViewModel() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
 @Composable
-fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
+fun Trend(navController: NavController,viewModel: TrendViewModel = remember { TrendViewModel() }) {
     val monthData by viewModel.monthData
     val inclination by viewModel.inclination
     val intercept by viewModel.intercept
@@ -132,9 +133,7 @@ fun Trend(viewModel: TrendViewModel = remember { TrendViewModel() }) {
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
-            )
-            Spacer(
-                modifier = Modifier.height(150.dp)
+                    .clickable {navController.navigateUp()}
             )
             Box {
                 Column(

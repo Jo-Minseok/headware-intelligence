@@ -74,13 +74,6 @@ fun Menu(navController: NavController) {
                     modifier = Modifier.padding(horizontal = 30.dp)
                 )
                 Spacer(modifier = Modifier.width(125.dp))
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .offset(x = 80.dp)
-                        .size(34.dp)
-                )
             }
 
             Column(

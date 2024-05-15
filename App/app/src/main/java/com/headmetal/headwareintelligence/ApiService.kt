@@ -11,47 +11,28 @@ import retrofit2.http.Path
 
 interface ApiService {
     @FormUrlEncoded
-    @POST("/login/employee")
-    fun loginemployee(
-        @Field("username") username: String,
-        @Field("password") password: String
+    @POST("/login")
+    fun API_login(
+        @Field("username") username: String?,
+        @Field("password") password: String?,
+        @Field("alert_token") alert_token: String,
+        @Field("type") type:String
     ): Call<LoginResponse>
 
-    @FormUrlEncoded
-    @POST("/login/manager")
-    fun loginmanager(
-        @Field("username") username: String,
-        @Field("password") password: String
-    ): Call<LoginResponse>
+    @POST("/register")
+    fun API_register(
+        @Body requestBody: RegisterInputModel
+    ): Call<RegisterInputModel>
 
-    @POST("/register/employee")
-    fun registerEmployee(
-        @Body requestBody: RegisterResponse
-    ): Call<RegisterResponse>
 
-    @POST("/register/manager")
-    fun registerManager(
-        @Body requestBody: RegisterResponse
-    ): Call<RegisterResponse>
-
-    @POST("/forgot/employee/id")
-    fun findemployeeId(
+    @POST("/forgot/id")
+    fun API_findid(
         @Body request: Forgot_Id_Request
     ): Call<Forgot_Id_Result>
 
-    @POST("/forgot/manager/id")
-    fun findmanagerId(
-        @Body request: Forgot_Id_Request
-    ): Call<Forgot_Id_Result>
-
-    @POST("/forgot/employee/pw")
-    fun confirmEmployee(
+    @POST("/forgot/pw")
+    fun API_changepw(
         @Body userEmployee: ForgotPw
-    ): Call<ForgotPw>
-
-    @POST("/forgot/manager/pw")
-    fun confirmManager(
-        @Body userManager: ForgotPw
     ): Call<ForgotPw>
 
     @GET("/trend/{start}/{end}")
@@ -85,5 +66,5 @@ interface ApiService {
     ): AllAccidentProcessingResponse
 
     @GET("/")
-    fun getStatus():Call<Void>
+    fun API_getStatus():Call<Void>
 }

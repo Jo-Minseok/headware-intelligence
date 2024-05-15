@@ -43,14 +43,15 @@ import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-data class RegisterResponse(
+data class RegisterInputModel(
     val id: String,
     val password: String,
     val re_password: String,
     val name: String,
     val email: String,
     val phone_no: String,
-    val company: String?
+    val company: String?,
+    val type:String
 )
 
 data class CompanyList(
@@ -66,11 +67,29 @@ fun performSignup(id: String, password: String, re_password: String, name: Strin
         return
     }
     val companyToSend = if(company=="없음") null else company
-    if (isManager) {
-        performManagerSignup(id, password, re_password, name, email, phone_no, companyToSend, navController)
-    } else {
-        performEmployeeSignup(id, password, re_password, name, email, phone_no, companyToSend, navController)
-    }
+    val apiService = RetrofitInstance.apiService
+    val call = apiService.API_register(
+        RegisterInputModel(id, password, re_password, name, email, phone_no,companyToSend,if (isManager) "manager" else "employee")
+    )
+    call.enqueue(object : Callback<RegisterInputModel>
+    {
+        override fun onResponse(call: Call<RegisterInputModel>, response: Response<RegisterInputModel>
+        ) {
+            if (response.isSuccessful) {
+                // 회원 가입 성공 시
+                showSignupSuccessDialog(navController)
+            } else {
+                // 회원 가입 실패 시 처리할 코드
+                showSignupFailedDialog(navController)
+            }
+        }
+
+        override fun onFailure(call: Call<RegisterInputModel>
+                               , t: Throwable) {
+            // 통신 실패 시 처리할 코드
+            Log.e("HEAD METAL", t.message.toString())
+        }
+    })
 }
 
 // 비밀번호 일치 불일치 확인 함수
@@ -85,61 +104,6 @@ private fun showPasswordMismatchDialog(navController: NavController) {
 
     val dialog = builder.create()
     dialog.show()
-}
-
-// 관리자 회원가입 함수
-private fun performManagerSignup(id: String, password: String, re_password: String, name: String,
-    email: String, phone_no:String, company: String?, navController: NavController
-) {
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.registerManager(
-        RegisterResponse(id, password, re_password, name, email, phone_no,company)
-    )
-    call.enqueue(object : Callback<RegisterResponse>
-    {
-        override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>
-        ) {
-            if (response.isSuccessful) {
-                // 회원 가입 성공 시
-                showSignupSuccessDialog(navController)
-            } else {
-                // 회원 가입 실패 시 처리할 코드
-                showSignupFailedDialog(navController)
-            }
-        }
-
-        override fun onFailure(call: Call<RegisterResponse>
-                               , t: Throwable) {
-            // 통신 실패 시 처리할 코드
-            Log.e("HEAD METAL", t.message.toString())
-        }
-    })
-}
-
-// 직원 회원가입 함수
-private fun performEmployeeSignup(id: String, password: String, re_password: String, name: String,
-                                  email: String, phone_no: String, company: String?, navController: NavController
-) {
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.registerEmployee(
-        RegisterResponse(id, password, re_password, name, email, phone_no, company)
-    )
-    call.enqueue(object : Callback<RegisterResponse> {
-        override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
-            if (response.isSuccessful) {
-                // 회원 가입 성공 시
-                showSignupSuccessDialog(navController)
-            } else {
-                // 회원 가입 실패 시
-                showSignupFailedDialog(navController)
-            }
-        }
-
-        override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
-            // 통신 실패 시 처리할 코드
-            println("서버 통신 실패: ${t.message}")
-        }
-    })
 }
 
 //회원가입 실패 다이얼로그

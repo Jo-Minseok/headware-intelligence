@@ -114,7 +114,7 @@ fun NavigationGraph(navController: NavHostController) {
             License(navController)
         }
         composable("helmetScreen") {
-            Helmet()
+            Helmet(navController)
         }
         composable("privacyScreen") {
             Privacy(navController)

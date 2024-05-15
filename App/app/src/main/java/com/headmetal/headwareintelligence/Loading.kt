@@ -25,8 +25,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -36,12 +34,14 @@ fun Loading(navController: NavController) {
     val context = LocalContext.current
     val auto: SharedPreferences = context.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val userId = auto.getString("userid", null)
+    val userPassword = auto.getString("password",null)
     val accessToken = auto.getString("token", null)
-
+    val type = auto.getString("type",null)
     if (userId != null && accessToken != null) {
         autoLogin = true
     }
 
+    // 권한 요청
     val permissionsToRequest = mutableListOf<String>()
     val permissions = mutableListOf<String>(
         Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -56,13 +56,11 @@ fun Loading(navController: NavController) {
         permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
         permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
     }
-
     permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(LocalContext.current, permission) != PackageManager.PERMISSION_GRANTED) {
             permissionsToRequest.add(permission)
         }
     }
-
     if (permissionsToRequest.isNotEmpty()) {
         ActivityCompat.requestPermissions(
             LocalContext.current as Activity, permissionsToRequest.toTypedArray(),
@@ -73,30 +71,44 @@ fun Loading(navController: NavController) {
         Log.d("HEAD METAL", "권한이 이미 존재합니다.")
     }
     
-    var showDialog by remember { mutableStateOf(false) }
+    var serverNotConnect by remember { mutableStateOf(false) }
 
     // 서버 상태 확인
     val apiService = RetrofitInstance.apiService
-    val call = apiService.getStatus()
+    val call = apiService.API_getStatus()
     call.enqueue(object : Callback<Void> {
         override fun onResponse(call: Call<Void>, response: Response<Void>) {
             if (response.isSuccessful) {
                 if (autoLogin) {
-                    navController.navigate("mainScreen")
+                    when(performLogin(userId,userPassword, isManager = type == "manager",auto)){
+                        0-> navController.navigate("mainScreen")
+                        1-> {
+                            AlertDialog.Builder(context)
+                                .setTitle("자동 로그인 실패")
+                                .setMessage("비밀번호나 계정 정보가 변경되었습니다.")
+                                .setPositiveButton("확인") { dialog, _ -> navController.navigate("loginScreen") }
+                                .show()
+                        }
+                        2-> AlertDialog.Builder(context)
+                            .setTitle("서버 연결 실패")
+                            .setMessage("네트워크가 불안정하거나 서버에 연결되지 않습니다.")
+                            .setPositiveButton("확인") { dialog, _ -> (context as Activity).finish() }
+                            .show()
+                    }
                 } else {
                     navController.navigate("loginScreen")
                 }
             } else {
-                showDialog = true
+                serverNotConnect = true
             }
         }
 
         override fun onFailure(call: Call<Void>, t: Throwable) {
-            showDialog = true
+            serverNotConnect = true
         }
     })
 
-    if (showDialog) {
+    if (serverNotConnect) {
         AlertDialog.Builder(context)
             .setTitle("서버 연결 실패")
             .setMessage("네트워크가 불안정하거나 서버에 연결되지 않습니다.")

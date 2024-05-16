@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, field_validator, EmailStr
 from pydantic_core.core_schema import FieldValidationInfo
 
@@ -17,7 +18,7 @@ class Account_Input_Create(BaseModel):
     name: str
     email: EmailStr
     phone_no: str
-    company: str
+    company: Optional[str] = None
     type: str
 
     @field_validator('id', 'password', 'name', 'email', 'phone_no', 'type')

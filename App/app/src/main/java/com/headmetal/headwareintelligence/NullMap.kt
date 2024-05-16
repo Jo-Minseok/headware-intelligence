@@ -18,6 +18,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.VideoCameraFront
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -63,7 +64,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 data class NullAccidentResponse(
     val no: List<Int>, // 사고 번호 리스트
     val latitude: List<Double>, // 위도 리스트
-    val longitude: List<Double>, // 경도 리스트
+    val longitude: List<Double> // 경도 리스트
 )
 
 // Accident 테이블의 뷰 모델
@@ -92,28 +93,54 @@ class NullAccidentViewModel : ViewModel() {
     }
 }
 
+// Accident_Processing 테이블의 뷰 모델
+class NullAccidentProcessingViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    private val _no = mutableStateOf<Int?>(null)
+
+    private val _victim = mutableStateOf<String?>(null)
+    val victim: State<String?> = _victim
+
+    var state: Boolean = false // 데이터 수신 상태 확인
+
+    fun getAccidentProcessingData(no: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = apiService.getAccidentProcessingData(no)
+            _no.value = response.no
+            _victim.value = response.victim
+            state = !state // 모든 데이터를 수신한 뒤 상태를 전환
+        }
+    }
+}
+
 @SuppressLint("UnrememberedMutableState")
 @Composable
 @Preview(showBackground = true)
 @ExperimentalNaverMapApi
 fun NullMap(
     nullAccidentViewModel: NullAccidentViewModel = remember { NullAccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
+    nullAccidentProcessingViewModel: NullAccidentProcessingViewModel = remember { NullAccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
 ) {
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
+    val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
     val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) } // 마지막으로 선택된 마커
 
     Surface(modifier = Modifier.fillMaxSize()) {
         LoadingScreen()
         NullMapScreen(
             nullAccidentViewModel,
+            nullAccidentProcessingViewModel,
             isBottomSheetVisible,
             accidentNo,
+            victimName,
             selectedMarker
         )
         NullBottomSheetScreen(
             isBottomSheetVisible,
             accidentNo,
+            victimName,
             selectedMarker
         )
     }
@@ -122,8 +149,10 @@ fun NullMap(
 @Composable
 fun NullMapScreen(
     nullAccidentViewModel: NullAccidentViewModel,
+    nullAccidentProcessingViewModel: NullAccidentProcessingViewModel,
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
+    victimName: MutableState<String>,
     selectedMarker: MutableState<Marker?>
 ) {
     val isEndDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 종료 알림창 스위치
@@ -170,9 +199,30 @@ fun NullMapScreen(
                             val marker = Marker()
                             marker.tag = no[i]
                             marker.setOnClickListener {
-                                accidentNo.value = marker.tag as Int
-                                selectedMarker.value = marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
-                                isBottomSheetVisible.value = true // 바텀 시트 on
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    accidentNo.value = marker.tag as Int
+
+                                    LoadingState.show() // 로딩 창 출력
+                                    val accidentProcessingResponseResult = withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
+                                        CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
+                                            val state = nullAccidentProcessingViewModel.state // 현재 상태 값을 받아옴
+                                            nullAccidentProcessingViewModel.getAccidentProcessingData(accidentNo.value) // Accident Processing 테이블 데이터 수신
+                                            while (state == nullAccidentProcessingViewModel.state) {
+                                                // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
+                                            }
+                                        }.await() // 데이터를 받아올 때까지 대기
+                                    }
+                                    LoadingState.hide() // 로딩 창 숨김
+
+                                    if (accidentProcessingResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
+                                        Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                        isEndDialogVisible.value = true // 종료 알림창 on
+                                    }
+
+                                    victimName.value = nullAccidentProcessingViewModel.victim.value.toString() // 사고자 이름 업데이트
+                                    selectedMarker.value = marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
+                                    isBottomSheetVisible.value = true // 바텀 시트 on
+                                }
 
                                 true
                             }
@@ -192,6 +242,7 @@ fun NullMapScreen(
 fun NullBottomSheetScreen(
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
+    victimName: MutableState<String>,
     selectedMarker: MutableState<Marker?>
 ) {
     val isDetailInputDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
@@ -238,6 +289,18 @@ fun NullBottomSheetScreen(
                     )
                 }
                 Row(modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp),
+                        tint = Color.Black
+                    )
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "작업자", color = Color.Gray)
+                        Text(victimName.value)
+                    }
                     IconButton(
                         onClick = { Log.i("IconClick", "영상통화 아이콘 클릭") } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
                     ) {

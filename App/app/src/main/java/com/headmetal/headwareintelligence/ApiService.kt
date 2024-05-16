@@ -41,7 +41,7 @@ interface ApiService {
     suspend fun getAccidentData(
     ): AccidentResponse
 
-    @GET("/map/null")
+    @GET("/map/marker/null")
     suspend fun getNullAccidentData(
     ): NullAccidentResponse
 

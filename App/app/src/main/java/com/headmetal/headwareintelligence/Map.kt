@@ -75,14 +75,6 @@ data class AccidentResponse(
     val situationCode: List<Int> // 처리 상황 코드 리스트
 )
 
-// Accident_Processing 테이블의 데이터를 수신하는 데이터 클래스(Response)
-data class AccidentProcessingResponse(
-    val no: Int, // 사고 번호
-    val situation: String, // 처리 상황
-    val detail: String, // 사고 처리 세부 내역
-    val victim: String // 사고자 이름
-)
-
 // Accident 테이블의 뷰 모델
 class AccidentViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService

@@ -5,10 +5,10 @@ from processing import processing_contents_crud
 
 router = APIRouter(prefix='/processing')
 
-@router.get('/{situationCode}')
-def processing_data(db: Session = Depends(get_db), situationCode: str = Path(...)):
+@router.get('/{manager}/{situationCode}')
+def processing_data(db: Session = Depends(get_db), manager: str = Path(...), situationCode: str = Path(...)):
     # 사고 처리 데이터 조회
-    accidentProcessings = processing_contents_crud.get_accident_processing(db=db, situationCode=situationCode)
+    accidentProcessings = processing_contents_crud.get_accident_processing(db=db, manager=manager, situationCode=situationCode)
     
     # 데이터 처리
     no = []

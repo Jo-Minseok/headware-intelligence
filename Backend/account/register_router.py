@@ -8,7 +8,7 @@ from starlette import status
 router = APIRouter(prefix="")
 
 
-@router.post("/register", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/register", status_code=status.HTTP_200_OK)
 def post_account_register(input_data: Account_Input_Create, db: Session = Depends(get_db)):
     exist = register_crud.get_existing_account(input_data, db)
     if exist:

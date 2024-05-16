@@ -16,7 +16,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_account(input_data: Account_Input_Create, db: Session):
     if (input_data.type == "employee"):
-        db_data = UserEmployee(employee_id=input_data.id,
+        db_data = UserEmployee(id=input_data.id,
                                password=pwd_context.hash(
                                    input_data.password),
                                name=input_data.name,
@@ -24,7 +24,7 @@ def create_account(input_data: Account_Input_Create, db: Session):
                                phone_no=input_data.phone_no,
                                company=input_data.company)
     elif (input_data.type == "manager"):
-        db_data = UserManager(manager_id=input_data.id,
+        db_data = UserManager(id=input_data.id,
                               password=pwd_context.hash(input_data.password),
                               name=input_data.name,
                               email=input_data.email,

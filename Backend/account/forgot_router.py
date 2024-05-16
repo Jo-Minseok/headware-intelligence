@@ -9,7 +9,7 @@ router = APIRouter(prefix='/forgot')
 
 
 # 아이디 찾기
-@router.post("/id", response_model=Forgot_Id_Result)
+@router.post("/id", response_model=Forgot_Id_Result, status_code=status.HTTP_200_OK)
 def get_employee_id(input_data: Forgot_Id, db: Session = Depends(get_db)):
     search_result = forgot_crud.forgot_id(
         input_data.name, input_data.email, input_data.type, db)

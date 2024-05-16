@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, WebSocket, Depends
+from fastapi import APIRouter, HTTPException, WebSocket, Depends, status
 from pydantic import BaseModel
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -58,7 +58,7 @@ class ConnectionManager:
 
 
 # 사고 발생시 데이터를 받아오고, 이를 DB에 저장하는 방식
-@router.post("/upload")
+@router.post("/upload", status_code=status.HTTP_200_OK)
 def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
     db_accident = Accident(date=datetime.date(year=accident.date[0], month=accident.date[1], day=accident.date[2]),
                            time=datetime.time(

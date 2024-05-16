@@ -1,6 +1,6 @@
 import openpyxl
 import pytz
-from fastapi import APIRouter
+from fastapi import APIRouter, status
 from datetime import datetime, timedelta
 import requests
 from weather import api_config
@@ -14,7 +14,8 @@ data_dict = {}
 for row in sheet.iter_rows(values_only=True):
     data_dict[row[0]] = [row[1], row[2]]
 
-@router.get("/{city}/{district}")
+
+@router.get("/{city}/{district}", status_code=status.HTTP_200_OK)
 async def get_weather(city: str, district: str):
     now = datetime.now(pytz.timezone('Asia/Seoul'))
     h, m = now.hour, now.minute

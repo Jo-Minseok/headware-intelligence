@@ -22,19 +22,22 @@ def processing_data(db: Session = Depends(get_db), manager: str = Path(...), sit
     processingDate = []
     processingTime = []
     detail = []
-    for accidentProcessing in accidentProcessings:
-        accident = processing_contents_crud.get_accident(db=db, no=accidentProcessing.no)
-        no.append(accident.no)
-        date.append(accident.date)
-        time.append(accident.time)
-        latitude.append(accident.latitude)
-        longitude.append(accident.longitude)
-        category.append(accident.category)
-        victim.append(processing_contents_crud.get_victim_name(db=db, no=accidentProcessing.no))
-        situation.append(accidentProcessing.situation)
-        processingDate.append(accidentProcessing.date)
-        processingTime.append(accidentProcessing.time)
-        detail.append(accidentProcessing.detail)
+    try:
+        for accidentProcessing in accidentProcessings:
+            accident = processing_contents_crud.get_accident(db=db, no=accidentProcessing.no)
+            no.append(accident.no)
+            date.append(accident.date)
+            time.append(accident.time)
+            latitude.append(accident.latitude)
+            longitude.append(accident.longitude)
+            category.append(accident.category)
+            victim.append(processing_contents_crud.get_victim_name(db=db, no=accidentProcessing.no))
+            situation.append(accidentProcessing.situation)
+            processingDate.append(accidentProcessing.date)
+            processingTime.append(accidentProcessing.time)
+            detail.append(accidentProcessing.detail)
+    except AttributeError:
+        pass
     
     # 결과 반환
     return {

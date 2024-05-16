@@ -1,5 +1,7 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
+import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,10 +66,10 @@ data class AllAccidentProcessingResponse(
     val longitude: List<Double>,
     val category: List<String>,
     val victim: List<String>,
-    val situation: List<String>,
-    val processingDate: List<String>,
-    val processingTime: List<String>,
-    val detail: List<String>
+    val situation: List<String?>,
+    val processingDate: List<String?>,
+    val processingTime: List<String?>,
+    val detail: List<String?>
 )
 
 data class Item(
@@ -77,10 +80,10 @@ data class Item(
     val longitude: Double,
     val category: String,
     val victim: String,
-    val situation: String,
-    val processingDate: String,
-    val processingTime: String,
-    val detail: String
+    val situation: String?,
+    val processingDate: String?,
+    val processingTime: String?,
+    val detail: String?
 )
 
 class AllAccidentProcessingViewModel : ViewModel() {
@@ -107,17 +110,17 @@ class AllAccidentProcessingViewModel : ViewModel() {
     private val _victim = mutableStateOf<List<String>>(emptyList())
     val victim: State<List<String>> = _victim
 
-    private val _situation = mutableStateOf<List<String>>(emptyList())
-    val situation: State<List<String>> = _situation
+    private val _situation = mutableStateOf<List<String?>>(emptyList())
+    val situation: State<List<String?>> = _situation
 
-    private val _processingDate = mutableStateOf<List<String>>(emptyList())
-    val processingDate: State<List<String>> = _processingDate
+    private val _processingDate = mutableStateOf<List<String?>>(emptyList())
+    val processingDate: State<List<String?>> = _processingDate
 
-    private val _processingTime = mutableStateOf<List<String>>(emptyList())
-    val processingTime: State<List<String>> = _processingTime
+    private val _processingTime = mutableStateOf<List<String?>>(emptyList())
+    val processingTime: State<List<String?>> = _processingTime
 
-    private val _detail = mutableStateOf<List<String>>(emptyList())
-    val detail: State<List<String>> = _detail
+    private val _detail = mutableStateOf<List<String?>>(emptyList())
+    val detail: State<List<String?>> = _detail
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
@@ -142,6 +145,7 @@ class AllAccidentProcessingViewModel : ViewModel() {
 
 @Composable
 fun Processing(navController: NavController,accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var searchText by remember { mutableStateOf("") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
@@ -235,7 +239,7 @@ fun Processing(navController: NavController,accidentProcessingViewModel: AllAcci
                         refreshState.value = false
                         tabIndexState.value = false
                         val state = accidentProcessingViewModel.state
-                        accidentProcessingViewModel.getAllAccidentProcessingData("admin", situationCode.value)
+                        accidentProcessingViewModel.getAllAccidentProcessingData(auto.getString("userid", null).toString(), situationCode.value)
                         while (state == accidentProcessingViewModel.state) {
                             //
                         }
@@ -255,10 +259,12 @@ fun Processing(navController: NavController,accidentProcessingViewModel: AllAcci
                 val processingTime by accidentProcessingViewModel.processingTime
                 val detail by accidentProcessingViewModel.detail
 
+                println(no)
+
                 val itemList = mutableListOf<Item>()
 
                 for (i in no.indices) {
-                    itemList.add(Item(no[i], date[i], time[i], latitude[i], longitude[i], category[i], victim[i], situation[i], processingDate[i], processingTime[i], detail[i]))
+                    itemList.add(Item(no[i], date[i], time[i], latitude[i], longitude[i], category[i], victim[i], situation[i] ?: "미처리", processingDate[i] ?: "", processingTime[i] ?: "", detail[i] ?: ""))
                 }
 
                 LazyColumn(modifier = Modifier.fillMaxSize()) {

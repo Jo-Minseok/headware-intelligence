@@ -162,7 +162,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
     }
 
     var expanded by remember { mutableStateOf(false) }
-    var Company by remember { mutableStateOf("") }
+    var Company by remember { mutableStateOf("없음") }
 
 
     var isManager by remember {

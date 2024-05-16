@@ -1,7 +1,6 @@
 from db.models import Accident, AccidentProcessing, UserEmployee, Work_list
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from db.db_connection import db_session
 from common import SituationCode
 
 # 사고 처리 데이터 조회

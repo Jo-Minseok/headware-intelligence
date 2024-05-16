@@ -1,6 +1,8 @@
 package com.headmetal.headwareintelligence
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -82,9 +84,9 @@ class NullAccidentViewModel : ViewModel() {
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
-    fun getNullAccidentData() {
+    fun getNullAccidentData(manager: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getNullAccidentData()
+            val response = apiService.getNullAccidentData(manager)
             _no.value = response.no
             _latitude.value = response.latitude
             _longitude.value = response.longitude
@@ -122,6 +124,7 @@ fun NullMap(
     nullAccidentViewModel: NullAccidentViewModel = remember { NullAccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
     nullAccidentProcessingViewModel: NullAccidentProcessingViewModel = remember { NullAccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
 ) {
+
     val isSpinButtonVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
@@ -213,6 +216,7 @@ fun NullMapScreen(
         EndDialog(onEnd = { android.os.Process.killProcess(android.os.Process.myPid()) })
     }
 
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val context = LocalContext.current
 
     AndroidView(
@@ -225,7 +229,7 @@ fun NullMapScreen(
                         val nullAccidentResponseResult = withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
                             CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
                                 val state = nullAccidentViewModel.state // 현재 상태 값을 받아옴
-                                nullAccidentViewModel.getNullAccidentData() // Accident 테이블 데이터 수신
+                                nullAccidentViewModel.getNullAccidentData(auto.getString("userid", null).toString()) // Accident 테이블 데이터 수신
                                 while (state == nullAccidentViewModel.state) {
                                     // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
                                 }
@@ -407,7 +411,7 @@ fun NullBottomSheetScreen(
                     Button( // 바텀 시트의 '처리 중' 버튼
                         onClick = {
                             Log.i("ButtonClick", "처리 중 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), "") // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                         },
@@ -427,7 +431,7 @@ fun NullBottomSheetScreen(
                     Button( // 바텀 시트의 '오작동' 버튼
                         onClick = {
                             Log.i("ButtonClick", "오작동 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null) // 처리 상황을 '오작동'으로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), "") // 처리 상황을 '오작동'으로 갱신(DB 반영)
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                         },

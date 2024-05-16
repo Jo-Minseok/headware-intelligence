@@ -42,12 +42,14 @@ interface ApiService {
         @Path("end") end: String
     ): TrendResponse
 
-    @GET("/map/marker")
+    @GET("/map/{manager}/marker")
     suspend fun getAccidentData(
+        @Path("manager") manager: String
     ): AccidentResponse
 
-    @GET("/map/marker/null")
+    @GET("/map/{manager}/marker/null")
     suspend fun getNullAccidentData(
+        @Path("manager") manager: String
     ): NullAccidentResponse
 
     @GET("/map/marker/{no}")

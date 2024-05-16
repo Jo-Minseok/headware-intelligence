@@ -124,7 +124,7 @@ class AllAccidentProcessingViewModel : ViewModel() {
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
-    fun getAllAccidentProcessingData(manager:String, situationCode: String) {
+    fun getAllAccidentProcessingData(manager: String, situationCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val response = apiService.getAllAccidentProcessingData(manager, situationCode)
             _no.value = response.no

@@ -6,23 +6,27 @@ from common import ReverseSituationCode
 
 router = APIRouter(prefix='/map')
     
-@router.get('/marker')
-def accident_data(db: Session = Depends(get_db)):
+@router.get('/{manager}/marker')
+def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     # 사고 처리 데이터 조회
-    accidents = accident_marker_crud.get_all_accident_processing(db=db)
+    accidents = accident_marker_crud.get_all_accident_processing(db=db, manager=manager)
     
     # 데이터 처리
     no = []
     latitude = []
     longitude = []
-    for No in [accident.no for accident in accidents if accident.situation != None]:
-        accident = accident_marker_crud.get_accident(db=db, no=No)
-        no.append(accident.no)
-        latitude.append(accident.latitude)
-        longitude.append(accident.longitude)
-    
-    # 처리 상황 코드 지정
-    situationCode = [ReverseSituationCode[accident.situation] for accident in accidents]
+    situationCode = []
+    try:
+        for No in [accident.no for accident in accidents if accident.situation != None]:
+            accident = accident_marker_crud.get_accident(db=db, no=No)
+            no.append(accident.no)
+            latitude.append(accident.latitude)
+            longitude.append(accident.longitude)
+        for accident in accidents:
+            if accident.situation != None:
+                situationCode.append(ReverseSituationCode[accident.situation])
+    except AttributeError:
+        pass
 
     # 결과 반환
     return {
@@ -32,20 +36,23 @@ def accident_data(db: Session = Depends(get_db)):
         'situationCode' : situationCode
     }
 
-@router.get('/marker/null')
-def accident_data(db: Session = Depends(get_db)):
+@router.get('/{manager}/marker/null')
+def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     # 사고 처리 데이터 조회
-    accidents = accident_marker_crud.get_all_accident_processing(db=db)
+    accidents = accident_marker_crud.get_all_accident_processing(db=db, manager=manager)
     
     # 데이터 처리
     no = []
     latitude = []
     longitude = []
-    for nullNo in [accident.no for accident in accidents if accident.situation == None]:
-        accident = accident_marker_crud.get_accident(db=db, no=nullNo)
-        no.append(accident.no)
-        latitude.append(accident.latitude)
-        longitude.append(accident.longitude)
+    try:
+        for nullNo in [accident.no for accident in accidents if accident.situation == None]:
+            accident = accident_marker_crud.get_accident(db=db, no=nullNo)
+            no.append(accident.no)
+            latitude.append(accident.latitude)
+            longitude.append(accident.longitude)
+    except AttributeError:
+        pass
 
     # 결과 반환
     return {

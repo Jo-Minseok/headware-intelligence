@@ -87,7 +87,7 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
     db.commit()
     db.close()
     
-insert_accident()
+# insert_accident()
 
 # metaData = MetaData()
 # metaData.reflect(bind=engine)

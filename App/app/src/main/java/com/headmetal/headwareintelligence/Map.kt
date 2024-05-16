@@ -1,6 +1,8 @@
 package com.headmetal.headwareintelligence
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -93,9 +95,9 @@ class AccidentViewModel : ViewModel() {
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
-    fun getAccidentData() {
+    fun getAccidentData(manager: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getAccidentData()
+            val response = apiService.getAccidentData(manager)
             _no.value = response.no
             _latitude.value = response.latitude
             _longitude.value = response.longitude
@@ -155,6 +157,7 @@ fun Map(
     accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
     accidentProcessingViewModel: AccidentProcessingViewModel = remember { AccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
 ) {
+
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
     val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
@@ -213,6 +216,7 @@ fun MapScreen(
         EndDialog(onEnd = { android.os.Process.killProcess(android.os.Process.myPid()) })
     }
 
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val context = LocalContext.current
 
     AndroidView(
@@ -225,7 +229,7 @@ fun MapScreen(
                         val accidentResponseResult = withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
                             CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
                                 val state = accidentViewModel.state // 현재 상태 값을 받아옴
-                                accidentViewModel.getAccidentData() // Accident 테이블 데이터 수신
+                                accidentViewModel.getAccidentData(auto.getString("userid", null).toString()) // Accident 테이블 데이터 수신
                                 while (state == accidentViewModel.state) {
                                     // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
                                 }

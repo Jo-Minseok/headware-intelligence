@@ -3,9 +3,7 @@ package com.headmetal.headwareintelligence
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +40,70 @@ import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+// 서버로부터 받는 로그인 응답 데이터 모델 정의
+data class LoginResponse(
+    val id: String,
+    val name: String,
+    val access_token: String,
+    val token_type: String
+)
+fun performLogin(
+    username: String?,
+    password: String?,
+    isManager: Boolean,
+    auto: SharedPreferences,
+    navController: NavController,
+    pwState:MutableState<String>
+) {
+    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+    val call = RetrofitInstance.apiService.API_login(
+        alert_token = auto.getString("alert_token", null).toString(),
+        type = if (isManager) "manager" else "employee",
+        id = username,
+        pw = password
+    )
+    call.enqueue(object : Callback<LoginResponse> {
+        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+            if (response.isSuccessful) {
+                autoLoginEdit.putString("userid", response.body()?.id)
+                autoLoginEdit.putString("password", password)
+                autoLoginEdit.putString("name", response.body()?.name)
+                autoLoginEdit.putString("token", response.body()?.access_token)
+                autoLoginEdit.putString("token_type", response.body()?.token_type)
+                autoLoginEdit.putString("type", if (isManager) "manager" else "employee")
+                autoLoginEdit.apply()
+                navController.navigate("mainScreen")
+                Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",Toast.LENGTH_SHORT)
+            } else {
+                val builder = AlertDialog.Builder(navController.context)
+                builder.setTitle("로그인 실패")
+                builder.setMessage("아이디 및 비밀번호를 확인하세요.")
+                // 확인 버튼 설정
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                    pwState.value = ""
+                }
+                // 다이얼로그 표시
+                val dialog = builder.create()
+                dialog.show()
+            }
+        }
+
+        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+            val builder = AlertDialog.Builder(navController.context)
+            builder.setTitle("로그인 실패")
+            builder.setMessage("서버 상태 및 네트워크 접속 불안정")
+            // 확인 버튼 설정
+            builder.setPositiveButton("확인") { dialog, _ ->
+                (navController.context as Activity).finish()
+            }
+            // 다이얼로그 표시
+            val dialog = builder.create()
+            dialog.show()
+        }
+    })
+}
 
 @Composable
 fun Login(navController: NavController) {
@@ -160,36 +222,7 @@ fun Login(navController: NavController) {
             Row {
                 Button(
                     onClick = {
-                        var builder: AlertDialog.Builder? = null
-                        val result = performLogin(idState.value, pwState.value, isManager, auto)
-                        // 로그인 성공시
-                        when (result) {
-                            0 -> navController.navigate("mainScreen")
-                            1 -> {
-                                builder = AlertDialog.Builder(navController.context)
-                                builder.setTitle("로그인 실패")
-                                builder.setMessage("아이디나 비밀번호를 확인하세요")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                    pwState.value = ""
-                                }
-
-                                val dialog = builder.create()
-                                dialog.show()
-                            }
-
-                            2 -> {
-                                builder = AlertDialog.Builder(navController.context)
-                                builder.setTitle("서버 통신 실패")
-                                builder.setMessage("네트워크나 서버 상태를 확인하세요")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                val dialog = builder.create()
-                                dialog.show()
-                            }
-                        }
-
+                        performLogin(idState.value,pwState.value,isManager,auto,navController,pwState)
                     },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),

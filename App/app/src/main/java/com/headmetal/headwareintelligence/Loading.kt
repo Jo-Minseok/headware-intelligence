@@ -25,6 +25,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -33,10 +34,13 @@ fun Loading(navController: NavController) {
     var autoLogin by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val auto: SharedPreferences = context.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val autoLoginEdit:SharedPreferences.Editor = auto.edit()
     val userId = auto.getString("userid", null)
     val userPassword = auto.getString("password",null)
     val accessToken = auto.getString("token", null)
-    val type = auto.getString("type",null)
+    val type = auto.getString("type",null).toString()
+    val builder = AlertDialog.Builder(navController.context)
+
     if (userId != null && accessToken != null) {
         autoLogin = true
     }
@@ -70,8 +74,6 @@ fun Loading(navController: NavController) {
     } else {
         Log.d("HEAD METAL", "권한이 이미 존재합니다.")
     }
-    
-    var serverNotConnect by remember { mutableStateOf(false) }
 
     // 서버 상태 확인
     val apiService = RetrofitInstance.apiService
@@ -80,41 +82,75 @@ fun Loading(navController: NavController) {
         override fun onResponse(call: Call<Void>, response: Response<Void>) {
             if (response.isSuccessful) {
                 if (autoLogin) {
-                    when(performLogin(userId,userPassword, isManager = type == "manager",auto)){
-                        0-> navController.navigate("mainScreen")
-                        1-> {
-                            AlertDialog.Builder(context)
-                                .setTitle("자동 로그인 실패")
-                                .setMessage("비밀번호나 계정 정보가 변경되었습니다.")
-                                .setPositiveButton("확인") { dialog, _ -> navController.navigate("loginScreen") }
-                                .show()
+                    val call_login = RetrofitInstance.apiService.API_login(
+                        alert_token = auto.getString("alert_token", null).toString(),
+                        type = type,
+                        id = userId,
+                        pw = userPassword
+                    )
+                    call_login.enqueue(object : Callback<LoginResponse> {
+                        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                            if (response.isSuccessful) {
+                                navController.navigate("mainScreen")
+                                Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",
+                                    Toast.LENGTH_SHORT)
+                            } else {
+                                val builder = AlertDialog.Builder(navController.context)
+                                builder.setTitle("자동 로그인 실패")
+                                builder.setMessage("변경된 비밀번호를 확인하세요.")
+                                // 확인 버튼 설정
+                                builder.setPositiveButton("확인") { dialog, _ ->
+                                    dialog.dismiss()
+                                    navController.navigate("loginScreen")
+                                    autoLoginEdit.clear()
+                                    autoLoginEdit.apply()
+                                }
+                                // 다이얼로그 표시
+                                val dialog = builder.create()
+                                dialog.show()
+                            }
                         }
-                        2-> AlertDialog.Builder(context)
-                            .setTitle("서버 연결 실패")
-                            .setMessage("네트워크가 불안정하거나 서버에 연결되지 않습니다.")
-                            .setPositiveButton("확인") { dialog, _ -> (context as Activity).finish() }
-                            .show()
-                    }
+
+                        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                            builder.setTitle("로그인 실패")
+                            builder.setMessage("서버 상태 및 네트워크 접속 불안정")
+                            // 확인 버튼 설정
+                            builder.setPositiveButton("확인") { dialog, _ ->
+                                (navController.context as Activity).finish()
+                            }
+                            // 다이얼로그 표시
+                            val dialog = builder.create()
+                            dialog.show()
+                        }
+                    })
                 } else {
                     navController.navigate("loginScreen")
                 }
             } else {
-                serverNotConnect = true
+                builder.setTitle("서버 접속 실패")
+                builder.setMessage("서버 상태 및 네트워크 접속 불안정")
+                // 확인 버튼 설정
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    (navController.context as Activity).finish()
+                }
+                // 다이얼로그 표시
+                val dialog = builder.create()
+                dialog.show()
             }
         }
 
         override fun onFailure(call: Call<Void>, t: Throwable) {
-            serverNotConnect = true
+            builder.setTitle("서버 접속 실패")
+            builder.setMessage("서버 상태 및 네트워크 접속 불안정")
+            // 확인 버튼 설정
+            builder.setPositiveButton("확인") { dialog, _ ->
+                (navController.context as Activity).finish()
+            }
+            // 다이얼로그 표시
+            val dialog = builder.create()
+            dialog.show()
         }
     })
-
-    if (serverNotConnect) {
-        AlertDialog.Builder(context)
-            .setTitle("서버 연결 실패")
-            .setMessage("네트워크가 불안정하거나 서버에 연결되지 않습니다.")
-            .setPositiveButton("확인") { dialog, _ -> (context as Activity).finish() }
-            .show()
-    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),

@@ -1,4 +1,4 @@
-from db.models import Accident, AccidentProcessing, Work_list
+from db.models import Accident, AccidentProcessing
 from db.db_connection import db_session
 import datetime
 import numpy as np
@@ -79,3 +79,13 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
     db.close()
     
 # insert_accident()
+
+# metaData = MetaData()
+# metaData.reflect(bind=engine)
+# table = Table('accident_processing', metaData, autoload=True, autoload_with=engine)
+
+# with engine.connect() as connection:
+#     connection.execute(text("ALTER TABLE accident_processing MODIFY COLUMN situation VARCHAR(100)"))
+#     connection.execute(text("ALTER TABLE accident_processing MODIFY COLUMN date DATE"))
+#     connection.execute(text("ALTER TABLE accident_processing MODIFY COLUMN time TIME"))
+#     connection.execute(text("ALTER TABLE accident_processing MODIFY COLUMN detail VARCHAR(100)"))

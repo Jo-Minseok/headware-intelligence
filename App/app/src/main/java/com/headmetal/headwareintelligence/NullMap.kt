@@ -411,7 +411,7 @@ fun NullBottomSheetScreen(
                     Button( // 바텀 시트의 '처리 중' 버튼
                         onClick = {
                             Log.i("ButtonClick", "처리 중 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), "") // 처리 상황을 '처리 중'으로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                         },
@@ -431,7 +431,7 @@ fun NullBottomSheetScreen(
                     Button( // 바텀 시트의 '오작동' 버튼
                         onClick = {
                             Log.i("ButtonClick", "오작동 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), "") // 처리 상황을 '오작동'으로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null) // 처리 상황을 '오작동'으로 갱신(DB 반영)
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                         },
@@ -451,7 +451,7 @@ fun NullBottomSheetScreen(
                     Button( // 바텀 시트의 '119 신고' 버튼
                         onClick = {
                             Log.i("ButtonClick", "119 신고 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.REPORT119.ordinal.toString(), "") // 처리 상황을 '119 신고'로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.REPORT119.ordinal.toString(), null) // 처리 상황을 '119 신고'로 갱신(DB 반영)
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                         },

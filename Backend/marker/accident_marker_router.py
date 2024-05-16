@@ -30,8 +30,30 @@ def accident_data(db: Session = Depends(get_db)):
     return {
         'no' : no, 
         'latitude' : latitude, 
-        'longitude' : longitude,
+        'longitude' : longitude, 
         'situationCode' : situationCode
+    }
+
+@router.get('/marker/null')
+def accident_data(db: Session = Depends(get_db)):
+    # 사고 처리 데이터 조회
+    accidents = accident_marker_crud.get_all_accident_processing(db=db)
+    
+    # 데이터 처리
+    no = []
+    latitude = []
+    longitude = []
+    for noNull in [accident.no for accident in accidents if accident.situation == None]:
+        accident = accident_marker_crud.get_accident(db=db, no=noNull)
+        no.append(accident.no)
+        latitude.append(accident.latitude)
+        longitude.append(accident.longitude)
+
+    # 결과 반환
+    return {
+        'no' : no, 
+        'latitude' : latitude, 
+        'longitude' : longitude
     }
 
 @router.get('/marker/{no}')

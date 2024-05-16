@@ -114,7 +114,7 @@ class NullAccidentProcessingViewModel : ViewModel() {
     }
 }
 
-@SuppressLint("UnrememberedMutableState")
+@SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
 @Composable
 @Preview(showBackground = true)
 @ExperimentalNaverMapApi
@@ -122,27 +122,76 @@ fun NullMap(
     nullAccidentViewModel: NullAccidentViewModel = remember { NullAccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
     nullAccidentProcessingViewModel: NullAccidentProcessingViewModel = remember { NullAccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
 ) {
+    val isSpinButtonVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
     val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
+    val accidentNoList: MutableList<Int> = remember { mutableListOf() }
+    val markerList: MutableList<Marker> = remember { mutableListOf() }
     val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) } // 마지막으로 선택된 마커
 
     Surface(modifier = Modifier.fillMaxSize()) {
         LoadingScreen()
-        NullMapScreen(
-            nullAccidentViewModel,
-            nullAccidentProcessingViewModel,
-            isBottomSheetVisible,
-            accidentNo,
-            victimName,
-            selectedMarker
-        )
-        NullBottomSheetScreen(
-            isBottomSheetVisible,
-            accidentNo,
-            victimName,
-            selectedMarker
-        )
+        Column {
+            SpinButtonScreen(
+                isSpinButtonVisible,
+                accidentNoList,
+                markerList
+            )
+            NullMapScreen(
+                nullAccidentViewModel,
+                nullAccidentProcessingViewModel,
+                isSpinButtonVisible,
+                isBottomSheetVisible,
+                accidentNo,
+                victimName,
+                accidentNoList,
+                markerList,
+                selectedMarker
+            )
+            NullBottomSheetScreen(
+                isBottomSheetVisible,
+                accidentNo,
+                victimName,
+                selectedMarker
+            )
+        }
+    }
+}
+
+@Composable
+fun SpinButtonScreen(
+    isSpinButtonVisible: MutableState<Boolean>,
+    accidentNoList: MutableList<Int>,
+    markerList: MutableList<Marker>
+) {
+    val idx: MutableState<Int> = remember { mutableIntStateOf(0) }
+
+    if (isSpinButtonVisible.value) {
+        markerList[0].performClick()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = {
+                if (idx.value > 0) {
+                    idx.value--
+                }
+            }) {
+                Text(text = "<")
+            }
+            Text(
+                text = "사고 번호 ${accidentNoList[idx.value]}",
+                textAlign = TextAlign.Center
+            )
+            Button(onClick = {
+                if (idx.value < accidentNoList.lastIndex) {
+                    idx.value++
+                }
+            }) {
+                Text(text = ">")
+            }
+        }
     }
 }
 
@@ -150,9 +199,12 @@ fun NullMap(
 fun NullMapScreen(
     nullAccidentViewModel: NullAccidentViewModel,
     nullAccidentProcessingViewModel: NullAccidentProcessingViewModel,
+    isSpinButtonVisible: MutableState<Boolean>,
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
     victimName: MutableState<String>,
+    accidentNoList: MutableList<Int>,
+    markerList: MutableList<Marker>,
     selectedMarker: MutableState<Marker?>
 ) {
     val isEndDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 종료 알림창 스위치
@@ -183,21 +235,22 @@ fun NullMapScreen(
 
                         if (nullAccidentResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
                             Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
-                            isEndDialogVisible.value = true // 종료 알림창 on
+                            //isEndDialogVisible.value = true // 종료 알림창 on
                         }
-
                         // 수신한 Accident 테이블 데이터를 캡쳐
-                        val no by nullAccidentViewModel.no
+                        accidentNoList.addAll(nullAccidentViewModel.no.value)
                         val latitude by nullAccidentViewModel.latitude
                         val longitude by nullAccidentViewModel.longitude
+
+                        isSpinButtonVisible.value = true
 
                         // 지도의 초기 위치 설정(GPS 사용 필요)
                         val initialCameraPosition = CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
                         map.moveCamera(initialCameraPosition)
 
-                        for (i in no.indices) { // 수신한 사고 건수만큼 반복
+                        for (i in accidentNoList.indices) { // 수신한 사고 건수만큼 반복
                             val marker = Marker()
-                            marker.tag = no[i]
+                            marker.tag = accidentNoList[i]
                             marker.setOnClickListener {
                                 CoroutineScope(Dispatchers.Main).launch {
                                     accidentNo.value = marker.tag as Int
@@ -216,11 +269,12 @@ fun NullMapScreen(
 
                                     if (accidentProcessingResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
                                         Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
-                                        isEndDialogVisible.value = true // 종료 알림창 on
+                                        //isEndDialogVisible.value = true // 종료 알림창 on
                                     }
 
                                     victimName.value = nullAccidentProcessingViewModel.victim.value.toString() // 사고자 이름 업데이트
                                     selectedMarker.value = marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
+                                    map.moveCamera(CameraUpdate.scrollTo(LatLng(marker.position.latitude, marker.position.longitude)))
                                     isBottomSheetVisible.value = true // 바텀 시트 on
                                 }
 
@@ -228,6 +282,7 @@ fun NullMapScreen(
                             }
                             marker.position = LatLng(latitude[i], longitude[i])
                             marker.icon = MarkerIcons.GRAY
+                            markerList.add(marker)
                             marker.map = map
                         }
                     }

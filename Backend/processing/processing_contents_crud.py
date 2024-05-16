@@ -5,8 +5,17 @@ from db.db_connection import db_session
 from common import SituationCode
 
 # 사고 처리 데이터 조회
-def get_accident_processing(db: Session, situationCode: str):
-    return db.query(AccidentProcessing).filter(AccidentProcessing.situation != '오작동').all() if SituationCode[situationCode] != '오작동' else db.query(AccidentProcessing).filter(AccidentProcessing.situation == '오작동').all()
+def get_accident_processing(db: Session, manager: str, situationCode: str):
+    res = []
+    work_id = db.execute(select(Work_list.work_id).where(Work_list.manager == manager)).all()
+    for id in work_id:
+        accident_no = db.execute(select(Accident.no).where(Accident.work_id == id[0])).all()
+        for no in accident_no:
+            if SituationCode[situationCode] != '오작동':
+                res.append(db.query(AccidentProcessing).filter(AccidentProcessing.situation != '오작동' and AccidentProcessing.no == no[0]).first())
+            else:
+                res.append(db.query(AccidentProcessing).filter(AccidentProcessing.situation == '오작동' and AccidentProcessing.no == no[0]).first())
+    return res
 
 # 사고 데이터 조회(단일 데이터)
 def get_accident(db: Session, no: int):

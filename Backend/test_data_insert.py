@@ -1,5 +1,6 @@
-from db.models import Accident, AccidentProcessing
-from db.db_connection import db_session
+from db.models import Accident, AccidentProcessing, Work_list
+from db.db_connection import db_session, engine
+from sqlalchemy import select, MetaData, Table
 import datetime
 import numpy as np
 
@@ -42,7 +43,7 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
                             latitude=lat, 
                             longitude=lon, 
-                            work_id='11', 
+                            work_id=['22', '104', '105', '106', '44', '107', '108', '109'][np.random.randint(0, 8)], 
                             victim_id=['1234', '5678'][np.random.randint(0, 2)], 
                             category=['낙상 사고', '낙하 사고'][np.random.randint(0, 2)])
         db.add(accident)
@@ -61,7 +62,7 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
                                             situation='처리 완료', 
                                             date=day.strftime('%Y-%m-%d'), 
                                             time=datetime.datetime.now().strftime('%H:%M:%S'), 
-                                            detail='TTT' + str(np.random.randint(1, 100)))
+                                            detail='detail' + str(np.random.randint(1, 100)))
         elif idx == 1:
             processing = AccidentProcessing(no=accident.no, 
                                             situation='119 신고', 

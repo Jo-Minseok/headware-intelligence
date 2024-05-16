@@ -121,9 +121,9 @@ class AllAccidentProcessingViewModel : ViewModel() {
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
-    fun getAllAccidentProcessingData(situationCode: String) {
+    fun getAllAccidentProcessingData(manager:String, situationCode: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getAllAccidentProcessingData(situationCode)
+            val response = apiService.getAllAccidentProcessingData(manager, situationCode)
             _no.value = response.no
             _date.value = response.date
             _time.value = response.time
@@ -235,7 +235,7 @@ fun Processing(navController: NavController,accidentProcessingViewModel: AllAcci
                         refreshState.value = false
                         tabIndexState.value = false
                         val state = accidentProcessingViewModel.state
-                        accidentProcessingViewModel.getAllAccidentProcessingData(situationCode.value)
+                        accidentProcessingViewModel.getAllAccidentProcessingData("admin", situationCode.value)
                         while (state == accidentProcessingViewModel.state) {
                             //
                         }

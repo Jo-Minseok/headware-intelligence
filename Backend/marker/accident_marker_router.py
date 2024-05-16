@@ -8,20 +8,18 @@ router = APIRouter(prefix='/map')
     
 @router.get('/marker')
 def accident_data(db: Session = Depends(get_db)):
-    # 사고 데이터 조회
-    accidents = accident_marker_crud.get_all_accident(db=db)
+    # 사고 처리 데이터 조회
+    accidents = accident_marker_crud.get_all_accident_processing(db=db)
     
     # 데이터 처리
     no = []
     latitude = []
     longitude = []
-    for accident in accidents:
+    for No in [accident.no for accident in accidents if accident.situation != None]:
+        accident = accident_marker_crud.get_accident(db=db, no=No)
         no.append(accident.no)
         latitude.append(accident.latitude)
         longitude.append(accident.longitude)
-        
-    # 사고 처리 데이터 조회
-    accidents = accident_marker_crud.get_all_accident_processing(db=db)
     
     # 처리 상황 코드 지정
     situationCode = [ReverseSituationCode[accident.situation] for accident in accidents]
@@ -43,8 +41,8 @@ def accident_data(db: Session = Depends(get_db)):
     no = []
     latitude = []
     longitude = []
-    for noNull in [accident.no for accident in accidents if accident.situation == None]:
-        accident = accident_marker_crud.get_accident(db=db, no=noNull)
+    for nullNo in [accident.no for accident in accidents if accident.situation == None]:
+        accident = accident_marker_crud.get_accident(db=db, no=nullNo)
         no.append(accident.no)
         latitude.append(accident.latitude)
         longitude.append(accident.longitude)

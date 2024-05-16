@@ -5,10 +5,6 @@ from marker.accident_marker_schema import Accident_Processing_Detail
 from common import SituationCode
 import datetime
 
-# 사고 데이터 조회(모든 데이터)
-def get_all_accident(db: Session):
-    return db.query(Accident).all()
-
 # 사고 처리 데이터 조회(모든 데이터)
 def get_all_accident_processing(db: Session):
     return db.query(AccidentProcessing).all()

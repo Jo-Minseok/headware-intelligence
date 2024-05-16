@@ -3,9 +3,9 @@ from db.db_connection import get_db
 from sqlalchemy.orm import Session
 from processing import processing_contents_crud
 
-router = APIRouter(prefix='/accident')
+router = APIRouter(prefix='/processing')
 
-@router.get('/processing/{manager}/{situationCode}')
+@router.get('/{situationCode}')
 def processing_data(db: Session = Depends(get_db), situationCode: str = Path(...)):
     # 사고 처리 데이터 조회
     accidentProcessings = processing_contents_crud.get_accident_processing(db=db, situationCode=situationCode)

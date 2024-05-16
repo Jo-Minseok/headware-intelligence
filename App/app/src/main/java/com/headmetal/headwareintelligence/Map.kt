@@ -43,13 +43,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
@@ -151,9 +151,9 @@ class ItemKey(val id: Int, private val position: LatLng = LatLng(0.0, 0.0)) : Cl
 
 @SuppressLint("UnrememberedMutableState")
 @Composable
-@Preview(showBackground = true)
 @ExperimentalNaverMapApi
 fun Map(
+    navController: NavController,
     accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
     accidentProcessingViewModel: AccidentProcessingViewModel = remember { AccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
 ) {

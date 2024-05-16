@@ -245,7 +245,7 @@ fun Main(navController: NavController) {
             }
             Column() {
                 Button(
-                    onClick = {},
+                    onClick = { navController.navigate("mapScreen") },
                     modifier = Modifier.padding(),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                     colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),

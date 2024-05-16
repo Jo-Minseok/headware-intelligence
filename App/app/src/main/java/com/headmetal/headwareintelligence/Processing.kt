@@ -144,7 +144,7 @@ class AllAccidentProcessingViewModel : ViewModel() {
 }
 
 @Composable
-fun Processing(navController: NavController,accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
+fun Processing(navController: NavController, accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var searchText by remember { mutableStateOf("") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }

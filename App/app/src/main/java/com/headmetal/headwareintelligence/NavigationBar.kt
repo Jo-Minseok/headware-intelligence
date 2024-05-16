@@ -20,6 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
 //@Composable
 //fun isItemSelected(navController: NavController, destination: String): Boolean {
@@ -80,6 +81,7 @@ sealed class Destinations(
     )
 
 }
+@OptIn(ExperimentalNaverMapApi::class)
 @Composable
 fun NavigationGraph(navController: NavHostController) {
     NavHost(navController, startDestination = "loadingScreen") {
@@ -130,6 +132,9 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable("countermeasuresScreen") {
             Countermeasures(navController)
+        }
+        composable("mapScreen") {
+            NullMap(navController)
         }
     }
 }

@@ -20,7 +20,7 @@ def get_employee_id(input_data: Forgot_Id, db: Session = Depends(get_db)):
 
 
 # 비밀번호 변경
-@router.put("/pw", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/pw", status_code=status.HTTP_200_OK)
 def change_employee_pw(input_data: Forgot_Pw, db: Session = Depends(get_db)):
     pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
     search_result = forgot_crud.search_account(

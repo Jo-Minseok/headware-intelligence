@@ -5,8 +5,8 @@ from account.account_schema import Login_Input
 from db.models import UserEmployee, UserManager
 
 
-def get_employee(input_data: Login_Input, db: Session):
-    if (input_data.type == "employee"):
+def get_employee(id: str,type:str,db: Session):
+    if (type == "employee"):
         return db.query(UserEmployee).filter(UserEmployee.id == id).first()
-    elif (input_data.type == "manager"):
+    elif (type == "manager"):
         return db.query(UserManager).filter(UserManager.id == id).first()

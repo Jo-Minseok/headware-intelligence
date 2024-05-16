@@ -29,11 +29,11 @@ router = APIRouter()
 
 
 # employee 라우터 연결, 반환 모델은 Employee_Login 스키마
-@router.post("/login", response_model=Login_Output)
-def get_employee_login(input_data: Login_Input, db: Session = Depends(get_db)):
-    user_row = login_crud.get_employee(input_data, db)
+@router.post("/login", response_model=Login_Output,status_code=status.HTTP_200_OK)
+def get_employee_login(alert_token:str,type:str,account_data: OAuth2PasswordRequestForm=Depends(), db: Session = Depends(get_db)):
+    user_row = login_crud.get_employee(account_data.username,type,db)
     # ID가 없거나 비밀번호를 확인했을 때 잘 못 됐다면 HTTP 예외 발생
-    if not user_row or not pwd_context.verify(input_data.password, user_row.password):
+    if not user_row or not pwd_context.verify(account_data.password, user_row.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="아이디와 비밀번호가 맞지 않습니다.",
@@ -48,7 +48,7 @@ def get_employee_login(input_data: Login_Input, db: Session = Depends(get_db)):
     access_token = jwt.encode(
         data, secure_object.SECRET_KEY, algorithm=secure_object.ALGORITHM)
     user_row.login_token = access_token
-    user_row.alert_token = input_data.alert_token
+    user_row.alert_token = alert_token
     db.commit()
     # Employee_Login 스키마 반환
     return {

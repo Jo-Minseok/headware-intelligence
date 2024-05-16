@@ -11,8 +11,6 @@ class Login_Output(BaseModel):
 
 
 class Login_Input(BaseModel):
-    id: str
-    password: str
     alert_token: str
     type: str
 

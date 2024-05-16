@@ -446,7 +446,7 @@ fun BottomSheetScreen(
                     Button( // 바텀 시트의 '처리 중' 버튼
                         onClick = {
                             Log.i("ButtonClick", "처리 중 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), "") // 처리 상황을 '처리 중'으로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                             situationCode[situationCodeIdx.value] = SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
                             selectedMarker.value?.icon = MarkerIcons.YELLOW // 단말 마커 아이콘을 노란색 마커로 갱신
                         },
@@ -466,7 +466,7 @@ fun BottomSheetScreen(
                     Button( // 바텀 시트의 '오작동' 버튼
                         onClick = {
                             Log.i("ButtonClick", "오작동 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), "") // 처리 상황을 '오작동'으로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null) // 처리 상황을 '오작동'으로 갱신(DB 반영)
                             situationCode[situationCodeIdx.value] = SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             cluster.value!!.remove(ItemKey(accidentNo.value)) // 삭제된 마커를 클러스터에서 제외
@@ -488,7 +488,7 @@ fun BottomSheetScreen(
                     Button( // 바텀 시트의 '119 신고' 버튼
                         onClick = {
                             Log.i("ButtonClick", "119 신고 버튼 클릭")
-                            updateAccidentSituation(accidentNo.value, SituationCode.REPORT119.ordinal.toString(), "") // 처리 상황을 '119 신고'로 갱신(DB 반영)
+                            updateAccidentSituation(accidentNo.value, SituationCode.REPORT119.ordinal.toString(), null) // 처리 상황을 '119 신고'로 갱신(DB 반영)
                             situationCode[situationCodeIdx.value] = SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
                             selectedMarker.value?.icon = MarkerIcons.RED // 단말 마커 아이콘을 빨간색 마커로 갱신
                         },

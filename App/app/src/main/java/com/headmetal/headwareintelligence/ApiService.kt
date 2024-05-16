@@ -8,11 +8,16 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
+    @FormUrlEncoded
     @POST("/login")
     fun API_login(
-        @Body requestBody: LoginInput
+        @Query("alert_token") alert_token:String,
+        @Query("type") type:String,
+        @Field("username") id:String?,
+        @Field("password") pw:String?
     ): Call<LoginResponse>
 
     @POST("/register")

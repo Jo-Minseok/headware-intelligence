@@ -109,7 +109,7 @@ class AccidentProcessing(Base):
 
     no = Column(Integer, ForeignKey("accident.no"),
                 primary_key=True, autoincrement=True)
-    situation = Column(VARCHAR(length=100), nullable=False)
-    date = Column(Date, nullable=False)
-    time = Column(Time, nullable=False)
-    detail = Column(VARCHAR(length=100), nullable=False)
+    situation = Column(VARCHAR(length=100), nullable=True)
+    date = Column(Date, nullable=True)
+    time = Column(Time, nullable=True)
+    detail = Column(VARCHAR(length=100), nullable=True)

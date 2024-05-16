@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import android.app.AlertDialog
 import android.content.SharedPreferences
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.getValue
@@ -69,7 +70,7 @@ fun BackOnPressed() {
     var backPressedTime = 0L
 
     BackHandler(enabled = backPressedState) {
-        if(System.currentTimeMillis() - backPressedTime <= 800L) {
+        if (System.currentTimeMillis() - backPressedTime <= 800L) {
             // 앱 종료
             (context as Activity).finish()
         } else {
@@ -80,22 +81,39 @@ fun BackOnPressed() {
     }
 }
 
+
+// 서버로부터 받는 로그인 응답 데이터 모델 정의
+data class LoginResponse(
+    val id: String,
+    val name: String,
+    val access_token: String,
+    val token_type: String
+)
+
 // 로그인 수행 함수
-fun performLogin(username: String?, password: String?, isManager: Boolean, auto: SharedPreferences): Int {
+fun performLogin(
+    username: String?,
+    password: String?,
+    isManager: Boolean,
+    auto: SharedPreferences
+): Int {
     val autoLoginEdit: SharedPreferences.Editor = auto.edit()
-    val call=RetrofitInstance.apiService.API_login(
-            LoginInput( id= username, password = password, alert_token = auto.getString("alert_token", null).toString(), type = if(isManager) "manager" else "employee")
+    val call = RetrofitInstance.apiService.API_login(
+        alert_token = auto.getString("alert_token", null).toString(),
+        type = if (isManager) "manager" else "employee",
+        id = username,
+        pw = password
     )
-    var loginSuccess: Int = 0
+    var loginSuccess =0
     call.enqueue(object : Callback<LoginResponse> {
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             if (response.isSuccessful) {
                 autoLoginEdit.putString("userid", response.body()?.id)
-                autoLoginEdit.putString("password",password)
+                autoLoginEdit.putString("password", password)
                 autoLoginEdit.putString("name", response.body()?.name)
                 autoLoginEdit.putString("token", response.body()?.access_token)
                 autoLoginEdit.putString("token_type", response.body()?.token_type)
-                autoLoginEdit.putString("type", if(isManager)"manager" else "employee")
+                autoLoginEdit.putString("type", if (isManager) "manager" else "employee")
                 autoLoginEdit.apply()
                 loginSuccess = 0
             } else {

@@ -43,21 +43,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-// 서버로부터 받는 로그인 응답 데이터 모델 정의
-data class LoginResponse(
-    val id: String,
-    val name: String,
-    val access_token: String,
-    val token_type: String,
-)
-
-data class LoginInput(
-    val id:String?,
-    val password:String?,
-    val alert_token:String,
-    val type:String
-)
-
 @Composable
 fun Login(navController: NavController) {
     BackOnPressed()

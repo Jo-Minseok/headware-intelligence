@@ -9,12 +9,6 @@ class Login_Output(BaseModel):
     access_token: str
     token_type: str
 
-
-class Login_Input(BaseModel):
-    alert_token: str
-    type: str
-
-
 # 계정 생성 스키마
 class Account_Input_Create(BaseModel):
     id: str

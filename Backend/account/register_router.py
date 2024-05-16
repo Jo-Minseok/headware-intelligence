@@ -14,4 +14,4 @@ def post_account_register(input_data: Account_Input_Create, db: Session = Depend
     if exist:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="이미 존재하는 계정")
-    register_crud.create_employee(input_data, db)
+    register_crud.create_account(input_data, db)

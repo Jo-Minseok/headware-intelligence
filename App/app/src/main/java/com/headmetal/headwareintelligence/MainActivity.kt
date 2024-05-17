@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
             }
             val token = task.result
             autoLoginEdit.putString("alert_token",token)
+            autoLoginEdit.apply()
             Log.d("FCM MESSAGE", "token $token")
         })
 

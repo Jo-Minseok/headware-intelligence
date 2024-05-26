@@ -1,7 +1,9 @@
 package com.headmetal.headwareintelligence
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,23 +52,64 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+data class WeatherResponse(
+    val temperature: Double,
+    val airVelocity: Double,
+    val precipitation: Double,
+    val humidity: Double
+)
 
+class WeatherViewModel : ViewModel() {
+    private val apiService = RetrofitInstance.apiService
+
+    private val _temperature = mutableStateOf<Double?>(null)
+    val temperature: State<Double?> = _temperature
+
+    private val _airVelocity = mutableStateOf<Double?>(null)
+    val airVelocity: State<Double?> = _airVelocity
+
+    private val _precipitation = mutableStateOf<Double?>(null)
+    val precipitation: State<Double?> = _precipitation
+
+    private val _humidity = mutableStateOf<Double?>(null)
+    val humidity: State<Double?> = _humidity
+
+    var state: Boolean = false // 데이터 수신 상태 확인
+
+    fun getWeather(city: String, district: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = apiService.getWeather(city, district)
+            _temperature.value = response.temperature
+            _airVelocity.value = response.airVelocity
+            _precipitation.value = response.precipitation
+            _humidity.value = response.humidity
+            state = !state // 모든 데이터를 수신한 뒤 상태를 전환
+        }
+    }
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun Main(navController: NavController) {
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+fun Main(navController: NavController, weatherViewModel: WeatherViewModel = remember { WeatherViewModel() }) {
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val username: String = auto.getString("name", null).toString()
+
     BackOnPressed()
+
     var interest = 10
-    var windy = 10
-    var rainy = 10
-    var temp = 10
     val interestColor = when {
         interest < 10 -> Color.Red
         interest < 20 -> Color(0xFFFF6600)
@@ -81,34 +125,27 @@ fun Main(navController: NavController) {
         interest < 20 -> "안전 사고 주의가 필요해요"
         else -> "안전 관심은 항상 필요해요"
     }
-    val windyColor = when {
-        windy < 10 -> Color.Red
-        windy < 20 -> Color(0xFFFF6600)
-        else -> Color.Green
-    }
-    val windyText = when {
-        windy < 10 -> "강풍경보"
-        windy < 20 -> "강풍주의보"
-        else -> "보통"
-    }
 
-    val rainyColor = when {
-        rainy < 10 -> Color.Red
-        rainy < 20 -> Color(0xFFFF6600)
-        else -> Color.Green
-    }
-    val rainyText = when {
-        rainy < 10 -> "호우경보"
-        rainy < 20 -> "호우주의보"
-        else -> "보통"
-    }
-    val tempColor = when {
-        temp < 10 -> Color.Red
-        temp < 20 -> Color(0xFFFF6600)
-        else -> Color.Green
-    }
     var current by remember {
         mutableStateOf(Calendar.getInstance().time)
+    }
+
+    CoroutineScope(Dispatchers.Main).launch {
+        LoadingState.show() // 로딩 창 출력
+        val accidentResponseResult = withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
+            CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
+                val state = weatherViewModel.state // 현재 상태 값을 받아옴
+                weatherViewModel.getWeather("부산광역시", "남구")
+                while (state == weatherViewModel.state) {
+                    // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
+                }
+            }.await() // 데이터를 받아올 때까지 대기
+        }
+        LoadingState.hide() // 로딩 창 숨김
+
+        if (accidentResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
+            //
+        }
     }
 
     Surface(
@@ -352,6 +389,11 @@ fun Main(navController: NavController) {
                 }
             }
 
+            val temperature by weatherViewModel.temperature
+            val airVelocity by weatherViewModel.airVelocity
+            val precipitation by weatherViewModel.precipitation
+            val humidity by weatherViewModel.humidity
+
             Box(
                 modifier = Modifier
                     .padding(top = 8.dp)
@@ -374,7 +416,6 @@ fun Main(navController: NavController) {
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp)
                                 .size(40.dp)
-
                         )
                         Column {
                             Text(
@@ -384,34 +425,16 @@ fun Main(navController: NavController) {
                             )
                             Row {
                                 Text(
-                                    text = "강수량 : ",
+                                    text = "1시간 강수량 : " + humidity.toString() + "mm",
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 10.dp)
-                                )
-                                Text(
-                                    text = "10mm",
-                                    color = rainyColor,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 2.dp)
-                                )
-                                Text(
-                                    text = rainyText,
-                                    color = rainyColor,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 5.dp)
                                 )
                             }
                             Row {
                                 Text(
-                                    text = "기온 : ",
+                                    text = "기온 : " + temperature.toString() + "ºC",
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                )
-                                Text(
-                                    text = "10ºC",
-                                    color = tempColor,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 5.dp, bottom = 10.dp)
                                 )
                             }
                         }
@@ -426,20 +449,8 @@ fun Main(navController: NavController) {
                             )
                             Row {
                                 Text(
-                                    text = "16m/s",
+                                    text = airVelocity.toString() + "m/s",
                                     fontSize = 16.sp,
-                                    color = windyColor,
-                                    style = TextStyle(textAlign = TextAlign.End),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(end = 10.dp)
-                                )
-                            }
-                            Row {
-                                Text(
-                                    text = windyText,
-                                    fontSize = 16.sp,
-                                    color = windyColor,
                                     style = TextStyle(textAlign = TextAlign.End),
                                     modifier = Modifier
                                         .fillMaxWidth()

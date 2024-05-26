@@ -15,7 +15,7 @@ for row in sheet.iter_rows(values_only=True):
     data_dict[row[0]] = [row[1], row[2]]
 
 
-@router.get("/{city}/{district}", status_code=status.HTTP_200_OK)
+@router.get('/{city}/{district}', status_code=status.HTTP_200_OK)
 async def get_weather(city: str, district: str):
     now = datetime.now(pytz.timezone('Asia/Seoul'))
     h, m = now.hour, now.minute
@@ -36,8 +36,23 @@ async def get_weather(city: str, district: str):
                             '&base_time=' + base_time +
                             '&nx=' + data_dict[city + ' ' + district][0] +
                             '&ny=' + data_dict[city + ' ' + district][1])
+    
+    for i in response.json()['response']['body']['items']['item']:
+        if i['category'] == 'T1H':
+            temperature = i['obsrValue']
+        elif i['category'] == 'WSD':
+            airVelocity = i['obsrValue']
+        elif i['category'] == 'RN1':
+            precipitation = i['obsrValue']
+        elif i['category'] == 'REH':
+            humidity = i['obsrValue']
 
-    return response.json()
+    return {
+        'temperature' : temperature,
+        'airVelocity' : airVelocity,
+        'precipitation' : precipitation,
+        'humidity' : humidity
+    }
 
 # # 세부 결과 확인
 # weather_data = response.json()['response']['body']['items']['item']

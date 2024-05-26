@@ -75,4 +75,10 @@ interface ApiService {
 
     @GET("/")
     fun API_getStatus():Call<Void>
+
+    @GET("/{city}/{district}")
+    fun getWeather(
+        @Path("city") city: String,
+        @Path("district") district: String
+    ): WeatherResponse
 }

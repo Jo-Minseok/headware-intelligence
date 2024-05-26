@@ -25,7 +25,6 @@ interface ApiService {
         @Body requestBody: RegisterInputModel
     ): Call<RegisterInputModel>
 
-
     @POST("/forgot/id")
     fun API_findid(
         @Body request: Forgot_Id_Request
@@ -36,11 +35,29 @@ interface ApiService {
         @Body userEmployee: ForgotPw
     ): Call<ForgotPw>
 
+    @GET("/company/list")
+    fun getCompanyList():Call<CompanyList>
+
+    @GET("/")
+    fun API_getStatus():Call<Void>
+
+    @GET("/weather/{city}/{district}")
+    suspend fun getWeather(
+        @Path("city") city: String,
+        @Path("district") district: String
+    ): WeatherResponse
+
     @GET("/trend/{start}/{end}")
     suspend fun getTrendData(
         @Path("start") start: String,
         @Path("end") end: String
     ): TrendResponse
+
+    @GET("/processing/{manager}/{situationCode}")
+    suspend fun getAllAccidentProcessingData(
+        @Path("manager") manager: String,
+        @Path("situationCode") situationCode: String
+    ): AllAccidentProcessingResponse
 
     @GET("/map/{manager}/marker")
     suspend fun getAccidentData(
@@ -63,22 +80,4 @@ interface ApiService {
         @Path("situationCode") situationCode: String,
         @Body requestBody: AccidentProcessingUpdateRequest
     ): Call<AccidentProcessingUpdateRequest>
-
-    @GET("/company/list")
-    fun getCompanyList():Call<CompanyList>
-
-    @GET("/processing/{manager}/{situationCode}")
-    suspend fun getAllAccidentProcessingData(
-        @Path("manager") manager: String,
-        @Path("situationCode") situationCode: String
-    ): AllAccidentProcessingResponse
-
-    @GET("/")
-    fun API_getStatus():Call<Void>
-
-    @GET("/{city}/{district}")
-    fun getWeather(
-        @Path("city") city: String,
-        @Path("district") district: String
-    ): WeatherResponse
 }

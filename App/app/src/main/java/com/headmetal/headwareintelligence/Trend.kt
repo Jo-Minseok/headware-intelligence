@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -37,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Calendar
@@ -93,10 +93,14 @@ class TrendViewModel : ViewModel() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Trend(navController: NavController,viewModel: TrendViewModel = remember { TrendViewModel() }) {
-    val monthData by viewModel.monthData
-    val inclination by viewModel.inclination
-    val intercept by viewModel.intercept
+fun Trend(
+    navController: NavController,
+    trendViewModel: TrendViewModel = remember { TrendViewModel() }
+) {
+    val monthData by trendViewModel.monthData
+    val inclination by trendViewModel.inclination
+    val intercept by trendViewModel.intercept
+    val refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     val veryHighDangerLine = 3
     val highDangerLine = 0
@@ -119,23 +123,24 @@ fun Trend(navController: NavController,viewModel: TrendViewModel = remember { Tr
 
     var expanded by remember { mutableStateOf(false) }
     val options = generateOptions()
-    var selectedOption by remember { mutableStateOf(options[0]) }
+    var selectedOption by remember { mutableStateOf(options[options.lastIndex]) }
+
+    LaunchedEffect(refreshState.value) {
+        val (startMonth, endMonth) = getMonthsFromOption(selectedOption)
+        trendViewModel.getTrendData(startMonth, endMonth)
+        refreshState.value = false
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
-        LaunchedEffect(selectedOption) {
-            val (startMonth, endMonth) = getMonthsFromOption(selectedOption)
-            viewModel.getTrendData(startMonth, endMonth)
-        }
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
-                    .clickable {navController.navigateUp()}
+                modifier = Modifier
+                    .padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
+                    .clickable { navController.navigateUp() }
             )
-            Box {
+            Box(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -156,9 +161,7 @@ fun Trend(navController: NavController,viewModel: TrendViewModel = remember { Tr
                             imageVector = Icons.Default.CalendarMonth,
                             contentDescription = null
                         )
-                        Spacer(
-                            modifier = Modifier.padding(horizontal = 10.dp)
-                        )
+                        Spacer(modifier = Modifier.padding(horizontal = 10.dp))
                         ExposedDropdownMenuBox(
                             expanded = expanded,
                             onExpandedChange = { expanded = !expanded }
@@ -182,6 +185,7 @@ fun Trend(navController: NavController,viewModel: TrendViewModel = remember { Tr
                                         text = { Text(text = item) },
                                         onClick = {
                                             selectedOption = item
+                                            refreshState.value = true
                                             expanded = false
                                         }
                                     )
@@ -189,70 +193,62 @@ fun Trend(navController: NavController,viewModel: TrendViewModel = remember { Tr
                             }
                         }
                     }
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 30.dp)
-                            .fillMaxWidth()
-                            .height(200.dp)
-                    ) {
+
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            if (!expanded) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 8.dp)
+                        .background(color = Color.White)
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xFFE0E0E0),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .fillMaxWidth()
+                ) {
+                    Column {
+                        Text(
+                            text = "$selectedOption 추세 위험도",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(start = 10.dp)
+                        )
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.Circle,
+                                contentDescription = null,
+                                tint = dangerColor,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 10.dp, top = 5.dp)
+                            )
+                            Text(
+                                text = dangerText,
+                                fontSize = 16.sp,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 5.dp, top = 5.dp)
+                            )
+                        }
+                        Text(
+                            text = dangerTextDetail,
+                            modifier = Modifier.padding(start = 40.dp, bottom = 5.dp)
+                        )
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(5.dp)
                         ) {
-                            if (!expanded) {
-                                ChartPrint(
-                                    monthData = monthData,
-                                    inclination = inclination,
-                                    intercept = intercept,
-                                    selectedOption = selectedOption,
-                                    dangerColor = dangerColor
-                                )
-                            }
+                            ChartPrint(
+                                monthData = monthData,
+                                inclination = inclination,
+                                intercept = intercept,
+                                selectedOption = selectedOption,
+                                dangerColor = dangerColor
+                            )
                         }
                     }
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            Box(
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 8.dp)
-                    .background(color = Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .fillMaxWidth()
-            ) {
-                Column {
-                    Text(
-                        text = "$selectedOption 추세 위험도",
-                        fontSize = 16.sp,
-                        modifier = Modifier
-                            .padding(start = 10.dp)
-                    )
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.Circle,
-                            contentDescription = null,
-                            tint = dangerColor,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, top = 5.dp)
-                        )
-                        Text(
-                            text = dangerText,
-                            fontSize = 16.sp,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 5.dp, top = 5.dp)
-                        )
-                    }
-                    Text(
-                        text = dangerTextDetail,
-                        modifier = Modifier
-                            .padding(start = 40.dp, bottom = 5.dp)
-                    )
                 }
             }
         }
@@ -260,7 +256,13 @@ fun Trend(navController: NavController,viewModel: TrendViewModel = remember { Tr
 }
 
 @Composable
-fun ChartPrint(monthData: List<Int>, inclination: Double, intercept: Double, selectedOption: String, dangerColor: Color) {
+fun ChartPrint(
+    monthData: List<Int>,
+    inclination: Double,
+    intercept: Double,
+    selectedOption: String,
+    dangerColor: Color
+) {
     val trendData = mutableListOf<Double>()
     for (x in monthData.indices) { // 기울기와 절편 값으로 사고 추세 직선 구하기
         trendData.add(x * inclination + intercept)
@@ -292,15 +294,14 @@ fun ChartPrint(monthData: List<Int>, inclination: Double, intercept: Double, sel
         ).plus(
             com.patrykandpatrick.vico.compose.chart.line.lineChart( // 추세선 차트 부분
                 lines = listOf(
-                    LineSpec( // 추세선 속성 지정
-                        lineColor = when(dangerColor) { // 선 색상 지정
+                    LineSpec(
+                        // 추세선 속성 지정
+                        lineColor = when (dangerColor) { // 선 색상 지정
                             Color.Red -> android.graphics.Color.RED
                             Color(0xFFFF6600) -> android.graphics.Color.rgb(255, 102, 0)
                             else -> android.graphics.Color.GREEN
                         },
-                        pointConnector = DefaultPointConnector( // 직선 형태 지정
-                            cubicStrength = 0f
-                        ),
+                        pointConnector = DefaultPointConnector(cubicStrength = 0f) // 직선 형태 지정
                     )
                 ),
                 axisValuesOverrider = AxisValuesOverrider.fixed( // y축 범위 지정
@@ -311,9 +312,7 @@ fun ChartPrint(monthData: List<Int>, inclination: Double, intercept: Double, sel
         ),
         chartModelProducer = monthDataProducer.plus(trendDataProducer), // 그래프 데이터 모델 선정
         startAxis = startAxis( // y축 label
-            valueFormatter = { value, _ ->
-                String.format("%.1f", value)
-            }
+            valueFormatter = { value, _ -> String.format("%.1f", value) }
         ),
         bottomAxis = bottomAxis( // x축 label
             valueFormatter = { value, _ ->
@@ -323,18 +322,13 @@ fun ChartPrint(monthData: List<Int>, inclination: Double, intercept: Double, sel
             }
         ),
         runInitialAnimation = true, // 그래프 출력 시 애니메이션 동작
-        legend = rememberLegend( // 그래프 범례
-            listOf(
-                Color(0xFF000080),
-                dangerColor
-            )
-        )
+        legend = rememberLegend(listOf(Color(0xFF000080), dangerColor)) // 그래프 범례
     )
 }
 
 // 그래프 범례
 @Composable
-fun rememberLegend(colors: List<Color>) : VerticalLegend {
+fun rememberLegend(colors: List<Color>): VerticalLegend {
     val labelTextList = listOf("월별 사고 건수", "사고 추세")
 
     return VerticalLegend(

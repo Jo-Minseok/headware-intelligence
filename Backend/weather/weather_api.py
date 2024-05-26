@@ -39,13 +39,13 @@ async def get_weather(city: str, district: str):
     
     for i in response.json()['response']['body']['items']['item']:
         if i['category'] == 'T1H':
-            temperature = i['obsrValue']
+            temperature = float(i['obsrValue'])
         elif i['category'] == 'WSD':
-            airVelocity = i['obsrValue']
+            airVelocity = float(i['obsrValue'])
         elif i['category'] == 'RN1':
-            precipitation = i['obsrValue']
+            precipitation = float(i['obsrValue'])
         elif i['category'] == 'REH':
-            humidity = i['obsrValue']
+            humidity = float(i['obsrValue'])
 
     return {
         'temperature' : temperature,

@@ -56,11 +56,11 @@ import java.util.Calendar
 import java.util.Locale
 
 
-
 @Composable
 fun Main(navController: NavController) {
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val username:String = auto.getString("name", null).toString()
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val username: String = auto.getString("name", null).toString()
     BackOnPressed()
     var interest = 10
     var windy = 10
@@ -111,7 +111,7 @@ fun Main(navController: NavController) {
         mutableStateOf(Calendar.getInstance().time)
     }
 
-   Surface(
+    Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)
     ) {
@@ -122,8 +122,12 @@ fun Main(navController: NavController) {
             }
         }
 
-        Column(modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp)
-            .verticalScroll(rememberScrollState())) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 16.dp, end = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             Column(modifier = Modifier.padding(top = 30.dp)) {
                 Row() {
                     Text(
@@ -133,7 +137,7 @@ fun Main(navController: NavController) {
                     Text(
                         text = username,
                         textDecoration = TextDecoration.Underline,
-                        fontStyle=FontStyle.Italic,
+                        fontStyle = FontStyle.Italic,
                         fontSize = 30.sp
                     )
                     Text(
@@ -146,7 +150,7 @@ fun Main(navController: NavController) {
                     fontSize = 15.sp
                 )
             }
-            Column(modifier= Modifier.padding(top = 15.dp)) {
+            Column(modifier = Modifier.padding(top = 15.dp)) {
                 Box(
                     modifier = Modifier
                         .background(color = Color.White)
@@ -195,19 +199,19 @@ fun Main(navController: NavController) {
                             )
                         }
 
+                    }
                 }
-            }
-            Box(
-                modifier = Modifier
-                    .padding()
-                    .background(color = Color.White)
-                    .clickable { navController.navigate("trendScreen") }
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .padding()
+                        .background(color = Color.White)
+                        .clickable { navController.navigate("trendScreen") }
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xFFE0E0E0),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .fillMaxWidth()
 
                 ) {
                     Column {
@@ -243,58 +247,87 @@ fun Main(navController: NavController) {
                 }
             }
             Column() {
-                Button(
-                    onClick = { navController.navigate("mapScreen") },
-                    modifier = Modifier.padding(),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                if (auto.getString("type", null) == "manager") {
+                    Button(
+                        onClick = { navController.navigate("mapScreen") },
+                        modifier = Modifier.padding(),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "작업 현장 확인",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "사고 발생지 확인",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            navController.navigate("nullmapScreen")
+                        },
+                        modifier = Modifier.padding(),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "미처리 사고 발생지 확인",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
-                Button(
-                    onClick = {
-                        navController.navigate("helmetScreen")
-                    },
-                    modifier = Modifier.padding(),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                else {
+                    Button(
+                        onClick = {
+                            navController.navigate("helmetScreen")
+                        },
+                        modifier = Modifier.padding(),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "안전모 등록",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "안전모 등록",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                     }
                 }
             }
-
             Column(
                 modifier = Modifier.padding(top = 30.dp)
             ) {
@@ -332,7 +365,7 @@ fun Main(navController: NavController) {
             ) {
                 Column {
                     Row {
-                            //아이콘은 날시에 따라 바뀌게
+                        //아이콘은 날시에 따라 바뀌게
                         Icon(
                             imageVector = Icons.Default.WaterDrop,
                             contentDescription = null,

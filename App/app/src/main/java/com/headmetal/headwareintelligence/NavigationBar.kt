@@ -134,6 +134,9 @@ fun NavigationGraph(navController: NavHostController) {
             Countermeasures(navController)
         }
         composable("mapScreen") {
+            Map(navController)
+        }
+        composable("nullmapScreen") {
             NullMap(navController)
         }
     }

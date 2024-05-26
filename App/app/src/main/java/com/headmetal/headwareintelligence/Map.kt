@@ -157,7 +157,6 @@ fun Map(
     accidentViewModel: AccidentViewModel = remember { AccidentViewModel() }, // Accident 테이블의 뷰 모델 의존성 주입
     accidentProcessingViewModel: AccidentProcessingViewModel = remember { AccidentProcessingViewModel() } // Accident_Processing 테이블의 뷰 모델 의존성 주입
 ) {
-
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
     val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
@@ -213,7 +212,7 @@ fun MapScreen(
     }
 
     if (isEndDialogVisible.value) { // 스위치가 on이 될 경우 종료 알림창 출력
-        EndDialog(onEnd = { android.os.Process.killProcess(android.os.Process.myPid()) })
+        EndDialog(onEnd = { android.os.Process.killProcess(android.os.Process.myPid()) }, message = "데이터 로딩에 실패하여\n앱을 종료합니다.")
     }
 
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)

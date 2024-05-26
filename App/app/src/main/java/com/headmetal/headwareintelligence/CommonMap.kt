@@ -88,7 +88,7 @@ fun AlertDialog(onClose: () -> Unit) {
 
 // 종료 알림창 Composable
 @Composable
-fun EndDialog(onEnd: () -> Unit) {
+fun EndDialog(onEnd: () -> Unit, message: String) {
     Dialog(
         onDismissRequest = onEnd,
         content = {
@@ -105,7 +105,7 @@ fun EndDialog(onEnd: () -> Unit) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(text = "알림")
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = "데이터 로딩에 실패하여\n앱을 종료합니다.", textAlign = TextAlign.Center)
+                    Text(text = message, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(10.dp))
                     Button(
                         onClick = onEnd, // 앱 종료

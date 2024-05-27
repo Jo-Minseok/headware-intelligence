@@ -1,6 +1,10 @@
-#define SHOCK 21
-#define PIEZO 14
-#define GPS_1 1
-#define GPS_2 2
-#define GYRO_1 13
-#define GYRO_2 15
+#define GPS_1 43
+#define GPS_2 44
+#define LED 3
+
+#define SHOCK 10
+#define CDS 8
+#define BUTTON 21
+#define PIEZO 12
+#define GYRO_SCL 13
+#define GYRO_SDA 14

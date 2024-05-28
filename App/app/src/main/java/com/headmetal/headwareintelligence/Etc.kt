@@ -102,7 +102,7 @@ fun Etc(navController: NavController) {
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier.padding(20.dp)
-                    .clickable{navController.navigate("menuScreen")}
+                    .clickable{navController.navigateUp()}
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),

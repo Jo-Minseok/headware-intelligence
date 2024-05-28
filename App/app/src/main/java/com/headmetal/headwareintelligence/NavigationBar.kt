@@ -25,23 +25,23 @@ import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
 
-sealed class Destinations(val route: String) {
-    object Loading : Destinations("loadingScreen")
-    object Login : Destinations("loginScreen")
-    object Signup: Destinations("signupScreen")
-    object Findid : Destinations("findidScreen")
-    object Findpw : Destinations("findpwScreen")
-    object Main : Destinations("mainScreen")
-    object Processing : Destinations("processingScreen")
-    object Menu : Destinations("menuScreen")
-    object Countermeasures : Destinations("countermeasuresScreen")
-    object Map : Destinations("mapScreen")
-    object Helmet : Destinations("helmetScreen")
-    object NullMap : Destinations("nullmap Screen")
-    object CompanyInfo : Destinations("companyinfoScreen")
-    object Etc : Destinations("etcScreen")
-    object License : Destinations("licenseScreen")
-    object Privacy : Destinations("privacyScreen")
+sealed class Destinations(val route: String,val title: String) {
+    object Loading : Destinations("loadingScreen","로딩")
+    object Login : Destinations("loginScreen","로그인")
+    object Signup: Destinations("signupScreen","회원가입")
+    object Findid : Destinations("findidScreen","아이디찾기")
+    object Findpw : Destinations("findpwScreen","비밀번호찾기")
+    object Main : Destinations("mainScreen","홈")
+    object Processing : Destinations("processingScreen","처리내역")
+    object Menu : Destinations("menuScreen","메뉴")
+    object Countermeasures : Destinations("countermeasuresScreen","행동요령")
+    object Map : Destinations("mapScreen","사고현장")
+    object Helmet : Destinations("helmetScreen","헬멧등록")
+    object NullMap : Destinations("nullmap Screen","")
+    object CompanyInfo : Destinations("companyinfoScreen","회사정보")
+    object Etc : Destinations("etcScreen","기타")
+    object License : Destinations("licenseScreen","라이센스")
+    object Privacy : Destinations("privacyScreen","개인정보")
 
 
 }
@@ -145,7 +145,7 @@ fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, mo
     ) {
         screens.forEach { screen ->
             NavigationBarItem(
-                label = { Text(text = screen.route) },
+                label = { Text(text = screen.title) },
                 icon = {
                     Icon(
                         imageVector = when (screen) {

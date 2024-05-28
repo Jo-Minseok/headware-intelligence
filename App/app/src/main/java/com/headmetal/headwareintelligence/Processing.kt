@@ -268,7 +268,7 @@ fun Processing(
                             Column {
                                 Row {
                                     Text(
-                                        text = "# 사건번호 ${item.no}",
+                                        text = "# 사고번호 ${item.no}",
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(start = 10.dp, top = 10.dp)
                                     )

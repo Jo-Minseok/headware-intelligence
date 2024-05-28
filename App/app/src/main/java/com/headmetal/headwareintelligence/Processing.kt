@@ -140,8 +140,12 @@ class AllAccidentProcessingViewModel : ViewModel() {
 }
 
 @Composable
-fun Processing(navController: NavController, accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+fun Processing(
+    navController: NavController,
+    accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }
+) {
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     val tabIndexState: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -150,11 +154,11 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         LoadingScreen()
         Column {
-            Icon(
-                imageVector = Icons.Default.ArrowBackIosNew,
+            Icon(imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.padding(20.dp).clickable {navController.navigateUp()}
-            )
+                modifier = Modifier
+                    .padding(20.dp)
+                    .clickable { navController.navigateUp() })
             Row {
                 Text(
                     text = "처리 내역",
@@ -177,29 +181,26 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                 }
             }
             TabRow(
-                selectedTabIndex = selectedTabIndex,
-                modifier = Modifier.border(width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp))
+                selectedTabIndex = selectedTabIndex, modifier = Modifier.border(
+                    width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp)
+                )
             ) {
-                Tab(
-                    modifier = Modifier.background(color = Color.White),
+                Tab(modifier = Modifier.background(color = Color.White),
                     selected = selectedTabIndex == 0,
                     onClick = {
                         selectedTabIndex = 0
                         situationCode.value = SituationCode.PROCESSING.ordinal.toString()
                         tabIndexState.value = true
                     },
-                    text = { Text(text = "사고 처리", fontSize = 20.sp, color = Color.Black) }
-                )
-                Tab(
-                    modifier = Modifier.background(color = Color.White),
+                    text = { Text(text = "사고 처리", fontSize = 20.sp, color = Color.Black) })
+                Tab(modifier = Modifier.background(color = Color.White),
                     selected = selectedTabIndex == 1,
                     onClick = {
                         selectedTabIndex = 1
                         situationCode.value = SituationCode.MALFUNCTION.ordinal.toString()
                         tabIndexState.value = true
                     },
-                    text = { Text(text = "오작동 처리", fontSize = 20.sp, color = Color.Black) }
-                )
+                    text = { Text(text = "오작동 처리", fontSize = 20.sp, color = Color.Black) })
             }
             Box(modifier = Modifier.weight(1f)) {
                 LaunchedEffect(refreshState.value || tabIndexState.value) {
@@ -208,7 +209,11 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                         refreshState.value = false
                         tabIndexState.value = false
                         val state = accidentProcessingViewModel.state
-                        accidentProcessingViewModel.getAllAccidentProcessingData(auto.getString("userid", null).toString(), situationCode.value)
+                        accidentProcessingViewModel.getAllAccidentProcessingData(
+                            auto.getString(
+                                "userid", null
+                            ).toString(), situationCode.value
+                        )
                         while (state == accidentProcessingViewModel.state) {
                             //
                         }
@@ -228,12 +233,24 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                 val processingTime by accidentProcessingViewModel.processingTime
                 val detail by accidentProcessingViewModel.detail
 
-                println(no)
-
                 val itemList = mutableListOf<Item>()
 
                 for (i in no.indices) {
-                    itemList.add(Item(no[i], date[i], time[i], latitude[i], longitude[i], category[i], victim[i], situation[i] ?: "미처리", processingDate[i] ?: "", processingTime[i] ?: "", detail[i] ?: ""))
+                    itemList.add(
+                        Item(
+                            no[i],
+                            date[i],
+                            time[i],
+                            latitude[i],
+                            longitude[i],
+                            category[i],
+                            victim[i],
+                            situation[i] ?: "미처리",
+                            processingDate[i] ?: "",
+                            processingTime[i] ?: "",
+                            detail[i] ?: ""
+                        )
+                    )
                 }
 
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -263,7 +280,11 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                                             .padding(end = 10.dp, top = 10.dp)
                                     )
                                 }
-                                Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+                                Divider(
+                                    color = Color.LightGray,
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
                                 Row {
                                     Icon(
                                         imageVector = Icons.Default.TripOrigin,
@@ -308,7 +329,11 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                                         modifier = Modifier.padding(start = 38.dp, bottom = 10.dp)
                                     )
                                 }
-                                Divider(color = Color.LightGray, thickness = 1.dp, modifier = Modifier.padding(vertical = 8.dp))
+                                Divider(
+                                    color = Color.LightGray,
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
                                 Text(
                                     text = "사고 내역 : ${item.category}",
                                     fontSize = 16.sp,

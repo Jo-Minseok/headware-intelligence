@@ -41,10 +41,10 @@ interface ApiService {
     @GET("/")
     fun API_getStatus():Call<Void>
 
-    @GET("/weather/{city}/{district}")
+    @GET("/weather/{latitude}/{longitude}")
     suspend fun getWeather(
-        @Path("city") city: String,
-        @Path("district") district: String
+        @Path("latitude") city: Double,
+        @Path("longitude") district: Double
     ): WeatherResponse
 
     @GET("/trend/{start}/{end}")

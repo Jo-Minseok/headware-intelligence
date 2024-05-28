@@ -1,5 +1,5 @@
 import openpyxl, pytz, requests
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from datetime import datetime, timedelta
 from weather import weather_api_config
 from haversine import haversine, Unit
@@ -37,11 +37,6 @@ def get_grid(latitude, longitude):
 async def get_weather(latitude: float, longitude: float):
     baseTime, date = get_current_time()
     gridX, gridY = get_grid(latitude, longitude)
-    
-    if not gridX or not gridY:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='위도 경도 값이 잘못되었습니다.')
     
     response = requests.get(weather_api_config.api.api_endpoint + '/getUltraSrtNcst'
                             '?serviceKey=' + weather_api_config.api.api_key +

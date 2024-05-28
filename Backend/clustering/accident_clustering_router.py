@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, responses
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from db.db_connection import get_db
@@ -25,13 +24,12 @@ def cluster_data(db: Session = Depends(get_db)):
     
     # 불러온 위도 경도 값의 개수가 3개 미만일 경우 예외 리턴
     if len(latitude) < 3:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT, detail='클러스터를 표시하기에는 데이터가 부족')
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail='클러스터를 표시하기에는 데이터가 부족')
 
     # 데이터프레임 생성
     df = pd.DataFrame({'latitude' : latitude, 'longitude' : longitude})
     
-    # 클러스터 개수 범위 설정, 범위를 위도, 경도 값 개수에 따라 2개에서 n - 1까지 지정(데이터가 5개라면 클러스터 개수는 2~4개가 나와야 함)
+    # 클러스터 개수 범위 설정, 범위를 위도, 경도 값 개수에 따라 2개에서 n - 1까지 지정(데이터가 5개라면 클러스터 개수는 2~4개가 나올 수 있음)
     k_range = range(2, len(latitude))
 
     # 각 클러스터 개수에 대해 KMeans 모델을 훈련하고 실루엣 스코어 계산
@@ -65,4 +63,4 @@ def cluster_data(db: Session = Depends(get_db)):
 
     # 클러스터 중심점 결과
     res = {i + 1 : list(centers[i]) + [max_distances[i]] for i in range(size)}
-    return JSONResponse(content=res)
+    return responses.JSONResponse(content=res)

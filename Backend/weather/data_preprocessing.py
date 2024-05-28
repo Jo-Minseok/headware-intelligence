@@ -1,7 +1,6 @@
 import openpyxl
 
-pre_file = openpyxl.load_workbook('./weather/original data.xlsx')
-pre_sheet = pre_file.active
+pre_sheet = openpyxl.load_workbook('./weather/original data.xlsx').active
 
 processing_dict = {}
 for row in pre_sheet.iter_rows(min_row=2, values_only = True):
@@ -12,9 +11,7 @@ for row in pre_sheet.iter_rows(min_row=2, values_only = True):
         continue
     processing_dict[key] = [row[5], row[6], row[14], row[13]]
 
-processing_data = []
-for k, v in processing_dict.items():
-    processing_data.append([k, v[0], v[1], v[2], v[3]])
+processing_data = [[k, v[0], v[1], v[2], v[3]] for k, v in processing_dict.items()]
 
 processing_file = openpyxl.Workbook()
 processing_sheet = processing_file.active

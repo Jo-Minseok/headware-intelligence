@@ -53,7 +53,7 @@ def insert_accident(start=datetime.datetime(2023, 1, 1), end=datetime.datetime(2
     # 사고 처리 데이터의 번호 값을 지정하기 위해 Accident 테이블의 모든 데이터를 질의
     accidents = db.query(Accident).all()
     
-    nullConut = 5
+    nullConut = 15
     
     for accident in accidents[:-nullConut]:
         idx = np.random.randint(0, 3)

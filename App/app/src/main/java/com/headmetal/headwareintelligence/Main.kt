@@ -101,8 +101,7 @@ fun Main(
     navController: NavController,
     weatherViewModel: WeatherViewModel = remember { WeatherViewModel() }
 ) {
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val username: String = auto.getString("name", null).toString()
     val temperature by weatherViewModel.temperature
     val airVelocity by weatherViewModel.airVelocity
@@ -312,19 +311,24 @@ fun Main(
             if (temperature != null && airVelocity != null && precipitation != null && humidity != null) {
                 val weatherInfo: String
                 val weatherIcon: ImageVector
+                val weatherColor: Color
 
                 if (precipitation!! > 30) {
                     weatherInfo = "호우 경보"
                     weatherIcon = Icons.Default.Water
+                    weatherColor = Color(0xFF00BFFF)
                 } else if (precipitation!! > 20) {
                     weatherInfo = "호우 주의보"
                     weatherIcon = Icons.Default.Water
+                    weatherColor = Color(0xFF00BFFF)
                 } else if (precipitation!! > 0) {
                     weatherInfo = "비"
                     weatherIcon = Icons.Default.WaterDrop
+                    weatherColor = Color(0xFF00BFFF)
                 } else {
                     weatherInfo = "맑음"
                     weatherIcon = Icons.Default.WbSunny
+                    weatherColor = Color(0xFFFF7F00)
                 }
 
                 Column(modifier = Modifier.padding(top = 30.dp)) {
@@ -366,7 +370,7 @@ fun Main(
                             Icon(
                                 imageVector = weatherIcon,
                                 contentDescription = null,
-                                tint = Color(0xFF00BFFF),
+                                tint = weatherColor,
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .padding(start = 10.dp)
@@ -419,7 +423,7 @@ fun Main(
                                 }
                                 Row {
                                     Text(
-                                        text = "습도 : " + humidity.toString() + "m/s",
+                                        text = "습도 : " + humidity.toString() + "%",
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(start = 10.dp, bottom = 14.dp)
                                     )

@@ -48,6 +48,7 @@ fun Loading(navController: NavController) {
     // 권한 요청
     val permissionsToRequest = mutableListOf<String>()
     val permissions = mutableListOf<String>(
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.POST_NOTIFICATIONS

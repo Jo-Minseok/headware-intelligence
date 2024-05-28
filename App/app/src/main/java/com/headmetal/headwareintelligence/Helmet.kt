@@ -1,12 +1,17 @@
 package com.headmetal.headwareintelligence
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
-import android.content.Intent
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
+import android.content.ContentValues.TAG
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Handler
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,7 +58,11 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Helmet(navController: NavController) {
-    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    var scanning = false
+    val handler = Handler()
+    val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+
     val auto: SharedPreferences =
         LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var helmetid by remember {
@@ -63,7 +72,7 @@ fun Helmet(navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     val ItemOptions = listOf("1324", "123", "1234")
     var selectedOption by remember { mutableStateOf(ItemOptions[0]) }
-    if (mBluetoothAdapter == null) {
+    if (bluetoothAdapter == null) {
         if (ActivityCompat.checkSelfPermission(
                 navController.context,
                 Manifest.permission.BLUETOOTH_CONNECT
@@ -220,9 +229,9 @@ fun Helmet(navController: NavController) {
                         Row {
                             Button(
                                 onClick = {
-                                    if (mBluetoothAdapter?.isEnabled == false) {
+                                    if (bluetoothAdapter?.isEnabled == false) {
 
-                                        mBluetoothAdapter.enable()
+                                        bluetoothAdapter.enable()
                                     } else {
                                         Toast.makeText(
                                             navController.context,
@@ -257,8 +266,8 @@ fun Helmet(navController: NavController) {
                         Row {
                             Button(
                                 onClick = {
-                                    if (mBluetoothAdapter?.isEnabled == true) {
-                                        mBluetoothAdapter?.disable()
+                                    if (bluetoothAdapter?.isEnabled == true) {
+                                        bluetoothAdapter.disable()
                                     } else {
                                         Toast.makeText(
                                             navController.context,

@@ -17,6 +17,8 @@ import com.google.firebase.messaging.Constants
 import com.google.firebase.messaging.FirebaseMessaging
 import android.app.Activity
 import android.content.SharedPreferences
+import androidx.compose.runtime.getValue
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 class MainActivity : ComponentActivity() {
     companion object{
@@ -47,16 +49,26 @@ class MainActivity : ComponentActivity() {
             var buttonsVisible = remember { mutableStateOf(true) }
             Scaffold(
                 bottomBar = {
-                    BottomBar(
-                        navController = navController,
-                        state = buttonsVisible,
-                        modifier = Modifier
-                    )
-                }) { paddingValues ->
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.destination?.route
+
+                    if (currentRoute in listOf(
+                            Destinations.Main.route,
+                            Destinations.Processing.route,
+                            Destinations.Menu.route
+                        )) {
+                        BottomBar(
+                            navController = navController,
+                            state = buttonsVisible,
+                            modifier = Modifier
+                        )
+                    }
+                }
+            ) { paddingValues ->
                 Box(
                     modifier = Modifier.padding(paddingValues)
                 ) {
-                    NavigationGraph(navController = navController)
+                    RootNavGraph(navController = navController)
                 }
             }
         }

@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Tab
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TripOrigin
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.Divider
@@ -29,8 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -47,7 +44,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
@@ -146,7 +142,6 @@ class AllAccidentProcessingViewModel : ViewModel() {
 @Composable
 fun Processing(navController: NavController, accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }) {
     val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    var searchText by remember { mutableStateOf("") }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     val tabIndexState: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -158,9 +153,7 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.padding(20.dp)
-                    .clickable {navController.navigateUp()}
-
+                modifier = Modifier.padding(20.dp).clickable {navController.navigateUp()}
             )
             Row {
                 Text(
@@ -170,6 +163,7 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 30.dp)
+                        .padding(bottom = 16.dp)
                 )
                 IconButton(onClick = { refreshState.value = true }) {
                     Icon(
@@ -181,31 +175,6 @@ fun Processing(navController: NavController, accidentProcessingViewModel: AllAcc
                             .padding(end = 3.dp, top = 5.dp)
                     )
                 }
-            }
-            Box(
-                modifier = Modifier.height(80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                TextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    singleLine = true,
-                    placeholder = { Text("사고 처리 내역 검색") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null
-                        )
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                        .fillMaxSize()
-                )
             }
             TabRow(
                 selectedTabIndex = selectedTabIndex,

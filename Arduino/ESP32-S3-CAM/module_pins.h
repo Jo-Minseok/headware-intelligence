@@ -6,5 +6,5 @@
 #define CDS 8
 #define BUTTON 21
 #define PIEZO 12
-#define GYRO_SCL 13
-#define GYRO_SDA 14
+#define GYRO_SCL 14
+#define GYRO_SDA 13

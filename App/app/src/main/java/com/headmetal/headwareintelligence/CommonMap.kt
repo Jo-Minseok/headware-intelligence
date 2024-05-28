@@ -38,9 +38,14 @@ data class AccidentProcessingUpdateRequest(
 
 // Accident_Processing 테이블의 사고 상황과 세부 처리 내역 데이터를 업데이트
 fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
-    val call = RetrofitInstance.apiService.updateAccidentSituation(no, situationCode, AccidentProcessingUpdateRequest(detail))
+    val call = RetrofitInstance.apiService.updateAccidentSituation(
+        no, situationCode, AccidentProcessingUpdateRequest(detail)
+    )
     call.enqueue(object : Callback<AccidentProcessingUpdateRequest> {
-        override fun onResponse(call: Call<AccidentProcessingUpdateRequest>, response: Response<AccidentProcessingUpdateRequest>) {
+        override fun onResponse(
+            call: Call<AccidentProcessingUpdateRequest>,
+            response: Response<AccidentProcessingUpdateRequest>
+        ) {
             if (response.isSuccessful) {
                 Log.i("HEAD METAL", "사고 상황 업데이트 성공")
             } else {
@@ -57,63 +62,55 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
 // 알림창 Composable
 @Composable
 fun AlertDialog(onClose: () -> Unit) {
-    Dialog(
-        onDismissRequest = onClose,
-        content = {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = Color.White,
-                modifier = Modifier.padding(16.dp)
+    Dialog(onDismissRequest = onClose, content = {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = Color.White,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = "알림")
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = "사고 처리 세부 내역은 최소\n한 글자 이상 입력해야 합니다.", textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = onClose,
-                        colors = ButtonDefaults.buttonColors(Color.Gray)
-                    ) { Text(text = "닫기") }
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "알림")
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "사고 처리 세부 내역은 최소\n한 글자 이상 입력해야 합니다.", textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)
+                ) { Text(text = "닫기") }
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
-    )
+    })
 }
 
 // 종료 알림창 Composable
 @Composable
 fun EndDialog(onEnd: () -> Unit, message: String) {
-    Dialog(
-        onDismissRequest = onEnd,
-        content = {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = Color.White,
-                modifier = Modifier.padding(16.dp)
+    Dialog(onDismissRequest = onEnd, content = {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = Color.White,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = "알림")
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(text = message, textAlign = TextAlign.Center)
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = onEnd, // 앱 종료
-                        colors = ButtonDefaults.buttonColors(Color.Gray)
-                    ) { Text(text = "종료") }
-                    Spacer(modifier = Modifier.height(4.dp))
-                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "알림")
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = message, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = onEnd, colors = ButtonDefaults.buttonColors(Color.Gray)
+                ) { Text(text = "종료") }
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
-    )
+    })
 }

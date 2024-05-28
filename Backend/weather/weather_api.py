@@ -4,8 +4,7 @@ from fastapi import APIRouter, status
 from datetime import datetime, timedelta
 import requests
 from weather import api_config
-from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderServiceError
+from haversine import haversine, Unit
 
 router = APIRouter(prefix='/weather')
 
@@ -14,17 +13,7 @@ sheet = data.active
 
 data_dict = {}
 for row in sheet.iter_rows(values_only=True):
-    data_dict[row[0]] = [row[1], row[2]]
-
-def reverse_geocode(lat, lon):
-    try:
-        geolocator = Nominatim(user_agent="headmetal")
-        location = geolocator.reverse((lat, lon), exactly_one=True)
-        result = list(location.address.split(', '))
-        return [result[-3], result[-4]]
-    except GeocoderServiceError as e:
-        print(f"Geocoder service error: {e}")
-        return None
+    data_dict[row[0]] = [row[1], row[2], row[3], row[4]]
 
 @router.get('/{latitude}/{longitude}', status_code=status.HTTP_200_OK)
 async def get_weather(latitude: float, longitude: float):
@@ -40,14 +29,20 @@ async def get_weather(latitude: float, longitude: float):
         else:
             base_time = ('%02d' % (h - 1)) + '00'
             date = datetime.today().strftime('%Y%m%d')
-    address = reverse_geocode(latitude, longitude)
+    min_distance = float('inf')
+    key = None
+    for k, v in data_dict.items():
+        distance = haversine((latitude, longitude), (float(v[2]), float(v[3])), unit=Unit.METERS)
+        if distance < min_distance:
+            min_distance = distance
+            key = k
     response = requests.get(api_config.api.api_endpoint + '/getUltraSrtNcst'
                             '?serviceKey=' + api_config.api.api_key +
                             '&dataType=JSON' +
                             '&base_date=' + date +
                             '&base_time=' + base_time +
-                            '&nx=' + data_dict[' '.join(address)][0] +
-                            '&ny=' + data_dict[' '.join(address)][1])
+                            '&nx=' + data_dict[key][0] +
+                            '&ny=' + data_dict[key][1])
     
     for i in response.json()['response']['body']['items']['item']:
         if i['category'] == 'T1H':

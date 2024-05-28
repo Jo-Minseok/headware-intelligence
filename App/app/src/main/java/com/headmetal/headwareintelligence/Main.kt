@@ -1,8 +1,13 @@
 package com.headmetal.headwareintelligence
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,21 +57,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 data class WeatherResponse(
-    val temperature: Float,
-    val airVelocity: Float,
-    val precipitation: Float,
-    val humidity: Float
+    val temperature: Float, val airVelocity: Float, val precipitation: Float, val humidity: Float
 )
 
 class WeatherViewModel : ViewModel() {
@@ -84,9 +89,9 @@ class WeatherViewModel : ViewModel() {
     private val _humidity = mutableStateOf<Float?>(null)
     val humidity: State<Float?> = _humidity
 
-    fun getWeather(city: String, district: String) {
+    fun getWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getWeather(city, district)
+            val response = apiService.getWeather(latitude, longitude)
             _temperature.value = response.temperature
             _airVelocity.value = response.airVelocity
             _precipitation.value = response.precipitation
@@ -101,7 +106,8 @@ fun Main(
     navController: NavController,
     weatherViewModel: WeatherViewModel = remember { WeatherViewModel() }
 ) {
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val username: String = auto.getString("name", null).toString()
     val temperature by weatherViewModel.temperature
     val airVelocity by weatherViewModel.airVelocity
@@ -119,15 +125,14 @@ fun Main(
     }
 
     LaunchedEffect(refreshState.value) {
-        weatherViewModel.getWeather("부산광역시", "남구")
+        weatherViewModel.getWeather(35.1336437235, 129.09320833287)
         refreshState.value = false
     }
 
     BackOnPressed()
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9F9F9)
+        modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)
     ) {
         Column(
             modifier = Modifier
@@ -138,22 +143,17 @@ fun Main(
             Column(modifier = Modifier.padding(top = 30.dp)) {
                 Row {
                     Text(
-                        text = "안녕하세요 ",
-                        fontSize = 30.sp
+                        text = "안녕하세요 ", fontSize = 30.sp
                     )
                     Text(
-                        text = username,
-                        textDecoration = TextDecoration.Underline,
-                        fontSize = 30.sp
+                        text = username, textDecoration = TextDecoration.Underline, fontSize = 30.sp
                     )
                     Text(
-                        text = "님!",
-                        fontSize = 30.sp
+                        text = "님!", fontSize = 30.sp
                     )
                 }
                 Text(
-                    text = "오늘도 안전한 근무 되시길 바랍니다!",
-                    fontSize = 15.sp
+                    text = "오늘도 안전한 근무 되시길 바랍니다!", fontSize = 15.sp
                 )
             }
             Column(modifier = Modifier.padding(top = 15.dp)) {
@@ -176,8 +176,7 @@ fun Main(
                             )
                             Text(
                                 text = SimpleDateFormat(
-                                    "EEEE, yyyy년 MM월 dd일",
-                                    Locale.getDefault()
+                                    "EEEE, yyyy년 MM월 dd일", Locale.getDefault()
                                 ).format(current),
                                 style = TextStyle(textAlign = TextAlign.End),
                                 modifier = Modifier
@@ -195,8 +194,7 @@ fun Main(
                             )
                             Text(
                                 text = SimpleDateFormat(
-                                    "HH:mm",
-                                    Locale.getDefault()
+                                    "HH:mm", Locale.getDefault()
                                 ).format(current),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -221,8 +219,7 @@ fun Main(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
+                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "사고 추세 확인",
@@ -245,8 +242,7 @@ fun Main(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
+                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "사고 발생지 확인",
@@ -269,8 +265,7 @@ fun Main(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
+                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "미처리 사고 발생지 확인",
@@ -294,8 +289,7 @@ fun Main(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
+                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = "안전모 등록",
@@ -381,9 +375,7 @@ fun Main(
                                     text = "기상 정보 : $weatherInfo",
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(
-                                        start = 10.dp,
-                                        top = 10.dp,
-                                        bottom = 10.dp
+                                        start = 10.dp, top = 10.dp, bottom = 10.dp
                                     )
                                 )
                                 Row {
@@ -395,28 +387,26 @@ fun Main(
                                 }
                                 Row {
                                     Text(
-                                        text = "기온 : " + temperature.toString() + "ºC" +
-                                                if (temperature!! > 35) {
-                                                    "(폭염 경보)"
-                                                } else if (temperature!! > 33) {
-                                                    "(폭염 주의보)"
-                                                } else {
-                                                    ""
-                                                },
+                                        text = "기온 : " + temperature.toString() + "ºC" + if (temperature!! > 35) {
+                                            "(폭염 경보)"
+                                        } else if (temperature!! > 33) {
+                                            "(폭염 주의보)"
+                                        } else {
+                                            ""
+                                        },
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
                                     )
                                 }
                                 Row {
                                     Text(
-                                        text = "풍속 : " + airVelocity.toString() + "m/s" +
-                                                if (airVelocity!! > 21) {
-                                                    "(강풍 경보)"
-                                                } else if (airVelocity!! > 14) {
-                                                    "(강풍 주의보)"
-                                                } else {
-                                                    ""
-                                                },
+                                        text = "풍속 : " + airVelocity.toString() + "m/s" + if (airVelocity!! > 21) {
+                                            "(강풍 경보)"
+                                        } else if (airVelocity!! > 14) {
+                                            "(강풍 주의보)"
+                                        } else {
+                                            ""
+                                        },
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
                                     )
@@ -432,18 +422,14 @@ fun Main(
                         }
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .background(color = Color.White)
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFE0E0E0),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .fillMaxWidth()
-                        .clickable { navController.navigate("countermeasuresScreen") }
-                ) {
+                Box(modifier = Modifier
+                    .padding(top = 8.dp)
+                    .background(color = Color.White)
+                    .border(
+                        width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp)
+                    )
+                    .fillMaxWidth()
+                    .clickable { navController.navigate("countermeasuresScreen") }) {
                     Column {
                         Row {
                             Icon(
@@ -468,18 +454,16 @@ fun Main(
                     }
                 }
                 if (auto.getString("type", null) == "manager") {
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 8.dp)
-                            .background(color = Color.White)
-                            .clickable { navController.navigate("processingScreen") }
-                            .border(
-                                width = 1.dp,
-                                color = Color(0xFFE0E0E0),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .fillMaxWidth()
-                    ) {
+                    Box(modifier = Modifier
+                        .padding(top = 8.dp)
+                        .background(color = Color.White)
+                        .clickable { navController.navigate("processingScreen") }
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xFFE0E0E0),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .fillMaxWidth()) {
                         Column {
                             Row {
                                 Icon(

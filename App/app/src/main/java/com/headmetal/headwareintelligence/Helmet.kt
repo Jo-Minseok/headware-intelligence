@@ -1,9 +1,26 @@
 package com.headmetal.headwareintelligence
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
+import android.content.ContentValues.TAG
+import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Handler
+import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,9 +33,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Surface
@@ -38,36 +57,97 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.TextStyle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.patrykandpatrick.vico.core.extension.getFieldValue
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
+data class Work_list_Response(
+    val work_list: List<String>
+)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Helmet(navController: NavController) {
-    val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val context = LocalContext.current
+    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
+
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     var helmetid by remember {
         mutableStateOf("")
     }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
-    {
-        if (mBluetoothAdapter == null) {
-            AlertDialog.Builder(LocalContext.current)
+    var expanded by remember { mutableStateOf(false) }
+    var itemOptions by remember { mutableStateOf(listOf<String>()) }
+    var selectedOption by remember{mutableStateOf("")}
+    val apiService_worklist = RetrofitInstance.apiService.API_work_list(id = auto.getString("userid",null).toString())
+    apiService_worklist.enqueue(object:Callback<Work_list_Response>{
+        override fun onResponse(call: Call<Work_list_Response>, response: Response<Work_list_Response>) {
+            if(response.isSuccessful) {
+                response.body()?.let { workListResponse ->
+                    itemOptions = workListResponse.work_list
+                }
+            }
+        }
+        override fun onFailure(call:Call<Work_list_Response>,t:Throwable){
+            Log.e("HEAD METAL","Failed to fetch work list")
+        }
+    })
+
+    var isBluetoothEnabled by remember{ mutableStateOf(bluetoothAdapter?.isEnabled == true)}
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted. Proceed with BLE operations.
+        } else {
+            // Permission is denied. Handle accordingly.
+        }
+    }
+    LaunchedEffect(Unit){
+        if(bluetoothAdapter == null || !context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
+            AlertDialog.Builder(navController.context)
                 .setTitle("블루투스 연결 실패")
                 .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
                 .setPositiveButton("확인") { dialog, which ->
                     navController.navigate("mainScreen")
                 }
                 .show()
+        }else{
+            when{
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                }
+                else -> {
+                    requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            }
         }
+    }
+
+    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
+    {
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.padding(20.dp)
-                    .clickable{
+                modifier = Modifier
+                    .padding(20.dp)
+                    .clickable {
                         navController.navigate("mainScreen")
                     }
             )
@@ -96,11 +176,11 @@ fun Helmet(navController: NavController) {
                     ) {
 
                         Row {
-
                             Text(
                                 text = "작업자 정보",
                                 color = Color.Black,
-                                fontSize = 20.sp
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                             Spacer(modifier = Modifier.weight(1f))
                         }
@@ -118,7 +198,7 @@ fun Helmet(navController: NavController) {
                             )
 
                             Text(// 로그인 정보 연동 작업자 ID 출력
-                                text = auto.getString("userid",null).toString(),
+                                text = auto.getString("userid", null).toString(),
                                 color = Color.Black,
                                 fontSize = 16.sp
                             )
@@ -133,7 +213,7 @@ fun Helmet(navController: NavController) {
                             )
 
                             Text(// 로그인 정보 연동 작업자 이름 출력
-                                text = auto.getString("name",null).toString(),
+                                text = auto.getString("name", null).toString(),
                                 color = Color.Black,
                                 fontSize = 16.sp
                             )
@@ -144,65 +224,128 @@ fun Helmet(navController: NavController) {
                             modifier = Modifier.height(30.dp)
                         )
 
-                        Column(
-                            modifier = Modifier.padding(bottom = 16.dp)
+                        Text(
+                            text = "작업장 선택",
+                            color = Color.Black,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded }
                         ) {
-                            Text(
-                                text = "블루투스 켜기",
-                                color = Color.Black,
-                                fontSize = 20.sp
-                            )
-                        }
-
-                        Row {
-                            Button(
-                                onClick = {
-
+                            TextField(
+                                value = selectedOption,
+                                onValueChange = {},
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                                 },
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                                shape = RoundedCornerShape(8.dp)
+                                readOnly = true,
+                                textStyle = TextStyle.Default.copy(fontSize = 15.sp)
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    )  {
-                                        Text(
-                                            text = "연결하기",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
-                                            fontSize = 16.sp
-                                        )
+                                itemOptions.forEach { eachoption ->
+                                    DropdownMenuItem(onClick = {
+                                        selectedOption = eachoption
+                                        expanded = false
+                                    }) {
+                                        Text(text = eachoption, fontSize = 15.sp)
                                     }
                                 }
                             }
                         }
 
-                        Row {
-                            Button(
-                                onClick = {},
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                        Spacer(
+                            modifier = Modifier.height(30.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        ) {
+                            Text(
+                                text = "블루투스 상태 : ",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = if (isBluetoothEnabled) "켜짐" else "꺼짐",
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            )
+                        }
+                        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                            Row {
+                                Button(
+                                    onClick = {
+                                        if (bluetoothAdapter?.isEnabled == false) {
+                                            bluetoothAdapter.enable()
+                                        } else {
+                                            Toast.makeText(
+                                                navController.context,
+                                                "이미 블루투스가 켜져있습니다",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                    shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    )  {
-                                        Text(
-                                            text = "연결해제",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
-                                            fontSize = 16.sp
-                                        )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.weight(1f),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "켜기",
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Black,
+                                                fontSize = 16.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            Row {
+                                Button(
+                                    onClick = {
+                                        if (bluetoothAdapter?.isEnabled == true) {
+                                            bluetoothAdapter.disable()
+                                        } else {
+                                            Toast.makeText(
+                                                navController.context,
+                                                "이미 블루투스가 꺼져있습니다",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.weight(1f),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "끄기",
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Black,
+                                                fontSize = 16.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -218,7 +361,8 @@ fun Helmet(navController: NavController) {
                             Text(
                                 text = "안전모 번호",
                                 color = Color.Black,
-                                fontSize = 20.sp
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                             TextField(
                                 value = helmetid,
@@ -236,6 +380,31 @@ fun Helmet(navController: NavController) {
 
                         Row {
                             Button(
+                                onClick = {context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))},
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Box(
+                                        modifier = Modifier.weight(1f),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "등록하기",
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Black,
+                                            fontSize = 16.sp
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Row {
+                            Button(
                                 onClick = {},
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                                 colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
@@ -248,9 +417,9 @@ fun Helmet(navController: NavController) {
                                     Box(
                                         modifier = Modifier.weight(1f),
                                         contentAlignment = Alignment.Center
-                                    )  {
+                                    ) {
                                         Text(
-                                            text = "등록하기",
+                                            text = "반납하기",
                                             fontWeight = FontWeight.Bold,
                                             color = Color.Black,
                                             fontSize = 16.sp
@@ -259,31 +428,6 @@ fun Helmet(navController: NavController) {
                                 }
                             }
                         }
-                       Row {
-                           Button(
-                               onClick = {},
-                               elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                               colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                               shape = RoundedCornerShape(8.dp)
-                           ) {
-                               Row(
-                                   verticalAlignment = Alignment.CenterVertically,
-                                   horizontalArrangement = Arrangement.SpaceBetween
-                               ) {
-                                   Box(
-                                       modifier = Modifier.weight(1f),
-                                       contentAlignment = Alignment.Center
-                                   )  {
-                                       Text(
-                                           text = "반납하기",
-                                           fontWeight = FontWeight.Bold,
-                                           color = Color.Black,
-                                           fontSize = 16.sp
-                                       )
-                                   }
-                               }
-                           }
-                       }
                     }
                 }
             }

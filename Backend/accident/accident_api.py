@@ -6,7 +6,7 @@ from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 import datetime
 from db.db_connection import get_db
-from db.models import Accident
+from db.models import Accident, Work
 from pyfcm import FCMNotification
 from db.models import UserEmployee
 
@@ -31,6 +31,10 @@ class Alert(BaseSettings):
 
 
 FCM_API_KEY = Alert(_env_file=r'./accident/.env', _env_file_encoding='utf-8')
+
+
+class Work_list(BaseModel):
+    work_list: List[str] = []
 
 # Websocket 접속 매니저
 
@@ -71,7 +75,7 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
     db.add(db_accident)
     db.commit()
     user = db.query(UserEmployee).filter(
-        UserEmployee.employee_id == accident.user_id).first()
+        UserEmployee.id == accident.victim_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
     # 사고 발생 시 알림 전송
@@ -79,9 +83,16 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
     alert = push_service.multiple_devices_data_message(
         topic_name=accident.work_id,
         message_title=f"{accident.category} 사고 발생!",
-        message_body=f"피해자: {user.name} ({accident.user_id})"
+        message_body=f"피해자: {user.name} ({accident.victim_id})"
     )
     return {"status": "success"}
+
+
+@router.get("/work_list", response_model=Work_list, status_code=status.HTTP_200_OK)
+def get_work_list(user_id: str, db: Session = Depends(get_db)):
+    work_rows = db.query(Work).filter(Work.worker_id == user_id)
+    work_ids = [work_row.work_id for work_row in work_rows]
+    return Work_list(work_list=work_ids)
 
 
 manager = ConnectionManager()

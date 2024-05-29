@@ -20,6 +20,10 @@ interface ApiService {
         @Field("password") pw:String?
     ): Call<LoginResponse>
 
+    @GET("/work_list")
+    fun API_work_list(
+        @Query("user_id") id:String
+    ):Call<Work_list_Response>
     @POST("/register")
     fun API_register(
         @Body requestBody: RegisterInputModel

@@ -16,170 +16,122 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
-//@Composable
-//fun isItemSelected(navController: NavController, destination: String): Boolean {
-//    val currentBackStackEntry: NavBackStackEntry? by navController.currentBackStackEntryAsState()
-//    return currentBackStackEntry?.destination?.route == destination
-//}
-//@Composable
-//fun NavigationBar(navController: NavController) {
-//    BottomNavigation(
-//        modifier = Modifier.fillMaxSize(),
-//        backgroundColor = Color.Transparent // 네비게이션 바의 배경색을 투명하게 설정
-//    ) {
-//        BottomNavigationItem(
-//            icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-//            label = { Text("검색") },
-//            selected = isItemSelected(navController, "processingScreen"),
-//            onClick = { navController.navigate("processingScreen") },
-//            selectedContentColor = Color.Black // 선택된 상태에서 아이콘과 텍스트의 색상
-//        )
-//        BottomNavigationItem(
-//            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-//            label = { Text("홈") },
-//            selected = isItemSelected(navController, "mainScreen"),
-//            onClick = { navController.navigate("mainScreen") },
-//            selectedContentColor = Color.Black // 선택된 상태에서 아이콘과 텍스트의 색상
-//        )
-//        BottomNavigationItem(
-//            icon = { Icon(Icons.Default.Info, contentDescription = "Info") },
-//            label = { Text("정보") },
-//            selected = isItemSelected(navController, "menuScreen"),
-//            onClick = { navController.navigate("menuScreen") },
-//            selectedContentColor = Color.Black // 선택된 상태에서 아이콘과 텍스트의 색상
-//        )
-//    }
-//}
 
-sealed class Destinations(
-    val route: String,
-    val title: String? = null,
-    val icon: ImageVector? = null
-) {
-    object processingScreen : Destinations(
-        route = "processingScreen",
-        title = "검색",
-        icon = Icons.Default.Search
-    )
+sealed class Destinations(val route: String,val title: String) {
+    object Loading : Destinations("loadingScreen","로딩")
+    object Login : Destinations("loginScreen","로그인")
+    object Signup: Destinations("signupScreen","회원가입")
+    object Findid : Destinations("findidScreen","아이디찾기")
+    object Findpw : Destinations("findpwScreen","비밀번호찾기")
+    object Main : Destinations("mainScreen","홈")
+    object Processing : Destinations("processingScreen","처리내역")
+    object Menu : Destinations("menuScreen","메뉴")
+    object Countermeasures : Destinations("countermeasuresScreen","행동요령")
+    object Map : Destinations("mapScreen","사고현장")
+    object Trend : Destinations("trendScreen","추세선")
+    object Helmet : Destinations("helmetScreen","헬멧등록")
+    object NullMap : Destinations("nullmapScreen","")
+    object CompanyInfo : Destinations("companyinfoScreen","회사정보")
+    object Etc : Destinations("etcScreen","기타")
+    object License : Destinations("licenseScreen","라이센스")
+    object Privacy : Destinations("privacyScreen","개인정보")
 
-    object mainScreen : Destinations(
-        route = "mainScreen",
-        title = "메인",
-        icon = Icons.Default.Home
-    )
-
-    object menuScreen : Destinations(
-        route = "menuScreen",
-        title = "메뉴",
-        icon = Icons.Default.Info
-    )
 
 }
+
+
+fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
+    composable(Destinations.Loading.route) {
+        Loading(navController)
+    }
+    composable(Destinations.Login.route) {
+        Login(navController)
+    }
+    composable(Destinations.Signup.route) {
+        Signup(navController)
+    }
+    composable(Destinations.Findid.route) {
+        Findid(navController)
+    }
+    composable(Destinations.Findpw.route) {
+        Findpw(navController)
+    }
+}
+
 @OptIn(ExperimentalNaverMapApi::class)
+fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
+    composable(Destinations.Main.route) {
+        Main(navController)
+    }
+    composable(Destinations.Processing.route) {
+        Processing(navController)
+    }
+    composable(Destinations.Map.route) {
+        Map(navController)
+    }
+    composable(Destinations.Trend.route) {
+        Trend(navController)
+    }
+    composable(Destinations.Helmet.route) {
+        Helmet(navController)
+    }
+    composable(Destinations.NullMap.route) {
+        NullMap(navController)
+    }
+    composable(Destinations.Countermeasures.route) {
+        Countermeasures(navController)
+    }
+    composable(Destinations.Menu.route) {
+        Menu(navController)
+    }
+}
+
+fun NavGraphBuilder.menuNavGraph(navController: NavHostController) {
+    composable(Destinations.Menu.route) {
+        Menu(navController)
+    }
+    composable(Destinations.CompanyInfo.route) {
+        CompanyInfo(navController)
+    }
+    composable(Destinations.Etc.route) {
+        Etc(navController)
+    }
+    composable(Destinations.Privacy.route) {
+        Privacy(navController)
+    }
+    composable(Destinations.License.route) {
+        License(navController)
+    }
+}
+
+
+
+
 @Composable
-fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController, startDestination = "loadingScreen") {
-        composable("loadingScreen") {
-            Loading(navController)
+fun RootNavGraph(navController: NavHostController) {
+    NavHost(navController, startDestination = "auth") {
+        navigation(startDestination = Destinations.Loading.route, route = "auth") {
+            authNavGraph(navController)
         }
-        composable("loginScreen") {
-            Login(navController)
+
+        navigation(startDestination = Destinations.Main.route, route = "main") {
+            mainNavGraph(navController)
         }
-        composable("signupScreen") {
-            Signup(navController)
-        }
-        composable("mainScreen") {
-            Main(navController)
-        }
-        composable("processingScreen") {
-            Processing(navController)
-        }
-        composable("menuScreen") {
-            Menu(navController)
-        }
-        composable("findidScreen") {
-            Findid(navController)
-        }
-        composable("findpwScreen") {
-            Findpw(navController)
-        }
-        composable("etcScreen") {
-            Etc(navController)
-        }
-        composable("licenseScreen") {
-            License(navController)
-        }
-        composable("helmetScreen") {
-            Helmet(navController)
-        }
-        composable("privacyScreen") {
-            Privacy(navController)
-        }
-        composable("privacychangeScreen") {
-            PrivacyChange(navController)
-        }
-        composable("companyinfoScreen") {
-            CompanyInfo(navController)
-        }
-        composable("trendScreen") {
-            Trend(navController)
-        }
-        composable("countermeasuresScreen") {
-            Countermeasures(navController)
-        }
-        composable("mapScreen") {
-            Map(navController)
-        }
-        composable("nullmapScreen") {
-            NullMap(navController)
+
+        navigation(startDestination = Destinations.Menu.route, route = "menu") {
+            menuNavGraph(navController)
         }
     }
 }
 
-@Composable
-fun BottomBar(
-    navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier
-) {
-    val screens = listOf(
-        Destinations.processingScreen,
-        Destinations.mainScreen,
-        Destinations.menuScreen
-    )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    NavigationBar(
-        modifier = modifier,
-        containerColor = Color.White,
-    ) {
-        screens.forEach { screen ->
-            NavigationBarItem(
-                label = { Text(text = screen.title!!) },
-                icon = { Icon(imageVector = screen.icon!!, contentDescription = "") },
-                selected = currentRoute == screen.route,
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = false
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    unselectedTextColor = Color.White, selectedTextColor = Color.LightGray
-                )
-            )
-        }
-    }
-}
 
 
 

@@ -28,6 +28,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Water
@@ -151,6 +152,15 @@ fun Main(
                     Text(
                         text = "님!", fontSize = 30.sp
                     )
+                    Spacer(modifier = Modifier.weight(1f)) // 여백 추가
+                    IconButton(
+                        onClick = { navController.navigate("menuScreen") }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "메뉴"
+                        )
+                    }
                 }
                 Text(
                     text = "오늘도 안전한 근무 되시길 바랍니다!", fontSize = 15.sp

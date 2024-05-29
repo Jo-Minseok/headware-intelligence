@@ -5,14 +5,22 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.ContentValues.TAG
+import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,19 +57,27 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.patrykandpatrick.vico.core.extension.getFieldValue
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
+data class Work_list_Response(
+    val work_list: List<String>
+)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Helmet(navController: NavController) {
-    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-    var scanning = false
-    val handler = Handler()
-    val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+    val context = LocalContext.current
+    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
 
     val auto: SharedPreferences =
         LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
@@ -70,21 +86,57 @@ fun Helmet(navController: NavController) {
     }
 
     var expanded by remember { mutableStateOf(false) }
-    val ItemOptions = listOf("1324", "123", "1234")
-    var selectedOption by remember { mutableStateOf(ItemOptions[0]) }
-    if (bluetoothAdapter == null) {
-        if (ActivityCompat.checkSelfPermission(
-                navController.context,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) != PackageManager.PERMISSION_GRANTED
-        )
-            AlertDialog.Builder(LocalContext.current)
+    var itemOptions by remember { mutableStateOf(listOf<String>()) }
+    var selectedOption by remember{mutableStateOf("")}
+    val apiService_worklist = RetrofitInstance.apiService.API_work_list(id = auto.getString("userid",null).toString())
+    apiService_worklist.enqueue(object:Callback<Work_list_Response>{
+        override fun onResponse(call: Call<Work_list_Response>, response: Response<Work_list_Response>) {
+            if(response.isSuccessful) {
+                response.body()?.let { workListResponse ->
+                    itemOptions = workListResponse.work_list
+                }
+            }
+        }
+        override fun onFailure(call:Call<Work_list_Response>,t:Throwable){
+            Log.e("HEAD METAL","Failed to fetch work list")
+        }
+    })
+
+    var isBluetoothEnabled by remember{ mutableStateOf(bluetoothAdapter?.isEnabled == true)}
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted. Proceed with BLE operations.
+        } else {
+            // Permission is denied. Handle accordingly.
+        }
+    }
+    LaunchedEffect(Unit){
+        if(bluetoothAdapter == null || !context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)){
+            AlertDialog.Builder(navController.context)
                 .setTitle("블루투스 연결 실패")
                 .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
                 .setPositiveButton("확인") { dialog, which ->
                     navController.navigate("mainScreen")
                 }
                 .show()
+        }else{
+            when{
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                }
+                else -> {
+                    requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            }
+        }
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
@@ -196,7 +248,7 @@ fun Helmet(navController: NavController) {
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false }
                             ) {
-                                ItemOptions.forEach { eachoption ->
+                                itemOptions.forEach { eachoption ->
                                     DropdownMenuItem(onClick = {
                                         selectedOption = eachoption
                                         expanded = false
@@ -220,80 +272,80 @@ fun Helmet(navController: NavController) {
                                 fontSize = 20.sp
                             )
                             Text(
-                                text = if (true) "켜짐" else "꺼짐",
+                                text = if (isBluetoothEnabled) "켜짐" else "꺼짐",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
                         }
-
-                        Row {
-                            Button(
-                                onClick = {
-                                    if (bluetoothAdapter?.isEnabled == false) {
-
-                                        bluetoothAdapter.enable()
-                                    } else {
-                                        Toast.makeText(
-                                            navController.context,
-                                            "이미 블루투스가 켜져있습니다",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                            Row {
+                                Button(
+                                    onClick = {
+                                        if (bluetoothAdapter?.isEnabled == false) {
+                                            bluetoothAdapter.enable()
+                                        } else {
+                                            Toast.makeText(
+                                                navController.context,
+                                                "이미 블루투스가 켜져있습니다",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                    shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(
-                                            text = "켜기",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
-                                            fontSize = 16.sp
-                                        )
+                                        Box(
+                                            modifier = Modifier.weight(1f),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "켜기",
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Black,
+                                                fontSize = 16.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        Row {
-                            Button(
-                                onClick = {
-                                    if (bluetoothAdapter?.isEnabled == true) {
-                                        bluetoothAdapter.disable()
-                                    } else {
-                                        Toast.makeText(
-                                            navController.context,
-                                            "이미 블루투스가 꺼져있습니다",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                                colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                            Row {
+                                Button(
+                                    onClick = {
+                                        if (bluetoothAdapter?.isEnabled == true) {
+                                            bluetoothAdapter.disable()
+                                        } else {
+                                            Toast.makeText(
+                                                navController.context,
+                                                "이미 블루투스가 꺼져있습니다",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    },
+                                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                                    shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(
-                                            text = "끄기",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.Black,
-                                            fontSize = 16.sp
-                                        )
+                                        Box(
+                                            modifier = Modifier.weight(1f),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "끄기",
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.Black,
+                                                fontSize = 16.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -328,7 +380,7 @@ fun Helmet(navController: NavController) {
 
                         Row {
                             Button(
-                                onClick = {},
+                                onClick = {context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))},
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                                 colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
                                 shape = RoundedCornerShape(8.dp)

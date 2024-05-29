@@ -48,7 +48,6 @@ fun Loading(navController: NavController) {
     // 권한 요청
     val permissionsToRequest = mutableListOf<String>()
     val permissions = mutableListOf<String>(
-        Manifest.permission.ACCESS_BACKGROUND_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.POST_NOTIFICATIONS
@@ -93,7 +92,7 @@ fun Loading(navController: NavController) {
                         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                             if (response.isSuccessful) {
                                 Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",
-                                    Toast.LENGTH_SHORT)
+                                    Toast.LENGTH_SHORT).show()
                                 navController.navigate("mainScreen")
                             } else {
                                 val builder = AlertDialog.Builder(navController.context)

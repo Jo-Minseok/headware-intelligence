@@ -16,29 +16,13 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.Constants
 import com.google.firebase.messaging.FirebaseMessaging
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.content.ComponentName
-import android.content.ServiceConnection
 import android.content.SharedPreferences
-import android.os.IBinder
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 class MainActivity : ComponentActivity() {
     companion object{
         const val REQUEST_PERMISSIONS_CODE = 1
-    }
-
-    private var deviceAddress:String = ""
-    private var bluetoothService :BluetoothLeService? = null
-    private val bluetoothServiceConnection = object: ServiceConnection{
-        override fun onServiceDisconnected(name: ComponentName?) {
-            TODO("Not yet implemented")
-        }
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            TODO("Not yet implemented")
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

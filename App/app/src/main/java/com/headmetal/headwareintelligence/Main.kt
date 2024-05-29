@@ -117,8 +117,49 @@ fun Main(
     val refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     var current by remember { mutableStateOf(Calendar.getInstance().time) }
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var latitude by remember { mutableStateOf<Double?>(null) }
+    var longitude by remember { mutableStateOf<Double?>(null) }
+    var hasLocationPermission by remember { mutableStateOf(false) }
+
+    val locationPermissionRequest = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        hasLocationPermission =
+            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+    }
 
     LaunchedEffect(Unit) {
+        when {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                hasLocationPermission = true
+            }
+
+            else -> {
+                locationPermissionRequest.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
+        }
+
+        if (hasLocationPermission) {
+            val location = fusedLocationClient.lastLocation.await()
+            location?.let {
+                latitude = it.latitude
+                longitude = it.longitude
+            }
+        } else {
+            Log.e("HEAD METAL", "위치 권한이 필요함")
+        }
+
+        refreshState.value = true
+
         while (true) {
             delay(1000)
             current = Calendar.getInstance().time
@@ -128,6 +169,10 @@ fun Main(
     LaunchedEffect(refreshState.value) {
         weatherViewModel.getWeather(35.1336437235, 129.09320833287)
         refreshState.value = false
+//        if (latitude != null && longitude != null) {
+//            weatherViewModel.getWeather(latitude!!, longitude!!)
+//            refreshState.value = false
+//        }
     }
 
     BackOnPressed()
@@ -152,13 +197,10 @@ fun Main(
                     Text(
                         text = "님!", fontSize = 30.sp
                     )
-                    Spacer(modifier = Modifier.weight(1f)) // 여백 추가
-                    IconButton(
-                        onClick = { navController.navigate("menuScreen") }
-                    ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(onClick = { navController.navigate("menuScreen") }) {
                         Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "메뉴"
+                            imageVector = Icons.Default.Menu, contentDescription = "메뉴"
                         )
                     }
                 }

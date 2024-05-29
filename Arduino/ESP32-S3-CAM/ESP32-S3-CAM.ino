@@ -9,7 +9,6 @@
 #include <HTTPClient.h>
 #include <NTPClient.h>
 #include <ArduinoWebsockets.h>
-#include <ArduinoJson.h>
 #include <MPU6050.h>
 
 #include "esp_camera.h"
@@ -20,15 +19,16 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
 #include <Wire.h>
-#include "image.h"
-Adafruit_SSD1306 display(128,64,&Wire,-1);
 
 #define SERVICE_UUID "c672da8f-05c6-472f-87d8-34201a97468f"
 #define CHARACTERISTIC_UUID "01e7eeab-2597-4c54-84e8-2fceb73c645d"
 using namespace websockets;
 unsigned int HELMET_NUM = 1;
 
-String user_id = "", work_id = "1234", bluetooth_data="", server_address = "minseok821lab.kro.kr:8000";
+Adafruit_SSD1306 display(128,64,&Wire,-1);
+
+String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
+int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
 /*
 ############################################################################
                                   BLE
@@ -56,6 +56,22 @@ class MyCallbacks : public BLECharacteristicCallbacks {
     String rxValue = pCharacteristic->getValue().c_str();
     if (rxValue.length() > 0) {
       bluetooth_data = rxValue;
+      if(bluetooth_data.startsWith("ui ")){
+        user_id = bluetooth_data.substring(3);
+        Serial.println("[BLE] USER ID = " + user_id);
+      }
+      else if(bluetooth_data.startsWith("wd ")){
+        work_id = bluetooth_data.substring(3);
+        Serial.println("[BLE] WORK ID = " + work_id);
+      }
+      else if(bluetooth_data.startsWith("wi ")){
+        wifi_id = bluetooth_data.substring(3);
+        Serial.println("[BLE] WIFI ID = " + wifi_id);
+      }
+      else if(bluetooth_data.startsWith("wp ")){
+        wifi_pw = bluetooth_data.substring(3);
+        Serial.println("[BLE] WIFI PW = " + wifi_pw);
+      }
     }
   }
 };
@@ -63,6 +79,15 @@ class MyCallbacks : public BLECharacteristicCallbacks {
 void BT_setup() {
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP START");
   String bluetooth_name = "HEADWARE " + String(HELMET_NUM) + "번 헬멧";
+
+  display.clearDisplay();
+  HELMETNUM_display();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(10,24);
+  display.println("BLUETOOTH");
+  display.display();
+
   BLEDevice::init(bluetooth_name.c_str());
   
   BLEServer *pServer = BLEDevice::createServer();
@@ -89,48 +114,73 @@ void BT_setup() {
     delay(100);
   }
 
-  pTxCharacteristic->setValue("id");
-  pTxCharacteristic->notify();
-
-  while (user_id == "") {
-    delay(100);
-    if (bluetooth_data.startsWith("i ")) {
-      user_id = bluetooth_data.substring(2);
-    }
-  }
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
 }
 
+void ID_setup(){
+  display.clearDisplay();
+  HELMETNUM_display();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(10,24);
+  display.println("USER ID");
+  display.display();
+
+  pTxCharacteristic->setValue("user_id");
+  pTxCharacteristic->notify();
+  while (user_id == "") {
+    delay(1000);
+    tone(PIEZO,melody[0],200);
+  }
+
+  display.clearDisplay();
+  HELMETNUM_display();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(10,24);
+  display.println("WORK ID");
+  display.display();
+
+  pTxCharacteristic->setValue("work_id");
+  pTxCharacteristic->notify();
+  while (work_id == "") {
+    delay(1000);
+    tone(PIEZO,melody[1],200);
+  }
+}
 /*
 ############################################################################
                                   WIFI
 ############################################################################
 */
 void WIFI_setup(){
-  Serial.println("[SETUP] WIFI: " + String(HELMET_NUM) + ".NO HELMET WIFI SETUP START");
-  String ssid = "",password = "";
-  
-  while ((ssid == "") || (password == "") || (WiFi.status() != WL_CONNECTED))
+  Serial.println("[SETUP] WIFI: SETUP START");
+  display.clearDisplay();
+  HELMETNUM_display();
+  display.setTextSize(3);
+  display.setTextColor(WHITE);
+  display.setCursor(10,24);
+  display.println("WIFI");
+  display.display();
+
+  while (true)
   {
+    tone(PIEZO,melody[1],500);
     pTxCharacteristic->setValue("wifi");
     pTxCharacteristic->notify();
-    if (bluetooth_data[0] == 's')
-    {
-      int spacePos = bluetooth_data.indexOf(' ');
-      ssid = bluetooth_data.substring(spacePos + 1);
-      Serial.println("[SYSTEM] WIFI: SSID= " + ssid);
+    Serial.println("[WIFI] ID = " + wifi_id + ", PW = " + wifi_pw);
+    WiFi.begin(wifi_id, wifi_pw);
+    delay(2000);
+    if(WiFi.status() != WL_CONNECTED){
+      Serial.println("[WIFI] CONNECT FAIL");
     }
-    else if (bluetooth_data[0] == 'p')
-    {
-      int spacePos = bluetooth_data.indexOf(' ');
-      password = bluetooth_data.substring(spacePos + 1);
-      Serial.println("[SYSTEM] WIFI: PASSWORD= " + password);
+    else{
+      Serial.println("[WIFI] CONNECT SUCCESS");
+      break;
     }
-    WiFi.begin(ssid, password);
-    delay(1000);
   }
   
-  Serial.println("[SETUP] WIFI: " + String(HELMET_NUM) + ".NO HELMET WIFI SETUP SUCCESS");
+  Serial.println("[SETUP] WIFI: SETUP SUCCESS");
 }
 
 /*
@@ -158,7 +208,7 @@ void HTTP_setup(){
   http.begin("http://"+server_address + "/");
   int httpResponseCode = http.GET();
   while(httpResponseCode != 200){
-    Serial.println("[ERROR] 서버 접속 오류");
+    Serial.println("[ERROR] SERVER: CONNECT FAIL");
     tone(PIEZO,251);
     delay(5000);
   }
@@ -173,35 +223,27 @@ void SendingData(String type)
     http.begin("http://" + server_address + "/accident/upload"); // 대상 서버 주소
     http.addHeader("Content-Type", "application/json");          // POST 전송 방식 json 형식으로 전송 multipart/form-data는 이미지 같은 바이너리 데이터
 
-    String json_to_string = "";
-    JsonDocument send_data; // Json 크기 설정
-
     // 사고 발생 날짜, 시간 설정
     time_t epochTime = timeClient.getEpochTime();
     struct tm *timeInfo;
     timeInfo = localtime(&epochTime);
 
-    send_data["type"] = type;
-    send_data["date"][0] = timeInfo->tm_year + 1900;
-    send_data["date"][1] = timeInfo->tm_mon + 1;
-    send_data["date"][2] = timeInfo->tm_mday;
-    send_data["time"][0] = timeInfo->tm_hour;
-    send_data["time"][1] = timeInfo->tm_min;
-    send_data["time"][2] = timeInfo->tm_sec;
-    send_data["id"] = user_id;
-    serializeJsonPretty(send_data, json_to_string);
-    send_data.clear();
+    String jsonPayload = "{";
+    jsonPayload += "\"type\":\"" + type + "\",";
+    jsonPayload += "\"date\":[" + String(timeInfo->tm_year + 1900) + "," + String(timeInfo->tm_mon + 1) + "," + String(timeInfo->tm_mday) + "],";
+    jsonPayload += "\"time\":[" + String(timeInfo->tm_hour) + "," + String(timeInfo->tm_min) + "," + String(timeInfo->tm_sec) + "],";
+    jsonPayload += "\"id\":\"" + user_id + "\"";
+    jsonPayload += "}";
 
-    int httpResponseCode = http.POST(json_to_string); // http 방식으로 전송 후 반환 값 저장
-    json_to_string.clear();
-    if (httpResponseCode > 0)
+    int httpResponseCode = http.POST(jsonPayload);
+    if (httpResponseCode == 200)
     {
-      String response = http.getString(); // http 방식으로 보낸 코드 출력
-      Serial.println(response);           // http 방식으로 전송 후 받은 응답 코드 출력
+      String response = http.getString();
+      Serial.println(response);
     }
     else
     { // 반환 값이 올바르지 않다면
-      Serial.print("Error on sending POST: ");
+      Serial.print("[ERROR] HTTP SENDING ERROR = ");
       Serial.println(httpResponseCode);
     }
     http.end();
@@ -223,7 +265,7 @@ void WEBSOCKET_setup() {
   Serial.println("[SETUP] WEBSOCKET: SETUP START");
   client.onMessage(onMessageCallback);
   client.onEvent(onEventsCallback);
-  client.connect("ws://bychul0424.kro.kr:8000/accident/ws/1234/seok3764");
+  client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
   Serial.println("[SETUP] WEBSOCKET: SETUP SUCCESS");
 }
 
@@ -263,7 +305,6 @@ void onEventsCallback(WebsocketsEvent event, String data) {
                                   SPEAKER
 ############################################################################
 */
-int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
 void PLAY_SIREN(String send_id){
   for(int i=0;i<10;i++){
     tone(PIEZO,melody[3],250);
@@ -273,9 +314,17 @@ void PLAY_SIREN(String send_id){
 }
 
 void SUCCESS_setup(){
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,26);
+  display.println("SUCCESS");
+  display.display();
   tone(PIEZO,melody[0],500);
   tone(PIEZO,melody[2],500);
   tone(PIEZO,melody[4],500);
+  display.clearDisplay();
+  display.display();
 }
 
 void PIEZO_setup(){
@@ -358,7 +407,7 @@ void capture_and_send_image(String send_id) {
   HTTPClient http;
   camera_fb_t * fb = esp_camera_fb_get();
   if (fb != NULL && fb->format == PIXFORMAT_JPEG) {
-    http.begin("http://bychul0424.kro.kr:8000/accident/upload_image");
+    http.begin("http://"+server_address+"/accident/upload_image");
     String boundary = "--------------------------";
     for (int i = 0; i < 24; i++) {
       boundary += String(random(0, 10));
@@ -399,15 +448,28 @@ void capture_and_send_image(String send_id) {
                                   OLED
 ############################################################################
 */
+
 const int OLED_addr = 0x3C;
 void OLED_setup(){
   Serial.println("[SETUP] OLED: SETUP START");
   //Wire.begin(0,9);
   display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
   display.clearDisplay();
-  display.drawBitmap(0,0,bluetooth_image,128,64,1);
+  HELMETNUM_display();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,26);
+  display.println("HEAD BUDDY");
   display.display();
   Serial.println("[SETUP] OLED: SETUP SUCCESS");
+}
+
+void HELMETNUM_display(){
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("NO. " + String(HELMET_NUM));
+  display.display();
 }
 
 /*
@@ -465,22 +527,44 @@ void setup(){
   Serial.begin(115200);
   Wire.begin();
 
-  GYRO_setup(); // 자이로스코프
   OLED_setup(); // OLED
-  CAMERA_setup(); // 카메라
-  
-  BT_setup(); // 블루투스
-  WIFI_setup(); // WIFI
-  TIME_setup(); // 시간
-  HTTP_setup(); // HTTP
-  WEBSOCKET_setup(); // WEBSOCKET
-  PIEZO_setup(); // 스피커
+  delay(1000);
   PIN_setup(); // 핀 셋업
+  delay(1000);
+  PIEZO_setup(); // 스피커
+  delay(1000);
+  BT_setup(); // 블루투스
+  delay(1000);
+  ID_setup(); // ID 설정
+  delay(1000);
+  WIFI_setup(); // WIFI
+  delay(1000);
+  TIME_setup(); // 시간
+  delay(1000);
+  HTTP_setup(); // HTTP
+  delay(1000);
+  WEBSOCKET_setup(); // WEBSOCKET
+  delay(1000);
+  GYRO_setup(); // 자이로스코프
+  delay(1000);
   SUCCESS_setup(); // 셋업 완료
+  delay(1000);
+  CAMERA_setup(); // 카메라
 }
 
 void loop(){
-  client.poll();
   mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
   GYRO_check();
+  if(WiFi.status() == WL_CONNECTED){
+    client.poll();
+    if(false){ // SHOCK 센서 조건부
+      SendingData("낙하");
+    }
+    else if(false){ // MPU6050 센서 조건부
+      SendingData("낙상");
+    }
+  }
+  else{
+    WIFI_setup();
+  }
 }

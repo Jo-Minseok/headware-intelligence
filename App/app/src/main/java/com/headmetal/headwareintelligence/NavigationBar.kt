@@ -25,23 +25,24 @@ import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
 
-sealed class Destinations(val route: String) {
-    object Loading : Destinations("loadingScreen")
-    object Login : Destinations("loginScreen")
-    object Signup: Destinations("signupScreen")
-    object Findid : Destinations("findidScreen")
-    object Findpw : Destinations("findpwScreen")
-    object Main : Destinations("mainScreen")
-    object Processing : Destinations("processingScreen")
-    object Menu : Destinations("menuScreen")
-    object Countermeasures : Destinations("countermeasuresScreen")
-    object Map : Destinations("mapScreen")
-    object Helmet : Destinations("helmetScreen")
-    object NullMap : Destinations("nullmap Screen")
-    object CompanyInfo : Destinations("companyinfoScreen")
-    object Etc : Destinations("etcScreen")
-    object License : Destinations("licenseScreen")
-    object Privacy : Destinations("privacyScreen")
+sealed class Destinations(val route: String,val title: String) {
+    object Loading : Destinations("loadingScreen","로딩")
+    object Login : Destinations("loginScreen","로그인")
+    object Signup: Destinations("signupScreen","회원가입")
+    object Findid : Destinations("findidScreen","아이디찾기")
+    object Findpw : Destinations("findpwScreen","비밀번호찾기")
+    object Main : Destinations("mainScreen","홈")
+    object Processing : Destinations("processingScreen","처리내역")
+    object Menu : Destinations("menuScreen","메뉴")
+    object Countermeasures : Destinations("countermeasuresScreen","행동요령")
+    object Map : Destinations("mapScreen","사고현장")
+    object Trend : Destinations("trendScreen","추세선")
+    object Helmet : Destinations("helmetScreen","헬멧등록")
+    object NullMap : Destinations("nullmapScreen","")
+    object CompanyInfo : Destinations("companyinfoScreen","회사정보")
+    object Etc : Destinations("etcScreen","기타")
+    object License : Destinations("licenseScreen","라이센스")
+    object Privacy : Destinations("privacyScreen","개인정보")
 
 
 }
@@ -75,6 +76,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     }
     composable(Destinations.Map.route) {
         Map(navController)
+    }
+    composable(Destinations.Trend.route) {
+        Trend(navController)
     }
     composable(Destinations.Helmet.route) {
         Helmet(navController)
@@ -124,53 +128,6 @@ fun RootNavGraph(navController: NavHostController) {
 
         navigation(startDestination = Destinations.Menu.route, route = "menu") {
             menuNavGraph(navController)
-        }
-    }
-}
-
-@Composable
-fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier) {
-    val screens = listOf(
-        Destinations.Processing,
-        Destinations.Main,
-        Destinations.Menu
-    )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    NavigationBar(
-        modifier = modifier,
-        containerColor = Color.White,
-    ) {
-        screens.forEach { screen ->
-            NavigationBarItem(
-                label = { Text(text = screen.route) },
-                icon = {
-                    Icon(
-                        imageVector = when (screen) {
-                            Destinations.Processing -> Icons.Default.Search
-                            Destinations.Main -> Icons.Default.Home
-                            Destinations.Menu -> Icons.Default.Info
-                            else -> Icons.Default.Home
-                        },
-                        contentDescription = screen.route
-                    )
-                },
-                selected = currentRoute == screen.route,
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = false
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    unselectedTextColor = Color.Gray, selectedTextColor = Color.Black
-                )
-            )
         }
     }
 }

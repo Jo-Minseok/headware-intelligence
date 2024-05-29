@@ -67,10 +67,12 @@ class MyCallbacks : public BLECharacteristicCallbacks {
       else if(bluetooth_data.startsWith("wi ")){
         wifi_id = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI ID = " + wifi_id);
+        WiFi.begin(wifi_id,wifi_pw);
       }
       else if(bluetooth_data.startsWith("wp ")){
         wifi_pw = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI PW = " + wifi_pw);
+        WiFi.begin(wifi_id,wifi_pw);
       }
     }
   }
@@ -323,6 +325,7 @@ void SUCCESS_setup(){
   tone(PIEZO,melody[0],500);
   tone(PIEZO,melody[2],500);
   tone(PIEZO,melody[4],500);
+  delay(1000);
   display.clearDisplay();
   display.display();
 }

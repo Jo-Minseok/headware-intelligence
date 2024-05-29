@@ -1,13 +1,10 @@
-#define GYRO_1 14
-#define GYRO_2 13
 #include <MPU6050.h>
-#include <Wire.h>
 MPU6050 mpu;
 int16_t ax, ay,az,gx,gy,gz;
 
 void GYRO_setup() {
   Serial.println("[SETUP] MPU6050: SETUP START");
-  Wire.begin(GYRO_1, GYRO_2);
+  Wire.begin();
   mpu.initialize();
   while (!mpu.testConnection())
   {

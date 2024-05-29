@@ -1,33 +1,34 @@
-#define ESP32_S3_CAM
-// #define ESP32_CAM
+#include <WiFi.h>
+#include <WiFiUdp.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 #include <BLEServer.h>
 #include <BLE2902.h>
-#include <WiFi.h>
-#include <ArduinoWebsockets.h>
 #include <HTTPClient.h>
-#include <WiFiUdp.h>
 #include <NTPClient.h>
-#include <Wire.h>
-#include <MPU6050.h>
+#include <ArduinoWebsockets.h>
 #include <ArduinoJson.h>
+#include <MPU6050.h>
 
 #include "esp_camera.h"
 #include "camera_pins.h"
 #include "DFRobot_AXP313A.h"
 #include "module_pins.h"
 
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_GFX.h>
+#include <Wire.h>
+#include "image.h"
+Adafruit_SSD1306 display(128,64,&Wire,-1);
+
 #define SERVICE_UUID "c672da8f-05c6-472f-87d8-34201a97468f"
 #define CHARACTERISTIC_UUID "01e7eeab-2597-4c54-84e8-2fceb73c645d"
 using namespace websockets;
 unsigned int HELMET_NUM = 1;
-WebsocketsClient client;
 
 String user_id = "", work_id = "1234", bluetooth_data="", server_address = "minseok821lab.kro.kr:8000";
-
 /*
 ############################################################################
                                   BLE
@@ -39,12 +40,12 @@ BLECharacteristic *pRxCharacteristic;
 
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
-    Serial.println("Bluetooth connected");
+    Serial.println("[BLE] Bluetooth connected");
     deviceConnected = true;
   }
 
   void onDisconnect(BLEServer* pServer) {
-    Serial.println("Bluetooth disconnected");
+    Serial.println("[BLE] Bluetooth disconnected");
     deviceConnected = false;
     pServer->startAdvertising();
   }
@@ -55,7 +56,6 @@ class MyCallbacks : public BLECharacteristicCallbacks {
     String rxValue = pCharacteristic->getValue().c_str();
     if (rxValue.length() > 0) {
       bluetooth_data = rxValue;
-      Serial.println("Received: " + bluetooth_data);
     }
   }
 };
@@ -71,8 +71,7 @@ void BT_setup() {
   BLEService *pService = pServer->createService(SERVICE_UUID);
   pTxCharacteristic = pService->createCharacteristic(
                         CHARACTERISTIC_UUID,
-                        BLECharacteristic::PROPERTY_READ |
-                        BLECharacteristic::PROPERTY_NOTIFY
+                        BLECharacteristic::PROPERTY_READ
                       );
   pTxCharacteristic->addDescriptor(new BLE2902());
 
@@ -97,11 +96,11 @@ void BT_setup() {
     delay(100);
     if (bluetooth_data.startsWith("i ")) {
       user_id = bluetooth_data.substring(2);
-      Serial.println("User ID received: " + user_id);
     }
   }
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
 }
+
 /*
 ############################################################################
                                   WIFI
@@ -218,6 +217,7 @@ void SendingData(String type)
                                 WEBSOCKET
 ############################################################################
 */
+WebsocketsClient client;
 void WEBSOCKET_setup() {
   client.close();
   Serial.println("[SETUP] WEBSOCKET: SETUP START");
@@ -243,6 +243,10 @@ void onMessageCallback(WebsocketsMessage message) {
       client.send(send_id + ":" + action + "전달");
       capture_and_send_image(send_id);
     }
+    else if(action == "소리"){
+      client.send(send_id + ":" + action + "전달");
+      PLAY_SIREN(send_id);
+    }
   }
 }
 
@@ -256,12 +260,53 @@ void onEventsCallback(WebsocketsEvent event, String data) {
 
 /*
 ############################################################################
+                                  SPEAKER
+############################################################################
+*/
+int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
+void PLAY_SIREN(String send_id){
+  for(int i=0;i<10;i++){
+    tone(PIEZO,melody[3],250);
+    tone(PIEZO,melody[7],250);
+  }
+  client.send("admin:소리완료");
+}
+
+void SUCCESS_setup(){
+  tone(PIEZO,melody[0],500);
+  tone(PIEZO,melody[2],500);
+  tone(PIEZO,melody[4],500);
+}
+
+void PIEZO_setup(){
+  ledcSetup(LEDC_CHANNEL_0, 5000, 8); // LEDC 초기화
+  ledcAttachPin(PIEZO, LEDC_CHANNEL_0); // PIEZO 핀에 LEDC 채널 연결
+}
+
+/*
+############################################################################
+                    PIN SETUP(SHOCK, BUTTON, CDS, LED)
+############################################################################
+*/
+void PIN_setup(){
+  Serial.println("[SETUP] PIN: SETUP START");
+  pinMode(SHOCK,INPUT); // 충격
+  Serial.println("[SETUP] PIN: SETUP SUCCESS");
+}
+
+/*
+############################################################################
                                 CAMERA
 ############################################################################
 */
+const int CAM_addr = 0x36;
 void CAMERA_setup(){
   Serial.println("[SETUP] CAMERA: SETUP START");
   DFRobot_AXP313A axp;
+  while(axp.begin()!=0){
+    Serial.println("[SETUP] CAMERA: DFRobot init error");
+    delay(100);
+  }
   axp.enableCameraPower(axp.eOV2640);//Enable the power for camera
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -286,6 +331,11 @@ void CAMERA_setup(){
   config.frame_size = FRAMESIZE_HVGA;
   config.pixel_format = PIXFORMAT_JPEG; // for streaming
   //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
+  config.jpeg_quality = 12;
+  config.fb_count = 1;
+
   if(psramFound()){
       config.jpeg_quality = 10;
       config.fb_count = 2;
@@ -296,14 +346,12 @@ void CAMERA_setup(){
       config.fb_location = CAMERA_FB_IN_DRAM;
   }
 
-  if (esp_camera_init(&config) != ESP_OK) {
-    while (true) {
+  while (esp_camera_init(&config) != ESP_OK) {
       Serial.println("[ERROR] CAMERA: SETUP FAIL");
       delay(500);
-    }
   }
   Serial.println("[SETUP] CAMERA: SETUP SUCCESS");
-}
+}  
 
 void capture_and_send_image(String send_id) {
   client.close();
@@ -348,14 +396,31 @@ void capture_and_send_image(String send_id) {
 
 /*
 ############################################################################
+                                  OLED
+############################################################################
+*/
+const int OLED_addr = 0x3C;
+void OLED_setup(){
+  Serial.println("[SETUP] OLED: SETUP START");
+  //Wire.begin(0,9);
+  display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
+  display.clearDisplay();
+  display.drawBitmap(0,0,bluetooth_image,128,64,1);
+  display.display();
+  Serial.println("[SETUP] OLED: SETUP SUCCESS");
+}
+
+/*
+############################################################################
                                   GYRO
 ############################################################################
 */
 MPU6050 mpu;
+const int MPU_addr=0x68;
 int16_t ax,ay,az,gx,gy,gz;
 void GYRO_setup() {
   Serial.println("[SETUP] MPU6050: SETUP START");
-  Wire.begin(GYRO_SCL, GYRO_SDA);
+  //Wire.begin(GYRO_SDA,GYRO_SCL);
   mpu.initialize();
   while (!mpu.testConnection())
   {
@@ -372,27 +437,22 @@ void GYRO_setup() {
   Serial.println("[SETUP] MPU6050: SETUP SUCCESS");
 }
 
-/*
-############################################################################
-                                  SPEAKER
-############################################################################
-*/
-void PIEZO_setup() {
-  Serial.println("[SETUP] PIEZO: SETUP START");
-  ledcSetup(0, 5000, 8);
-  ledcAttachPin(PIEZO, 0);
-  Serial.println("[SETUP] PIEZO: SETUP SUCCESS");
-}
-
-/*
-############################################################################
-                    PIN SETUP(SHOCK, BUTTON, CDS, LED)
-############################################################################
-*/
-void PIN_setup(){
-  Serial.println("[SETUP] PIN: SETUP START");
-  pinMode(SHOCK,INPUT); // 충격
-  Serial.println("[SETUP] PIN: SETUP SUCCESS");
+void GYRO_check(){
+  Serial.print("[MPU6050 CHECK] ");
+  Serial.print("기울기:");
+  Serial.print("    X=");
+  Serial.print(ax / 8192);
+  Serial.print("    |    Y=");
+  Serial.print(ay / 8192);
+  Serial.print("    |    Z=");
+  Serial.print(az / 8192);
+  Serial.print("    |    가속도:");
+  Serial.print("    |    X=");
+  Serial.print(gx / 1310);
+  Serial.print("    |    Y=");
+  Serial.print(gy / 1310);
+  Serial.print("    |    Z=");
+  Serial.println(gz / 1310);
 }
 
 /*
@@ -403,25 +463,24 @@ void PIN_setup(){
 
 void setup(){
   Serial.begin(115200);
+  Wire.begin();
 
-  // 0 OLED 디스플레이
-  BT_setup(); // 1 블루투스
-  WIFI_setup(); // 2 WIFI
-  TIME_setup(); // 3 시간
-  HTTP_setup(); // 4 HTTP
-  WEBSOCKET_setup(); // 5 WEBSOCKET
-  CAMERA_setup(); // 6 카메라
-  GYRO_setup(); // 7 자이로스코프
-  PIEZO_setup(); // 8 스피커
-  PIN_setup(); // 9 핀 셋업
-  // 10 GPS 셋업
+  GYRO_setup(); // 자이로스코프
+  OLED_setup(); // OLED
+  CAMERA_setup(); // 카메라
+  
+  BT_setup(); // 블루투스
+  WIFI_setup(); // WIFI
+  TIME_setup(); // 시간
+  HTTP_setup(); // HTTP
+  WEBSOCKET_setup(); // WEBSOCKET
+  PIEZO_setup(); // 스피커
+  PIN_setup(); // 핀 셋업
+  SUCCESS_setup(); // 셋업 완료
 }
 
 void loop(){
   client.poll();
-  mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-  if(digitalRead(SHOCK) == HIGH){
-    Serial.println("낙하");
-    // SendingData("낙하");
-  }
+  mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
+  GYRO_check();
 }

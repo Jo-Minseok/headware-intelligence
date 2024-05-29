@@ -2,6 +2,10 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -49,13 +53,13 @@ import androidx.navigation.ui.navigateUp
 
 @Composable
 fun Menu(navController: NavController) {
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+    val userrank = auto.getString("type", null)
+    val username = auto.getString("name", null)
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
-        val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-        val autoLoginEdit: SharedPreferences.Editor = auto.edit()
-        val userrank = auto.getString("type", null)
-        val username = auto.getString("name", null)
-
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
@@ -156,7 +160,8 @@ fun Menu(navController: NavController) {
                         }
                     }
                     Button(
-                        onClick = {},
+                        onClick = {
+                        },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 2.5.dp)
@@ -175,14 +180,15 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "알림 설정",
+                                "권한 설정",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Switch(
-                                checked = true,
-                                onCheckedChange = { },
+                                checked = false,
+                                onCheckedChange = {
+                                },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,
                                     checkedTrackColor = Color(0xFF2FA94E),

@@ -64,13 +64,10 @@ fun HyperlinkText(text: String, onClick: () -> Unit) {
         pop()
     }
 
-    ClickableText(
-        text = annotatedString,
-        onClick = {
-            // 여기서 URL에 대한 처리를 해줄 수 있습니다.
-            onClick()
-        }
-    )
+    ClickableText(text = annotatedString, onClick = {
+        // 여기서 URL에 대한 처리를 해줄 수 있습니다.
+        onClick()
+    })
 }
 
 // AlertDialog 내의 텍스트를 포함하는 함수 수정
@@ -95,18 +92,15 @@ fun AlertDialogWithHyperlinks(
 fun Etc(navController: NavController) {
     val uriHandler = LocalUriHandler.current
     var infoDialog by remember { mutableStateOf(false) }
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
-    {
+    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Icon(
-                imageVector = Icons.Default.ArrowBackIosNew,
+            Icon(imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.padding(20.dp)
-                    .clickable{navController.navigate("menuScreen")}
-            )
+                modifier = Modifier
+                    .padding(20.dp)
+                    .clickable { navController.navigateUp() })
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "기타",
@@ -128,7 +122,7 @@ fun Etc(navController: NavController) {
                     Column(
                     ) {
                         Button(
-                            onClick = {infoDialog=true},
+                            onClick = { infoDialog = true },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .padding(vertical = 2.5.dp)
@@ -139,9 +133,7 @@ fun Etc(navController: NavController) {
                             Row(
                             ) {
                                 Text(
-                                    "개발자",
-                                    color = Color.Black,
-                                    fontSize = 20.sp
+                                    "개발자", color = Color.Black, fontSize = 20.sp
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
@@ -151,19 +143,30 @@ fun Etc(navController: NavController) {
                             }
                         }
                         if (infoDialog) {
-                            AlertDialogWithHyperlinks(
-                                onDismissRequest = { infoDialog = false },
+                            AlertDialogWithHyperlinks(onDismissRequest = { infoDialog = false },
                                 title = { Text(text = "Developers") },
                                 text = {
                                     Column {
                                         Text(text = "조민석 (PM, APP, BE, HW)")
-                                        HyperlinkText("https://github.com/Jo-Minseok") { uriHandler.openUri("https://github.com/Jo-Minseok") }
+                                        HyperlinkText("https://github.com/Jo-Minseok") {
+                                            uriHandler.openUri(
+                                                "https://github.com/Jo-Minseok"
+                                            )
+                                        }
                                         Text(text = "")
                                         Text(text = "전진호 (BE, APP)")
-                                        HyperlinkText("https://github.com/right5625") { uriHandler.openUri("https://github.com/right5625") }
+                                        HyperlinkText("https://github.com/right5625") {
+                                            uriHandler.openUri(
+                                                "https://github.com/right5625"
+                                            )
+                                        }
                                         Text(text = "")
                                         Text(text = "채승룡 (APP)")
-                                        HyperlinkText("https://github.com/chaeseungryong/git") { uriHandler.openUri("https://github.com/chaeseungryong/git") }
+                                        HyperlinkText("https://github.com/chaeseungryong/git") {
+                                            uriHandler.openUri(
+                                                "https://github.com/chaeseungryong/git"
+                                            )
+                                        }
 
                                     }
                                 },
@@ -171,8 +174,7 @@ fun Etc(navController: NavController) {
                                     TextButton(onClick = { infoDialog = false }) {
                                         Text(text = "확인")
                                     }
-                                }
-                            )
+                                })
                         }
 
                         Spacer(
@@ -191,15 +193,11 @@ fun Etc(navController: NavController) {
                             Row(
                             ) {
                                 Text(
-                                    "버전 정보",
-                                    color = Color.Black,
-                                    fontSize = 20.sp
+                                    "버전 정보", color = Color.Black, fontSize = 20.sp
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Text(
-                                    "1.0.0",
-                                    color = Color.Black,
-                                    fontSize = 20.sp
+                                    "1.0.0", color = Color.Black, fontSize = 20.sp
                                 )
                             }
                         }
@@ -208,7 +206,7 @@ fun Etc(navController: NavController) {
                         )
 
                         Button(
-                            onClick = {navController.navigate("LicenseScreen")},
+                            onClick = { navController.navigate("LicenseScreen") },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .padding(vertical = 2.5.dp)
@@ -219,9 +217,7 @@ fun Etc(navController: NavController) {
                             Row(
                             ) {
                                 Text(
-                                    "라이센스",
-                                    color = Color.Black,
-                                    fontSize = 20.sp
+                                    "라이센스", color = Color.Black, fontSize = 20.sp
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
@@ -237,9 +233,7 @@ fun Etc(navController: NavController) {
                         Row {
 
                             Text(
-                                text = "App Info",
-                                color = Color.Black,
-                                fontSize = 12.sp
+                                text = "App Info", color = Color.Black, fontSize = 12.sp
                             )
                             Spacer(modifier = Modifier.weight(1f))
                         }
@@ -251,22 +245,18 @@ fun Etc(navController: NavController) {
                         Row {
 
                             Text(
-                                text = "Team : Head-Metal",
-                                color = Color.Black,
-                                fontSize = 12.sp
+                                text = "Team : Head-Metal", color = Color.Black, fontSize = 12.sp
                             )
                             Spacer(modifier = Modifier.weight(1f))
                         }
 
                         Row {
-                            Text(
-                                text = "Site : https://github.com/Jo-Minseok/headware-intelligence\n",
+                            Text(text = "Site : https://github.com/Jo-Minseok/headware-intelligence\n",
                                 color = Color.Black,
                                 fontSize = 12.sp,
                                 modifier = Modifier.clickable {
                                     uriHandler.openUri("https://github.com/Jo-Minseok/headware-intelligence")
-                                }
-                            )
+                                })
                             Spacer(modifier = Modifier.weight(1f))
                         }
 

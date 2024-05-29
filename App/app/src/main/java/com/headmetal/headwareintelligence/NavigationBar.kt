@@ -36,8 +36,9 @@ sealed class Destinations(val route: String,val title: String) {
     object Menu : Destinations("menuScreen","메뉴")
     object Countermeasures : Destinations("countermeasuresScreen","행동요령")
     object Map : Destinations("mapScreen","사고현장")
+    object Trend : Destinations("trendScreen","추세선")
     object Helmet : Destinations("helmetScreen","헬멧등록")
-    object NullMap : Destinations("nullmap Screen","")
+    object NullMap : Destinations("nullmapScreen","")
     object CompanyInfo : Destinations("companyinfoScreen","회사정보")
     object Etc : Destinations("etcScreen","기타")
     object License : Destinations("licenseScreen","라이센스")
@@ -75,6 +76,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     }
     composable(Destinations.Map.route) {
         Map(navController)
+    }
+    composable(Destinations.Trend.route) {
+        Trend(navController)
     }
     composable(Destinations.Helmet.route) {
         Helmet(navController)
@@ -124,53 +128,6 @@ fun RootNavGraph(navController: NavHostController) {
 
         navigation(startDestination = Destinations.Menu.route, route = "menu") {
             menuNavGraph(navController)
-        }
-    }
-}
-
-@Composable
-fun BottomBar(navController: NavHostController, state: MutableState<Boolean>, modifier: Modifier = Modifier) {
-    val screens = listOf(
-        Destinations.Processing,
-        Destinations.Main,
-        Destinations.Menu
-    )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    NavigationBar(
-        modifier = modifier,
-        containerColor = Color.White,
-    ) {
-        screens.forEach { screen ->
-            NavigationBarItem(
-                label = { Text(text = screen.title) },
-                icon = {
-                    Icon(
-                        imageVector = when (screen) {
-                            Destinations.Processing -> Icons.Default.Search
-                            Destinations.Main -> Icons.Default.Home
-                            Destinations.Menu -> Icons.Default.Info
-                            else -> Icons.Default.Home
-                        },
-                        contentDescription = screen.route
-                    )
-                },
-                selected = currentRoute == screen.route,
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = false
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    unselectedTextColor = Color.Gray, selectedTextColor = Color.Black
-                )
-            )
         }
     }
 }

@@ -46,24 +46,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val navController: NavHostController = rememberNavController()
-            var buttonsVisible = remember { mutableStateOf(true) }
             Scaffold(
-                bottomBar = {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.destination?.route
-
-                    if (currentRoute in listOf(
-                            Destinations.Main.route,
-                            Destinations.Processing.route,
-                            Destinations.Menu.route
-                        )) {
-                        BottomBar(
-                            navController = navController,
-                            state = buttonsVisible,
-                            modifier = Modifier
-                        )
-                    }
-                }
             ) { paddingValues ->
                 Box(
                     modifier = Modifier.padding(paddingValues)

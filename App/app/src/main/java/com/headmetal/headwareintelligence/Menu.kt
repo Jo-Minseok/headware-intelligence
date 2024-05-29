@@ -2,6 +2,10 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,23 +51,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.ui.navigateUp
 
-
-fun requestNotificationPermission() {
-    // 실제로 알림 권한을 요청하는 코드를 작성해야 해요.
-    // 예를 들어, 사용자에게 알림 권한을 요청하는 다이얼로그를 표시할 수 있어요.
-    // 이 코드는 플랫폼마다 다를 수 있으므로 해당 플랫폼의 문서를 참고하세요.
-}
 @Composable
 fun Menu(navController: NavController) {
+    val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+    val userrank = auto.getString("type", null)
+    val username = auto.getString("name", null)
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
-        val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-        val autoLoginEdit: SharedPreferences.Editor = auto.edit()
-        val userrank = auto.getString("type", null)
-        val username = auto.getString("name", null)
-
-        var notificationPermissionGranted by remember { mutableStateOf(false) }
-
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
@@ -165,12 +161,6 @@ fun Menu(navController: NavController) {
                     }
                     Button(
                         onClick = {
-                            if (notificationPermissionGranted) {
-                                // 알림 권한이 이미 허용된 경우에는 아무 작업도 하지 않음
-                            } else {
-                                // 알림 권한을 요청
-                                requestNotificationPermission()
-                            }
                         },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
@@ -190,16 +180,14 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "알림 설정",
+                                "권한 설정",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Switch(
-                                checked = notificationPermissionGranted,
-                                onCheckedChange = { isChecked ->
-                                    notificationPermissionGranted = isChecked
-                                    // 권한을 허용할 때 또는 거부할 때 추가적인 로직이 필요한 경우에는 여기에 작성하세요.
+                                checked = false,
+                                onCheckedChange = {
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,

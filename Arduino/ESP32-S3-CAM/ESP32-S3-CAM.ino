@@ -120,6 +120,7 @@ void BT_setup() {
 }
 
 void ID_setup(){
+  Serial.println("[SETUP] USER ID: SETUP START");
   display.clearDisplay();
   HELMETNUM_display();
   display.setTextSize(2);
@@ -134,7 +135,9 @@ void ID_setup(){
     delay(1000);
     tone(PIEZO,melody[0],200);
   }
+  Serial.println("[SETUP] USER ID: SETUP SUCCESS");
 
+  Serial.println("[SETUP] WORK ID: SETUP START");
   display.clearDisplay();
   HELMETNUM_display();
   display.setTextSize(2);
@@ -149,6 +152,7 @@ void ID_setup(){
     delay(1000);
     tone(PIEZO,melody[1],200);
   }
+  Serial.println("[SETUP] WORK ID: SETUP SUCCESS");
 }
 /*
 ############################################################################

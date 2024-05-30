@@ -75,7 +75,6 @@ import com.naver.maps.map.util.MarkerIcons
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
@@ -84,7 +83,6 @@ import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
-import java.util.Calendar
 
 // Accident 테이블의 데이터를 수신하는 데이터 클래스(Response)
 data class AccidentResponse(
@@ -140,8 +138,11 @@ class AccidentProcessingViewModel : ViewModel() {
     private val _detail = mutableStateOf<String?>(null)
     val detail: State<String?> = _detail
 
-    private val _victim = mutableStateOf<String?>(null)
-    val victim: State<String?> = _victim
+    private val _victimId = mutableStateOf<String?>(null)
+    val victimId: State<String?> = _victimId
+
+    private val _victimName = mutableStateOf<String?>(null)
+    val victimName: State<String?> = _victimName
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
@@ -151,7 +152,8 @@ class AccidentProcessingViewModel : ViewModel() {
             _no.value = response.no
             _situation.value = response.situation
             _detail.value = response.detail
-            _victim.value = response.victim
+            _victimId.value = response.victimId
+            _victimName.value = response.victimName
             state = !state // 모든 데이터를 수신한 뒤 상태를 전환
         }
     }
@@ -185,6 +187,7 @@ fun Map(
     val situationCode: MutableList<Int> = remember { mutableListOf() } // 처리 상황 코드 리스트
     val workId: MutableList<String> = remember { mutableListOf() }
     val listIdx: MutableState<Int> = remember { mutableIntStateOf(0) }
+    val victimId: MutableState<String> = remember { mutableStateOf("") }
     val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
     val cluster: MutableState<Clusterer<ItemKey>?> = remember { mutableStateOf(null) } // 클러스터
     val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) } // 마지막으로 선택된 마커
@@ -199,6 +202,7 @@ fun Map(
             situationCode,
             workId,
             listIdx,
+            victimId,
             victimName,
             cluster,
             selectedMarker
@@ -209,6 +213,7 @@ fun Map(
             situationCode,
             workId,
             listIdx,
+            victimId,
             victimName,
             cluster,
             selectedMarker
@@ -225,6 +230,7 @@ fun MapScreen(
     situationCode: MutableList<Int>,
     workId: MutableList<String>,
     listIdx: MutableState<Int>,
+    victimId: MutableState<String>,
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
@@ -391,8 +397,7 @@ fun MapScreen(
                                             isEndDialogVisible.value = true // 종료 알림창 on
                                         }
 
-                                        listIdx.value =
-                                            no.indexOf(key.id)
+                                        listIdx.value = no.indexOf(key.id)
                                         selectedMarker.value =
                                             marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
 
@@ -402,8 +407,10 @@ fun MapScreen(
                                             isDetailPrintDialogVisible.value =
                                                 true // 사고 처리 세부 내역 출력창 on
                                         } else { // 클릭한 단말 마커의 처리 상황 코드가 PROCESSING, MALFUNCTION, REPORT119일 경우
+                                            victimId.value =
+                                                accidentProcessingViewModel.victimId.value.toString()
                                             victimName.value =
-                                                accidentProcessingViewModel.victim.value.toString() // 사고자 이름 업데이트
+                                                accidentProcessingViewModel.victimName.value.toString() // 사고자 이름 업데이트
                                             isBottomSheetVisible.value = true // 바텀 시트 on
                                         }
                                     }
@@ -437,10 +444,13 @@ fun BottomSheetScreen(
     situationCode: MutableList<Int>,
     workId: MutableList<String>,
     listIdx: MutableState<Int>,
+    victimId: MutableState<String>,
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
 ) {
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
     val scope = rememberCoroutineScope()
     var messages by remember { mutableStateOf(listOf<String>()) }
@@ -457,12 +467,6 @@ fun BottomSheetScreen(
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
             messages = messages + "Error: ${t.message}"
         }
-    }
-
-    LaunchedEffect(Unit) {
-        val request = Request.Builder().url("wss://echo.websocket.org").build()
-        val webSocket = client.newWebSocket(request, webSocketListener)
-        webSocket.send("Hello, WebSocket!")
     }
 
     val isDetailInputDialogVisible: MutableState<Boolean> =
@@ -523,7 +527,17 @@ fun BottomSheetScreen(
                         Log.i(
                             "IconClick", "영상통화 아이콘 클릭"
                         )
-
+                        scope.launch(Dispatchers.IO) {
+                            val request = Request.Builder().url(
+                                "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
+                                    auto.getString(
+                                        "userid", null
+                                    ).toString()
+                                }"
+                            ).build()
+                            val webSocket = client.newWebSocket(request, webSocketListener)
+                            webSocket.send("${victimId.value}:카메라")
+                        }
                     } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
                     ) {
                         Icon(
@@ -538,9 +552,15 @@ fun BottomSheetScreen(
                             "IconClick", "스피커 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-                            val request = Request.Builder().url("ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/seok3764").build()
+                            val request = Request.Builder().url(
+                                "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
+                                    auto.getString(
+                                        "userid", null
+                                    ).toString()
+                                }"
+                            ).build()
                             val webSocket = client.newWebSocket(request, webSocketListener)
-                            webSocket.send("Hello from Compose!")
+                            webSocket.send("${victimId.value}:소리")
                         }
                     } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
                     ) {

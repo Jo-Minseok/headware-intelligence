@@ -72,15 +72,16 @@ def accident_data_detail(db: Session = Depends(get_db), no: str = Path(...)):
     # 사고 처리 데이터 조회
     accident = accident_marker_crud.get_accident_processing(db=db, no=no)
     
-    # 사고자 이름 조회
-    victim = accident_marker_crud.get_victim_name(db=db, no=no)
+    # 사고자 조회
+    victimId, victimName = accident_marker_crud.get_victim_name(db=db, no=no)
 
     # 결과 반환
     return {
         'no' : accident.no, 
         'situation' : accident.situation, 
         'detail' : accident.detail, 
-        'victim' : victim
+        'victimId' : victimId, 
+        'victimName' : victimName
     }
 
 @router.put('/marker/{no}/{situationCode}')

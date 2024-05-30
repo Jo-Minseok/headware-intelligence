@@ -16,12 +16,14 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     latitude = []
     longitude = []
     situationCode = []
+    workId = []
     try:
         for No in [accident.no for accident in accidents if accident.situation != None]:
             accident = accident_marker_crud.get_accident(db=db, no=No)
             no.append(accident.no)
             latitude.append(accident.latitude)
             longitude.append(accident.longitude)
+            workId.append(accident.work_id)
         for accident in accidents:
             if accident.situation != None:
                 situationCode.append(ReverseSituationCode[accident.situation])
@@ -33,7 +35,8 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
         'no' : no, 
         'latitude' : latitude, 
         'longitude' : longitude, 
-        'situationCode' : situationCode
+        'situationCode' : situationCode, 
+        'workId' : workId
     }
 
 @router.get('/{manager}/marker/null')

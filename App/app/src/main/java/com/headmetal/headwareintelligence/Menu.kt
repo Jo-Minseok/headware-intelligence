@@ -58,6 +58,13 @@ fun Menu(navController: NavController) {
     val userrank = auto.getString("type", null)
     val username = auto.getString("name", null)
 
+    // 스위치 값 가져오기
+    val savedSwitchValue = auto.getBoolean("switch_key", false)
+    var switchValue by remember { mutableStateOf(savedSwitchValue) }
+
+
+
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -161,6 +168,8 @@ fun Menu(navController: NavController) {
                     }
                     Button(
                         onClick = {
+                            switchValue = !switchValue
+                            autoLoginEdit.putBoolean("switch_key", switchValue).apply()
                         },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
@@ -180,14 +189,16 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "권한 설정",
+                                "구독 설정",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             Switch(
-                                checked = false,
-                                onCheckedChange = {
+                                checked = switchValue,
+                                onCheckedChange = { isChecked ->
+                                    switchValue = isChecked
+                                    autoLoginEdit.putBoolean("switch_key", isChecked).apply()
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = Color.White,

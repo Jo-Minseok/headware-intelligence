@@ -168,6 +168,8 @@ fun Menu(navController: NavController) {
                     }
                     Button(
                         onClick = {
+                            switchValue = !switchValue
+                            autoLoginEdit.putBoolean("switch_key", switchValue).apply()
                         },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
@@ -187,7 +189,7 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "권한 설정",
+                                "구독 설정",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )

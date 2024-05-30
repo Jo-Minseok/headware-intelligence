@@ -23,11 +23,11 @@ def get_accident(db: Session, no: int):
 def get_accident_processing(db: Session, no: int):
     return db.query(AccidentProcessing).filter(AccidentProcessing.no == no).first()
 
-# 사고자 이름 조회
+# 사고자 조회
 def get_victim_name(db: Session, no: int):
     victim_id = db.execute(select(Accident.victim_id).where(Accident.no == no)).fetchone()[0]
     victim_name = db.execute(select(UserEmployee.name).where(UserEmployee.id == victim_id)).fetchone()[0]
-    return victim_name
+    return (victim_id, victim_name)
 
 # 사고 처리 데이터 갱신
 def update_accident_processing(db: Session, no: int, situationCode: str, detail: Accident_Processing_Detail):

@@ -182,11 +182,9 @@ fun Map(
     val isBottomSheetVisible: MutableState<Boolean> =
         remember { mutableStateOf(false) } // 바텀 시트 스위치
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
-    val accidentNoList: MutableList<Int> = remember { mutableListOf() }
     val situationCode: MutableList<Int> = remember { mutableListOf() } // 처리 상황 코드 리스트
-    val situationCodeIdx: MutableState<Int> =
-        remember { mutableIntStateOf(0) } // 처리 완료 등으로 처리 상황 코드 리스트 값의 갱신을 위한 인덱스(마지막으로 선택한 마커의 사고 번호에 해당하는 인덱스)
-    val workIdList: MutableList<String> = remember { mutableListOf() }
+    val workId: MutableList<String> = remember { mutableListOf() }
+    val listIdx: MutableState<Int> = remember { mutableIntStateOf(0) }
     val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
     val cluster: MutableState<Clusterer<ItemKey>?> = remember { mutableStateOf(null) } // 클러스터
     val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) } // 마지막으로 선택된 마커
@@ -198,10 +196,9 @@ fun Map(
             accidentProcessingViewModel,
             isBottomSheetVisible,
             accidentNo,
-            accidentNoList,
             situationCode,
-            situationCodeIdx,
-            workIdList,
+            workId,
+            listIdx,
             victimName,
             cluster,
             selectedMarker
@@ -210,7 +207,8 @@ fun Map(
             isBottomSheetVisible,
             accidentNo,
             situationCode,
-            situationCodeIdx,
+            workId,
+            listIdx,
             victimName,
             cluster,
             selectedMarker
@@ -224,10 +222,9 @@ fun MapScreen(
     accidentProcessingViewModel: AccidentProcessingViewModel,
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
-    accidentNoList: MutableList<Int>,
     situationCode: MutableList<Int>,
-    situationCodeIdx: MutableState<Int>,
-    workIdList: MutableList<String>,
+    workId: MutableList<String>,
+    listIdx: MutableState<Int>,
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
@@ -320,11 +317,11 @@ fun MapScreen(
                     }
 
                     // 수신한 Accident 테이블 데이터를 캡쳐
-                    accidentNoList.addAll(accidentViewModel.no.value)
+                    val no by accidentViewModel.no
                     val latitude by accidentViewModel.latitude
                     val longitude by accidentViewModel.longitude
                     situationCode.addAll(accidentViewModel.situationCode.value)
-                    //workIdList.addAll(accidentViewModel.workId.value)
+                    workId.addAll(accidentViewModel.workId.value)
 
                     // 지도의 초기 위치 설정
                     val initialCameraPosition =
@@ -352,7 +349,7 @@ fun MapScreen(
                             super.updateLeafMarker(info, marker)
                             val key = info.key as ItemKey // 단말 마커의 id 값(사고 번호)
 
-                            when (situationCode[accidentNoList.indexOf(key.id)]) { // 사고 번호에 해당하는 사고의 처리 상황 코드에 따라 마커 아이콘 지정 및 마커 숨김
+                            when (situationCode[no.indexOf(key.id)]) { // 사고 번호에 해당하는 사고의 처리 상황 코드에 따라 마커 아이콘 지정 및 마커 숨김
                                 SituationCode.COMPLETE.ordinal -> {
                                     marker.icon = MarkerIcons.GREEN
                                 } // 처리 상황 코드가 COMPLETE일 때 초록색 마커 출력(처리 완료)
@@ -394,12 +391,12 @@ fun MapScreen(
                                             isEndDialogVisible.value = true // 종료 알림창 on
                                         }
 
-                                        situationCodeIdx.value =
-                                            accidentNoList.indexOf(key.id) // 이벤트 함수 외부에서 마지막에 선택한 마커의 사고 번호에 해당하는 인덱스를 사용하기 위해 캡처
+                                        listIdx.value =
+                                            no.indexOf(key.id)
                                         selectedMarker.value =
                                             marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
 
-                                        if (situationCode[situationCodeIdx.value] == SituationCode.COMPLETE.ordinal) { // 클릭한 단말 마커의 처리 상황 코드가 COMPLETE일 경우
+                                        if (situationCode[listIdx.value] == SituationCode.COMPLETE.ordinal) { // 클릭한 단말 마커의 처리 상황 코드가 COMPLETE일 경우
                                             detail.value =
                                                 accidentProcessingViewModel.detail.value.toString() // 사고 처리 세부 내역 업데이트
                                             isDetailPrintDialogVisible.value =
@@ -415,11 +412,11 @@ fun MapScreen(
                         }
                     }).build() // 클러스터 마커 및 단말 마커를 설정하기 위한 빌더 구성 후 빌드
 
-                    for (i in accidentNoList.indices) { // 수신한 사고 건수만큼 반복
+                    for (i in no.indices) { // 수신한 사고 건수만큼 반복
                         if (situationCode[i] != SituationCode.MALFUNCTION.ordinal) { // 처리 상황 코드가 MALFUNCTION인 경우 지도에 나타내지 않고 클러스터로 구성하지 않음
                             cluster.value!!.add(
                                 ItemKey(
-                                    accidentNoList[i], LatLng(latitude[i], longitude[i])
+                                    no[i], LatLng(latitude[i], longitude[i])
                                 ), null
                             ) // 사고 번호, 위도, 경도 값을 사용하여 클러스터를 구성
                         }
@@ -438,7 +435,8 @@ fun BottomSheetScreen(
     isBottomSheetVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
     situationCode: MutableList<Int>,
-    situationCodeIdx: MutableState<Int>,
+    workId: MutableList<String>,
+    listIdx: MutableState<Int>,
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
@@ -477,7 +475,7 @@ fun BottomSheetScreen(
             accidentNo = accidentNo,
             selectedMarker = selectedMarker,
             situationCode = situationCode,
-            situationCodeIdx = situationCodeIdx
+            listIdx = listIdx
         )
     }
 
@@ -540,7 +538,7 @@ fun BottomSheetScreen(
                             "IconClick", "스피커 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-                            val request = Request.Builder().url("ws://minseok821lab.kro.kr:8000/accident/ws/1234/seok3764").build()
+                            val request = Request.Builder().url("ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/seok3764").build()
                             val webSocket = client.newWebSocket(request, webSocketListener)
                             webSocket.send("Hello from Compose!")
                         }
@@ -586,7 +584,7 @@ fun BottomSheetScreen(
                             updateAccidentSituation(
                                 accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null
                             ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
-                            situationCode[situationCodeIdx.value] =
+                            situationCode[listIdx.value] =
                                 SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
                             selectedMarker.value?.icon = MarkerIcons.YELLOW // 단말 마커 아이콘을 노란색 마커로 갱신
                         },
@@ -609,7 +607,7 @@ fun BottomSheetScreen(
                             updateAccidentSituation(
                                 accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null
                             ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
-                            situationCode[situationCodeIdx.value] =
+                            situationCode[listIdx.value] =
                                 SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             cluster.value!!.remove(ItemKey(accidentNo.value)) // 삭제된 마커를 클러스터에서 제외
@@ -634,7 +632,7 @@ fun BottomSheetScreen(
                             updateAccidentSituation(
                                 accidentNo.value, SituationCode.REPORT119.ordinal.toString(), null
                             ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
-                            situationCode[situationCodeIdx.value] =
+                            situationCode[listIdx.value] =
                                 SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
                             selectedMarker.value?.icon = MarkerIcons.RED // 단말 마커 아이콘을 빨간색 마커로 갱신
                         },
@@ -666,7 +664,7 @@ fun DetailInputDialog(
     accidentNo: MutableState<Int>,
     selectedMarker: MutableState<Marker?>,
     situationCode: MutableList<Int>,
-    situationCodeIdx: MutableState<Int>
+    listIdx: MutableState<Int>
 ) {
     val detail = remember { mutableStateOf("") } // 사고 처리 세부 내역(입력)
 
@@ -704,7 +702,7 @@ fun DetailInputDialog(
                                     SituationCode.COMPLETE.ordinal.toString(),
                                     detail.value
                                 ) // 처리 상황을 '처리 완료'로 갱신(DB 반영)
-                                situationCode[situationCodeIdx.value] =
+                                situationCode[listIdx.value] =
                                     SituationCode.COMPLETE.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 COMPLETE로 갱신
                                 selectedMarker.value?.icon =
                                     MarkerIcons.GREEN // 단말 마커 아이콘을 초록색 마커로 갱신

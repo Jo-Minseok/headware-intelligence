@@ -1,30 +1,18 @@
 package com.headmetal.headwareintelligence
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.content.BroadcastReceiver
-import android.content.ComponentName
-import android.content.ContentValues.TAG
+import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Handler
-import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -42,6 +30,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
@@ -73,17 +62,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.patrykandpatrick.vico.core.extension.getFieldValue
-import org.apache.http.conn.scheme.HostNameResolver
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.UUID
 
 data class Work_list_Response(
     val work_list: List<String>
 )
 
+data class DeviceData(
+    val name:String,
+    val uuid:String,
+    val address:String
+)
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Helmet(navController: NavController) {
@@ -130,6 +121,49 @@ fun Helmet(navController: NavController) {
     val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
     var isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter?.isEnabled == true) }
+    val bluetoothLeScanner = bluetoothAdapter!!.bluetoothLeScanner
+    val scanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
+    var scanList = ArrayList<DeviceData>()
+    var showScanDialog by remember { mutableStateOf(false) }
+
+    val scanCallback:ScanCallback=object:ScanCallback(){
+        override fun onScanResult(callbackType:Int,result:ScanResult){
+            Log.d("onScanResult", result.toString())
+            if (ActivityCompat.checkSelfPermission(
+                    navController.context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            if(result.device.name != null){
+                var uuid ="null"
+                if(result.scanRecord?.serviceUuids!=null){
+                    uuid = result.scanRecord!!.serviceUuids.toString()
+                }
+                val scanItem = DeviceData(
+                    result.device.name?:"null",
+                    uuid,
+                    result.device.address?:"null"
+                )
+
+                if(!scanList.contains(scanItem)){
+                    scanList.add(scanItem)
+                }
+            }
+        }
+
+        override fun onScanFailed(errorCode: Int) {
+            Log.d("HEAD METAL", "BLUETOOTH SCAN FAILED " + errorCode)
+        }
+    }
 
     LaunchedEffect(Unit) {
         // 블루투스 기능 유무 체크
@@ -164,6 +198,36 @@ fun Helmet(navController: NavController) {
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
+        if(showScanDialog){
+            AlertDialog(
+                onDismissRequest = {
+                    showScanDialog = false
+                    bluetoothLeScanner.stopScan(scanCallback)
+                },
+                title = {Text(text = "헬멧 스캔 중")},
+                text = {
+                    Column{
+                        if(scanList.isEmpty()){
+                            Text("스캔된 디바이스가 없습니다.")
+                        }
+                        else{
+                            scanList.forEach{device->
+                                Text("${device.name}: ${device.address}")
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showScanDialog = false
+                        }
+                    ){
+                        Text("확인")
+                    }
+                }
+            )
+        }
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
@@ -419,154 +483,9 @@ fun Helmet(navController: NavController) {
                                         context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
                                     }
                                     else{
-                                        var mScanning:Boolean = false
-                                        var arrayDevices = ArrayList<BluetoothDevice>()
-                                        fun scanLeDevice(enable : Boolean,navController: NavController){
-                                            // 검색을 10초만 하게 했다.
-                                            val SCAN_PERIOD:Long = 10000
-                                            val handler = Handler()
-                                            val scanCallback = object: ScanCallback(){
-                                                // 스캔 실패
-                                                override fun onScanFailed(errorCode: Int) {
-                                                    super.onScanFailed(errorCode)
-                                                    Toast.makeText(navController.context,"BLE Scan Failed : " + errorCode, Toast.LENGTH_SHORT).show()
-                                                }
-
-                                                // 스캔 결과 단일 기종
-                                                override fun onScanResult(
-                                                    callbackType: Int,
-                                                    result: ScanResult?
-                                                ) {
-                                                    result?.let{
-                                                        if(!arrayDevices.contains(it.device))
-                                                            arrayDevices.add(it.device)
-                                                    }
-                                                }
-
-                                                // 스캔 결과 리스트
-                                                override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-                                                    results?.let{
-                                                        for(result in it){
-                                                            if(!arrayDevices.contains(result.device))
-                                                                arrayDevices.add(result.device)
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            when(enable){
-                                                true -> {
-                                                    // 만약, 검색을 하고 있다면, 10초동안 검색하게 한다.
-                                                    handler.postDelayed({
-                                                        mScanning = false
-                                                        if (ActivityCompat.checkSelfPermission(
-                                                                navController.context,
-                                                                Manifest.permission.BLUETOOTH_SCAN
-                                                            ) != PackageManager.PERMISSION_GRANTED
-                                                        ) {
-                                                            // TODO: Consider calling
-                                                            //    ActivityCompat#requestPermissions
-                                                            // here to request the missing permissions, and then overriding
-                                                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                                            //                                          int[] grantResults)
-                                                            // to handle the case where the user grants the permission. See the documentation
-                                                            // for ActivityCompat#requestPermissions for more details.
-                                                        }
-                                                        bluetoothAdapter?.bluetoothLeScanner?.stopScan(scanCallback)
-                                                    },SCAN_PERIOD)
-                                                    mScanning = true
-                                                    arrayDevices.clear()
-                                                    bluetoothAdapter?.bluetoothLeScanner?.startScan(scanCallback)
-                                                }
-                                                // 검색을 안 하게 한다면. 자동으로 끈다.
-                                                else->{
-                                                    mScanning = false
-                                                    bluetoothAdapter?.bluetoothLeScanner?.stopScan(scanCallback)
-                                                }
-                                            }
-                                        }
-
-                                        val gattUpdateReceiver = object: BroadcastReceiver(){
-                                            override fun onReceive(context: Context?, intent: Intent?){
-                                                val action = intent?.action
-                                                when(action){
-                                                    BluetoothLeService.ACTION_DATA_AVAILABLE->{
-                                                        val resp: String = intent.getStringExtra(BluetoothLeService.EXTRA_DATA)
-                                                            .toString()
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        val handler = Handler()
-                                        // LE 디바이스 검색 시작
-                                        scanLeDevice(true,navController)
-
-                                        // 디바이스를 선택하는 코드를 적어야해요~
-
-                                        // 0번째 디바이스를 선택
-                                        val device = arrayDevices.get(0)
-
-                                        // 디바이스의 주소값을 알아내
-                                        val deviceAddress = device.getAddress()
-
-                                        // 만약 스캔중이라면
-                                        if(mScanning){
-                                            // 스캔을 꺼
-                                            scanLeDevice(false,navController)
-                                        }
-
-                                        // BLE 장치와 연결을 시도한다.
-                                        var bluetoothService: BluetoothLeService? = null
-                                        var writeCharacteristic : BluetoothGattCharacteristic? = null
-                                        var notifyCharacteristic: BluetoothGattCharacteristic? = null
-
-                                        fun SelectCharacteristicData(gattServices:List<BluetoothGattService>){
-                                            for(gattService in gattServices) {
-                                                var gattCharacteristics: List<BluetoothGattCharacteristic> =
-                                                    gattService.characteristics
-
-                                                for (gattCharacteristic in gattCharacteristics) {
-                                                    when (gattCharacteristic.uuid) {
-                                                        BluetoothLeService.UUID_DATA_WRITE -> writeCharacteristic =
-                                                            gattCharacteristic
-
-                                                        BluetoothLeService.UUID_DATA_NOTIFY -> notifyCharacteristic =
-                                                            gattCharacteristic
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        // SendData에서 writeCharacteristic과 setCharacteristicNotification 메서드를 사용
-                                        fun SendData(data:String){
-                                            writeCharacteristic?.let{
-                                                if(it.properties or BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE > 0){
-                                                    bluetoothService?.writeCharacteristic(it,data)
-                                                }
-                                            }
-
-                                            notifyCharacteristic?.let{
-                                                if(it.properties or BluetoothGattCharacteristic.PROPERTY_NOTIFY >0){
-                                                    bluetoothService?.setCharacteristicNotification(it,true)
-                                                }
-                                            }
-                                        }
-                                        val serviceConnection = object: ServiceConnection {
-                                            // 연결이 끊긴다면
-                                            override fun onServiceDisconnected(name: ComponentName?) {
-                                                bluetoothService = null
-                                            }
-                                            // 연결이 된다면
-                                            override fun onServiceConnected(
-                                                name: ComponentName?,
-                                                service: IBinder?
-                                            ) {
-                                                bluetoothService = (service as BluetoothLeService.LocalBinder).service
-                                                bluetoothService?.connect(deviceAddress)
-                                            }
-                                        }
-                                        val gattServiceIntent = Intent(navController.context,BluetoothLeService::class.java)
-                                        navController.context.bindService(gattServiceIntent,serviceConnection,Context.BIND_AUTO_CREATE)
+                                        // 스캔 시작
+                                        bluetoothLeScanner.startScan(null,scanSettings,scanCallback)
+                                        showScanDialog = true
                                     }
                                 },
                                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),

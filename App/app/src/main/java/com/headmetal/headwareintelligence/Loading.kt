@@ -77,13 +77,13 @@ fun Loading(navController: NavController) {
 
     // 서버 상태 확인
     val apiService = RetrofitInstance.apiService
-    val call = apiService.API_getStatus()
+    val call = apiService.apiGetStatus()
     call.enqueue(object : Callback<Void> {
         override fun onResponse(call: Call<Void>, response: Response<Void>) {
             if (response.isSuccessful) {
                 if (autoLogin) {
-                    val call_login = RetrofitInstance.apiService.API_login(
-                        alert_token = auto.getString("alert_token", null).toString(),
+                    val call_login = RetrofitInstance.apiService.apiLogin(
+                        alertToken = auto.getString("alert_token", null).toString(),
                         type = type,
                         id = userId,
                         pw = userPassword

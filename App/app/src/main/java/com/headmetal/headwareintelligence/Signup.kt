@@ -68,7 +68,7 @@ fun performSignup(id: String, password: String, re_password: String, name: Strin
     }
     val companyToSend = if(company=="없음") null else company
     val apiService = RetrofitInstance.apiService
-    val call = apiService.API_register(
+    val call = apiService.apiRegister(
         RegisterInputModel(id, password, re_password, name, email, phone_no,companyToSend,if (isManager) "manager" else "employee")
     )
     call.enqueue(object : Callback<RegisterInputModel>

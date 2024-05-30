@@ -21,7 +21,8 @@
 #include <Wire.h>
 
 #define SERVICE_UUID "c672da8f-05c6-472f-87d8-34201a97468f"
-#define CHARACTERISTIC_UUID "01e7eeab-2597-4c54-84e8-2fceb73c645d"
+#define CHARACTERISTIC_READ "01e7eeab-2597-4c54-84e8-2fceb73c645d"
+#define CHARACTERISTIC_WRITE "5a9edc71-80cb-4159-b2e6-a2913b761026"
 using namespace websockets;
 unsigned int HELMET_NUM = 1;
 
@@ -74,6 +75,9 @@ class MyCallbacks : public BLECharacteristicCallbacks {
         Serial.println("[BLE] WIFI PW = " + wifi_pw);
         WiFi.begin(wifi_id,wifi_pw);
       }
+      else{
+        Serial.println("[BLE] RECEIVED DATA " + bluetooth_data);
+      }
     }
   }
 };
@@ -97,13 +101,13 @@ void BT_setup() {
 
   BLEService *pService = pServer->createService(SERVICE_UUID);
   pTxCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_UUID,
+                        CHARACTERISTIC_READ,
                         BLECharacteristic::PROPERTY_READ
                       );
   pTxCharacteristic->addDescriptor(new BLE2902());
 
   pRxCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_UUID,
+                        CHARACTERISTIC_WRITE,
                         BLECharacteristic::PROPERTY_WRITE
                       );
   pRxCharacteristic->setCallbacks(new MyCallbacks());

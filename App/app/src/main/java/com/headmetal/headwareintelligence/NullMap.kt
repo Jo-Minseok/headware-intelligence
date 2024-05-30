@@ -41,6 +41,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -65,12 +67,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okio.ByteString
 
 // Accident 테이블의 데이터를 수신하는 데이터 클래스(Response)
 data class NullAccidentResponse(
     val no: List<Int>, // 사고 번호 리스트
     val latitude: List<Double>, // 위도 리스트
-    val longitude: List<Double> // 경도 리스트
+    val longitude: List<Double>, // 경도 리스트
+    val workId: List<String>
 )
 
 // Accident 테이블의 뷰 모델
@@ -86,6 +94,9 @@ class NullAccidentViewModel : ViewModel() {
     private val _longitude = mutableStateOf<List<Double>>(emptyList())
     val longitude: State<List<Double>> = _longitude
 
+    private val _workId = mutableStateOf<List<String>>(emptyList())
+    val workId: State<List<String>> = _workId
+
     var state: Boolean = false // 데이터 수신 상태 확인
 
     fun getNullAccidentData(manager: String) {
@@ -94,6 +105,7 @@ class NullAccidentViewModel : ViewModel() {
             _no.value = response.no
             _latitude.value = response.latitude
             _longitude.value = response.longitude
+            _workId.value = response.workId
             state = !state // 모든 데이터를 수신한 뒤 상태를 전환
         }
     }
@@ -105,8 +117,11 @@ class NullAccidentProcessingViewModel : ViewModel() {
 
     private val _no = mutableStateOf<Int?>(null)
 
-    private val _victim = mutableStateOf<String?>(null)
-    val victim: State<String?> = _victim
+    private val _victimId = mutableStateOf<String?>(null)
+    val victimId: State<String?> = _victimId
+
+    private val _victimName = mutableStateOf<String?>(null)
+    val victimName: State<String?> = _victimName
 
     var state: Boolean = false // 데이터 수신 상태 확인
 
@@ -114,7 +129,8 @@ class NullAccidentProcessingViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             val response = apiService.getAccidentProcessingData(no)
             _no.value = response.no
-            _victim.value = response.victim
+            _victimId.value = response.victimId
+            _victimName.value = response.victimName
             state = !state // 모든 데이터를 수신한 뒤 상태를 전환
         }
     }
@@ -131,6 +147,8 @@ fun NullMap(
     val isBottomSheetVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 바텀 시트 스위치
     val isNoDataDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val accidentNo: MutableState<Int> = remember { mutableIntStateOf(0) } // 사고 번호
+    val workId: MutableList<String> = remember { mutableListOf() }
+    val victimId: MutableState<String> = remember { mutableStateOf("") }
     val victimName: MutableState<String> = remember { mutableStateOf("") } // 사고자 이름
     val markerList: MutableList<Marker> = remember { mutableListOf() }
     val markerListIdx: MutableState<Int> = remember { mutableIntStateOf(0) }
@@ -138,30 +156,32 @@ fun NullMap(
 
     Surface(modifier = Modifier.fillMaxSize()) {
         LoadingScreen()
-        Column {
-            NullMapScreen(
-                nullAccidentViewModel,
-                nullAccidentProcessingViewModel,
-                isBottomSheetVisible,
-                isNoDataDialogVisible,
-                accidentNo,
-                victimName,
-                markerList,
-                markerListIdx,
-                selectedMarker,
-                navController
-            )
-            NullBottomSheetScreen(
-                isBottomSheetVisible,
-                isNoDataDialogVisible,
-                accidentNo,
-                victimName,
-                markerList,
-                markerListIdx,
-                selectedMarker,
-                navController
-            )
-        }
+        NullMapScreen(
+            nullAccidentViewModel,
+            nullAccidentProcessingViewModel,
+            isBottomSheetVisible,
+            isNoDataDialogVisible,
+            accidentNo,
+            workId,
+            victimId,
+            victimName,
+            markerList,
+            markerListIdx,
+            selectedMarker,
+            navController
+        )
+        NullBottomSheetScreen(
+            isBottomSheetVisible,
+            isNoDataDialogVisible,
+            accidentNo,
+            workId,
+            victimId,
+            victimName,
+            markerList,
+            markerListIdx,
+            selectedMarker,
+            navController
+        )
     }
 }
 
@@ -172,6 +192,8 @@ fun NullMapScreen(
     isBottomSheetVisible: MutableState<Boolean>,
     isNoDataDialogVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
+    workId: MutableList<String>,
+    victimId: MutableState<String>,
     victimName: MutableState<String>,
     markerList: MutableList<Marker>,
     markerListIdx: MutableState<Int>,
@@ -217,6 +239,7 @@ fun NullMapScreen(
                         val no by nullAccidentViewModel.no
                         val latitude by nullAccidentViewModel.latitude
                         val longitude by nullAccidentViewModel.longitude
+                        workId.addAll(nullAccidentViewModel.workId.value)
 
                         if (no.isEmpty()) {
                             Log.e("HEAD METAL", "미처리된 사고 데이터가 존재하지 않음")
@@ -247,7 +270,8 @@ fun NullMapScreen(
                                         isEndDialogVisible.value = true // 종료 알림창 on
                                     }
 
-                                    victimName.value = nullAccidentProcessingViewModel.victim.value.toString() // 사고자 이름 업데이트
+                                    victimId.value = nullAccidentProcessingViewModel.victimId.value.toString()
+                                    victimName.value = nullAccidentProcessingViewModel.victimName.value.toString() // 사고자 이름 업데이트
                                     selectedMarker.value = marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
                                     map.moveCamera(CameraUpdate.scrollTo(LatLng(marker.position.latitude, marker.position.longitude)))
                                     isBottomSheetVisible.value = true // 바텀 시트 on
@@ -275,12 +299,34 @@ fun NullBottomSheetScreen(
     isBottomSheetVisible: MutableState<Boolean>,
     isNoDataDialogVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
+    workId: MutableList<String>,
+    victimId: MutableState<String>,
     victimName: MutableState<String>,
     markerList: MutableList<Marker>,
     markerListIdx: MutableState<Int>,
     selectedMarker: MutableState<Marker?>,
     navController: NavController
 ) {
+    val auto: SharedPreferences =
+        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val client = remember { OkHttpClient() }
+    val scope = rememberCoroutineScope()
+    var messages by remember { mutableStateOf(listOf<String>()) }
+
+    val webSocketListener = object : WebSocketListener() {
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            messages = messages + text
+        }
+
+        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
+            messages = messages + bytes.hex()
+        }
+
+        override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+            messages = messages + "Error: ${t.message}"
+        }
+    }
+
     val isDetailInputDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
 
     if (isDetailInputDialogVisible.value) { // 스위치가 on이 될 경우 사고 처리 세부 내역 입력창 출력
@@ -361,7 +407,20 @@ fun NullBottomSheetScreen(
                                 Text(victimName.value)
                             }
                             IconButton(
-                                onClick = { Log.i("IconClick", "영상통화 아이콘 클릭") } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
+                                onClick = {
+                                    Log.i("IconClick", "영상통화 아이콘 클릭")
+                                    scope.launch(Dispatchers.IO) {
+                                        val request = Request.Builder().url(
+                                            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
+                                                auto.getString(
+                                                    "userid", null
+                                                ).toString()
+                                            }"
+                                        ).build()
+                                        val webSocket = client.newWebSocket(request, webSocketListener)
+                                        webSocket.send("${victimId.value}:카메라")
+                                    }
+                                } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.VideoCameraFront,
@@ -371,7 +430,20 @@ fun NullBottomSheetScreen(
                                 )
                             }
                             IconButton(
-                                onClick = { Log.i("IconClick", "스피커 아이콘 클릭") } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
+                                onClick = {
+                                    Log.i("IconClick", "스피커 아이콘 클릭")
+                                    scope.launch(Dispatchers.IO) {
+                                        val request = Request.Builder().url(
+                                            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
+                                                auto.getString(
+                                                    "userid", null
+                                                ).toString()
+                                            }"
+                                        ).build()
+                                        val webSocket = client.newWebSocket(request, webSocketListener)
+                                        webSocket.send("${victimId.value}:소리")
+                                    }
+                                } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Campaign,

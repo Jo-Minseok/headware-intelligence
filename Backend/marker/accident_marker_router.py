@@ -45,12 +45,14 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     no = []
     latitude = []
     longitude = []
+    workId = []
     try:
         for nullNo in [accident.no for accident in accidents if accident.situation == None]:
             accident = accident_marker_crud.get_accident(db=db, no=nullNo)
             no.append(accident.no)
             latitude.append(accident.latitude)
             longitude.append(accident.longitude)
+            workId.append(accident.work_id)
     except AttributeError:
         pass
 
@@ -58,7 +60,8 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     return {
         'no' : no, 
         'latitude' : latitude, 
-        'longitude' : longitude
+        'longitude' : longitude, 
+        'workId' : workId
     }
 
 @router.get('/marker/{no}')

@@ -90,11 +90,12 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose-m2:1.6.3")
     implementation("com.patrykandpatrick.vico:compose-m3:1.6.3")
     implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("androidx.compose.ui:ui:1.3.2")
-    implementation("androidx.compose.material:material:1.3.2")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.3.2")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.0")
     implementation("androidx.activity:activity-compose:1.7.1")
+    implementation("androidx.compose.ui:ui:1.4.2")
+    implementation("androidx.compose.material:material:1.4.2")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.4.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")

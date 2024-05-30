@@ -1,11 +1,13 @@
 package com.headmetal.headwareintelligence
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanCallback
@@ -59,6 +61,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -78,6 +81,7 @@ data class DeviceData(
     val uuid:String,
     val address:String
 )
+@SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Helmet(navController: NavController) {
@@ -92,9 +96,9 @@ fun Helmet(navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     var itemOptions by remember { mutableStateOf(listOf<String>()) }
     var selectedOption by remember { mutableStateOf("") }
-    val apiService_worklist =
+    val apiServiceWorklist =
         RetrofitInstance.apiService.API_work_list(id = auto.getString("userid", null).toString())
-    apiService_worklist.enqueue(object : Callback<Work_list_Response> {
+    apiServiceWorklist.enqueue(object : Callback<Work_list_Response> {
         override fun onResponse(
             call: Call<Work_list_Response>,
             response: Response<Work_list_Response>
@@ -123,12 +127,14 @@ fun Helmet(navController: NavController) {
 
     val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
-    var isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter?.isEnabled == true) }
+    val isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter?.isEnabled == true) }
     val bluetoothLeScanner = bluetoothAdapter!!.bluetoothLeScanner
     val scanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
-    var scanList = ArrayList<DeviceData>()
+    val scanList by remember { mutableStateOf(mutableStateListOf<DeviceData>()) }
     var showScanDialog by remember { mutableStateOf(false) }
-    
+    var showWIFIDialog by remember { mutableStateOf(false) }
+    val SERVICE = "0000fff0-0000-1000-8000-00805f9b34fb"
+    val READ_UUID= "0000180a-0000-1000-8000-00805f9b34fb"
     // 스캔 콜백
     val scanCallback:ScanCallback=object:ScanCallback(){
         override fun onScanResult(callbackType:Int,result:ScanResult){
@@ -165,10 +171,10 @@ fun Helmet(navController: NavController) {
         }
 
         override fun onScanFailed(errorCode: Int) {
-            Log.d("HEAD METAL", "BLUETOOTH SCAN FAILED " + errorCode)
+            Log.d("HEAD METAL", "BLUETOOTH SCAN FAILED $errorCode")
         }
     }
-
+    var readMsg by remember{ mutableStateOf("")}
     // 연결 콜백
     val gattCallback = object: BluetoothGattCallback(){
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -189,19 +195,57 @@ fun Helmet(navController: NavController) {
                     // for ActivityCompat#requestPermissions for more details.
                     return
                 }
-                Toast.makeText(context, gatt?.device?.name + "과 연결 성공",Toast.LENGTH_SHORT)
+                Toast.makeText(context, gatt?.device?.name + "과 연결 성공",Toast.LENGTH_SHORT).show()
                 gatt?.discoverServices()
             }
             else if(newState == BluetoothProfile.STATE_DISCONNECTED){
-                Toast.makeText(context, gatt?.device?.name + "과 연결 해제",Toast.LENGTH_SHORT)
+                Toast.makeText(context, gatt?.device?.name + "과 연결 해제",Toast.LENGTH_SHORT).show()
             }
         }
 
-        
+        // 데이터 보낼 때
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicWrite(gatt, characteristic, status)
+            when(status){
+                BluetoothGatt.GATT_SUCCESS->{
+                    Toast.makeText(context,"데이터 전송 성공",Toast.LENGTH_SHORT).show()
+                }
+                else->{
+                    Toast.makeText(context,"데이터 전송 실패", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        // 데이터 받을 때
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            value: ByteArray
+        ) {
+            super.onCharacteristicChanged(gatt, characteristic, value)
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Toast.makeText(context, "데이터 수신 성공", Toast.LENGTH_SHORT).show()
+                readMsg = String(value)
+                if(readMsg.startsWith("ui")){
+
+                }
+            }
+        }
+        override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
+            super.onCharacteristicChanged(gatt, characteristic)
+            if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.S){
+                Toast.makeText(context,"데이터 수신 성공",Toast.LENGTH_SHORT).show()
+                if()
+            }
+        }
     }
     LaunchedEffect(Unit) {
         // 블루투스 기능 유무 체크
-        if (bluetoothAdapter == null || !context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             AlertDialog.Builder(navController.context)
                 .setTitle("블루투스 연결 실패")
                 .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
@@ -247,7 +291,11 @@ fun Helmet(navController: NavController) {
                         else{
                             scanList.forEach{device->
                                 if(device.name.startsWith("HEADWARE")) {
-                                    Button(onClick = { bluetoothAdapter.getRemoteDevice(device.address).connectGatt(context,false,gattCallback)}) {
+                                    Button(onClick = {
+                                        bluetoothAdapter.getRemoteDevice(device.address).connectGatt(context,false,gattCallback)
+                                        showScanDialog = false
+                                        showWIFIDialog = true},
+                                        colors = ButtonDefaults.buttonColors(Color.Transparent)) {
                                         Text(text = device.name)
                                     }
                                 }
@@ -258,13 +306,18 @@ fun Helmet(navController: NavController) {
                 confirmButton = {
                     Button(
                         onClick = {
+                            bluetoothLeScanner.stopScan(scanCallback)
                             showScanDialog = false
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ){
-                        Text("확인")
+                        Text(text = "확인")
                     }
                 }
             )
+        }
+        if(showWIFIDialog){
+            AlertDialog(
         }
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(
@@ -407,7 +460,7 @@ fun Helmet(navController: NavController) {
                             Button(
                                 onClick = {
                                     if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                                        if (bluetoothAdapter?.isEnabled == false) {
+                                        if (!bluetoothAdapter.isEnabled) {
                                             bluetoothAdapter.enable()
                                         } else {
                                             Toast.makeText(
@@ -448,7 +501,7 @@ fun Helmet(navController: NavController) {
                             Button(
                                 onClick = {
                                     if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                                        if (bluetoothAdapter?.isEnabled == true) {
+                                        if (bluetoothAdapter.isEnabled) {
                                             bluetoothAdapter.disable()
                                         } else {
                                             Toast.makeText(
@@ -517,7 +570,7 @@ fun Helmet(navController: NavController) {
                             Button(
                                 onClick = {
                                     // 블루투스가 안 켜져 있을 경우
-                                    if(bluetoothAdapter?.isEnabled == false){
+                                    if(!bluetoothAdapter.isEnabled){
                                         context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
                                     }
                                     else{

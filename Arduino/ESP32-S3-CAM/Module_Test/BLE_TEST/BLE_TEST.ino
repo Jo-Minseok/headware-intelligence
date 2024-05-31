@@ -1,158 +1,144 @@
-#include <WiFi.h>
-#include <WiFiUdp.h>
+/*
+    Video: https://www.youtube.com/watch?v=oCMOYS71NIU
+    Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
+    Ported to Arduino ESP32 by Evandro Copercini
+
+   Create a BLE server that, once we receive a connection, will send periodic notifications.
+   The service advertises itself as: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
+   Has a characteristic of: 6E400002-B5A3-F393-E0A9-E50E24DCCA9E - used for receiving data with "WRITE" 
+   Has a characteristic of: 6E400003-B5A3-F393-E0A9-E50E24DCCA9E - used to send data with  "NOTIFY"
+
+   The design of creating the BLE server is:
+   1. Create a BLE Server
+   2. Create a BLE Service
+   3. Create a BLE Characteristic on the Service
+   4. Create a BLE Descriptor on the characteristic
+   5. Start the service.
+   6. Start advertising.
+
+*/
+
+/* This example domenstrates the Bluetooth data transparent transmission function. Burn the code, open serial monitor, turn on the BLE debugger on the phone, then,
+ * 1. you can see the data sent by ESP32-S3--see APP usage image 
+ * 2. send data to ESP32-S3 by the input box of BLE debugger--see APP usage image 
+ * This example originates from BLE_uart sample 
+ */
+
 #include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEScan.h>
-#include <BLEAdvertisedDevice.h>
 #include <BLEServer.h>
+#include <BLEUtils.h>
 #include <BLE2902.h>
-
-#include "module_pins.h"
-
-#include <Adafruit_SSD1306.h>
-#include <Adafruit_GFX.h>
-#include <Wire.h>
 
 #define SERVICE_UUID "c672da8f-05c6-472f-87d8-34201a97468f"
 #define CHARACTERISTIC_READ "01e7eeab-2597-4c54-84e8-2fceb73c645d"
 #define CHARACTERISTIC_WRITE "5a9edc71-80cb-4159-b2e6-a2913b761026"
 
-unsigned int HELMET_NUM = 1;
-
-Adafruit_SSD1306 display(128,64,&Wire,-1);
-
-String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
-int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
-/*
-############################################################################
-                                  BLE
-############################################################################
-*/
 bool deviceConnected = false;
-BLECharacteristic *pTxCharacteristic;
+BLEServer *pServer = NULL;
+BLECharacteristic * pTxCharacteristic;
 BLECharacteristic *pRxCharacteristic;
 
-class MyServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer* pServer) {
-    Serial.println("[BLE] Bluetooth connected");
-    deviceConnected = true;
-  }
+//Bluetooth connect/disconnect. Auto triggered when connection/disconnection event occurs. 
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {   //Execute this function when Bluetooth is connected. 
+      Serial.println("Bluetooth connected");
+      deviceConnected = true;
+    };
 
-  void onDisconnect(BLEServer* pServer) {
-    Serial.println("[BLE] Bluetooth disconnected");
-    deviceConnected = false;
-    pServer->startAdvertising();
-  }
-};
+    void onDisconnect(BLEServer* pServer) {  //Execute this function when Bluetooth is disconnected
+      Serial.println("Bluetooth disconnected");
+      deviceConnected = false;
+      delay(500); // give the bluetooth stack the chance to get things ready
+      pServer->startAdvertising(); // restart advertising
 
-class MyCallbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
-    String rxValue = pCharacteristic->getValue().c_str();
-    if (rxValue.length() > 0) {
-      bluetooth_data = rxValue;
-      Serial.println("[BLE] RECEIVED DATA " + bluetooth_data);
     }
-  }
 };
 
-void BT_setup() {
-  Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP START");
-  String bluetooth_name = "HEADWARE " + String(HELMET_NUM) + "번 헬멧";
+/****************Data Receiving*************/
+/****************************************/
+//Process received Bluetooth data. Auto triggered when data received. 
+class MyCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristic) {
+      std::string rxValue = pCharacteristic->getValue();//Receive data, and assign it to rxValue
 
-  display.clearDisplay();
-  HELMETNUM_display();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(10,24);
-  display.println("BLUETOOTH");
-  display.display();
+      //if(rxValue == "ON"){Serial.println("Turn light on");}   //Determine whether the received character is "ON"
 
-  BLEDevice::init(bluetooth_name.c_str());
-  
-  BLEServer *pServer = BLEDevice::createServer();
+      if (rxValue.length() > 0) {
+        Serial.println("*********");
+        Serial.print("Received Value: ");
+        for (int i = 0; i < rxValue.length(); i++){
+          Serial.print(rxValue[i]);
+        }
+        Serial.println();
+        Serial.println("*********");
+      }
+    }
+};
+
+void BLEBegin(){
+  // Create the BLE Device
+  BLEDevice::init("HEADWARE TEST");
+
+  // Create the BLE Server
+  pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 
+  // Create the BLE Service
   BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Create a BLE Characteristic
   pTxCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_READ,
-                        BLECharacteristic::PROPERTY_READ
-                      );
+                    CHARACTERISTIC_READ,
+                    BLECharacteristic::PROPERTY_NOTIFY
+                  );
+
   pTxCharacteristic->addDescriptor(new BLE2902());
 
-  pRxCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_WRITE,
-                        BLECharacteristic::PROPERTY_WRITE
-                      );
+  BLECharacteristic * pRxCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_WRITE,
+                      BLECharacteristic::PROPERTY_WRITE
+                    );
+
   pRxCharacteristic->setCallbacks(new MyCallbacks());
 
+  // Start the service
   pService->start();
+
+  // Start advertising
   pServer->getAdvertising()->start();
-
-  // Wait for user ID
-  while (!deviceConnected) {
-    delay(100);
-  }
-
-  Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
+  Serial.println("Waiting a client connection to notify...");
 }
 
-/*
-############################################################################
-                                  OLED
-############################################################################
-*/
+uint8_t txValue = 0;
 
-const int OLED_addr = 0x3C;
-void OLED_setup(){
-  Serial.println("[SETUP] OLED: SETUP START");
-  //Wire.begin(0,9);
-  display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
-  display.clearDisplay();
-  HELMETNUM_display();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-  display.setCursor(0,26);
-  display.println("HEAD BUDDY");
-  display.display();
-  Serial.println("[SETUP] OLED: SETUP SUCCESS");
-}
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
 
-void HELMETNUM_display(){
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println("NO. " + String(HELMET_NUM));
-  display.display();
-}
 
-/*
-############################################################################
-                                  Main
-############################################################################
-*/
 
-void setup(){
+/***************************************/
+/****************************************/
+
+
+void setup() {
   Serial.begin(115200);
-  Wire.begin();
+  BLEBegin();  //Init Bluetooth
 
-  OLED_setup(); // OLED
-  delay(1000);
-  BT_setup(); // 블루투스 
 }
 
-void loop(){
-  if (Serial.available()) { // 시리얼로부터 데이터가 수신되었는지 확인
-    String input = Serial.readStringUntil('\n'); // 문자열을 읽음 (줄 바꿈 문자까지)
-    Serial.print("Received from serial: ");
-    Serial.println(input); // 입력된 문자열을 시리얼 모니터에 출력
+void loop() {
+/****************Data Transmitting*************/
+/****************************************/
+  if (deviceConnected) {  //Transmit data when the Bluetooth is connected. 
+    pTxCharacteristic->setValue("Hello");  //Send char string 
+    pTxCharacteristic->notify();
+    delay(1000); // bluetooth stack will go into congestion, if too many packets are sent
 
-    // BLE로 데이터 전송
-    if (deviceConnected) { // BLE 장치가 연결되어 있는지 확인
-      pTxCharacteristic->setValue(input.c_str()); // BLE 특성에 입력된 문자열 설정
-      pTxCharacteristic->notify(); // 연결된 BLE 장치로 데이터를 전송
-      Serial.println("Sent over BLE: " + input);
-    } else {
-      Serial.println("No BLE device connected.");
-    }
+    pTxCharacteristic->setValue("DFRobot");  //Send char string
+    pTxCharacteristic->notify();
+    delay(1000); // bluetooth stack will go into congestion, if too many packets are sent
   }
+/****************************************/
+/****************************************/
 }
+

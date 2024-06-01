@@ -167,12 +167,10 @@ fun Main(
     }
 
     LaunchedEffect(refreshState.value) {
-        weatherViewModel.getWeather(35.1336437235, 129.09320833287)
-        refreshState.value = false
-//        if (latitude != null && longitude != null) {
-//            weatherViewModel.getWeather(latitude!!, longitude!!)
-//            refreshState.value = false
-//        }
+        if (latitude != null && longitude != null) {
+            weatherViewModel.getWeather(latitude!!, longitude!!)
+            refreshState.value = false
+        }
     }
 
     BackOnPressed()

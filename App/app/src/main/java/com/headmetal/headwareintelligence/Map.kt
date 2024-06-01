@@ -331,9 +331,7 @@ fun MapScreen(
 
                     // 지도의 초기 위치 설정
                     val initialCameraPosition =
-                        CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
-//                    val initialCameraPosition =
-//                        CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!))
+                        CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!))
                     map.moveCamera(initialCameraPosition)
 
                     // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성

@@ -162,9 +162,9 @@ fun Etc(navController: NavController) {
                                         }
                                         Text(text = "")
                                         Text(text = "채승룡 (APP)")
-                                        HyperlinkText("https://github.com/chaeseungryong/git") {
+                                        HyperlinkText("https://github.com/chaeseungryong") {
                                             uriHandler.openUri(
-                                                "https://github.com/chaeseungryong/git"
+                                                "https://github.com/chaeseungryong"
                                             )
                                         }
 

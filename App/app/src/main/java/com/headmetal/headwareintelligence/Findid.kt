@@ -49,7 +49,7 @@ data class Forgot_Id_Result(
 
 fun performFindId(name: String, email: String, isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
-    val call = apiService.API_findid(
+    val call = apiService.apiFindid(
         Forgot_Id_Request(
             name,
             email,

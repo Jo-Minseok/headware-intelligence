@@ -13,29 +13,29 @@ import retrofit2.http.Query
 interface ApiService {
     @FormUrlEncoded
     @POST("/login")
-    fun API_login(
-        @Query("alert_token") alert_token:String,
+    fun apiLogin(
+        @Query("alert_token") alertToken:String,
         @Query("type") type:String,
         @Field("username") id:String?,
         @Field("password") pw:String?
     ): Call<LoginResponse>
 
     @GET("/accident/work_list")
-    fun API_work_list(
+    fun apiWorklist(
         @Query("user_id") id:String
-    ):Call<Work_list_Response>
+    ):Call<WorklistResponse>
     @POST("/register")
-    fun API_register(
+    fun apiRegister(
         @Body requestBody: RegisterInputModel
     ): Call<RegisterInputModel>
 
     @POST("/forgot/id")
-    fun API_findid(
+    fun apiFindid(
         @Body request: Forgot_Id_Request
     ): Call<Forgot_Id_Result>
 
     @PUT("/forgot/pw")
-    fun API_changepw(
+    fun apiChangepw(
         @Body userEmployee: ForgotPw
     ): Call<ForgotPw>
 
@@ -43,7 +43,7 @@ interface ApiService {
     fun getCompanyList():Call<CompanyList>
 
     @GET("/")
-    fun API_getStatus():Call<Void>
+    fun apiGetStatus():Call<Void>
 
     @GET("/weather/{latitude}/{longitude}")
     suspend fun getWeather(

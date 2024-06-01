@@ -57,8 +57,8 @@ fun performLogin(
     pwState:MutableState<String>
 ) {
     val autoLoginEdit: SharedPreferences.Editor = auto.edit()
-    val call = RetrofitInstance.apiService.API_login(
-        alert_token = auto.getString("alert_token", null).toString(),
+    val call = RetrofitInstance.apiService.apiLogin(
+        alertToken = auto.getString("alert_token", null).toString(),
         type = if (isManager) "manager" else "employee",
         id = username,
         pw = password

@@ -25,6 +25,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -145,12 +146,16 @@ fun Helmet(navController: NavController) {
     // 블루투스 다이얼로그 변수
     var showScanDialog by remember { mutableStateOf(false) }
     var showWIFIDialog by remember { mutableStateOf(false) }
+    var showReturnDialog by remember { mutableStateOf(false) }
+    var enableRegister by remember {mutableStateOf(true)}
+    var enableInternet by remember{ mutableStateOf(false)}
     // wifi ID/PW 변수
     val wifiID = remember { mutableStateOf("") }
     val wifiPW = remember { mutableStateOf("") }
+    var wifisendID by remember { mutableStateOf("") }
+    var wifisendPW by remember { mutableStateOf("") }
     // 블루투스 UUID
     var serviceUUID: UUID? by remember { mutableStateOf(null) }
-    var readUUID: UUID? by remember { mutableStateOf(null) }
     var writeUUID: UUID? by remember { mutableStateOf(null) }
     var notifyUUID: UUID? by remember { mutableStateOf(null) }
     // BluetoothGatt에 대한 객체로 remember로 받음 초기 값음 null
@@ -164,7 +169,7 @@ fun Helmet(navController: NavController) {
     }
 
     // UI 변수
-    var helmetid by remember { mutableStateOf("") }
+    var helmetid by remember { mutableStateOf(auto.getString("helmetid","")) }
 
     // BLE 스캔 콜백
     val scanCallback: ScanCallback = object : ScanCallback() {
@@ -211,6 +216,8 @@ fun Helmet(navController: NavController) {
                 newState
             ) // 상위 클래스 onConnectionStateChange 호출
             if (newState == BluetoothProfile.STATE_CONNECTED) { // BLE 장치의 새로운 상태가 연결 상태이면
+                enableRegister = false
+                enableInternet = true
                 if (ActivityCompat.checkSelfPermission( // 만약 권한이 없으면
                         context,
                         Manifest.permission.BLUETOOTH_CONNECT
@@ -218,8 +225,7 @@ fun Helmet(navController: NavController) {
                 ) {
                     Log.d("HEAD METAL", "BLE NOT PERMISSION") // 권한이 없다고 출력하고
                     return // 함수 종료
-                }
-                else{
+                } else {
                     Log.d("HEAD METAL", "BLE STATE_CONNECTED") // 연결됐다고 로그 출력
                 }
                 gatt?.discoverServices()
@@ -227,6 +233,8 @@ fun Helmet(navController: NavController) {
                 connectedGatt = gatt // 변경된 장치의 BLE GATT을 받아옴 -> UI 자체 변수에 저장
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) { // BLE 장치의 새로운 상태가 연결 해제됐다면
                 Log.d("HEAD METAL", "BLE DISCONNECT")
+                enableRegister = true
+                enableInternet = false
             }
         }
 
@@ -240,15 +248,10 @@ fun Helmet(navController: NavController) {
                         val properties = characteristic.properties
                         val propertyList = mutableListOf<String>()
 
-                        if (properties and BluetoothGattCharacteristic.PROPERTY_READ != 0) {
-                            propertyList.add("READ")
-                            readUUID = characteristic.uuid
-                        }
-                        else if(properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
+                        if (properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
                             propertyList.add("WRITE")
                             writeUUID = characteristic.uuid
-                        }
-                        else if(properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0){
+                        } else if (properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0) {
                             propertyList.add("NOTIFY")
                             notifyUUID = characteristic.uuid
                         }
@@ -267,14 +270,14 @@ fun Helmet(navController: NavController) {
                         Log.d("HEAD METAL", "BLE NOTIFICATION START")
                         val characteristicNotify = service!!.getCharacteristic(notifyUUID)
                         gatt.setCharacteristicNotification(characteristicNotify, true)
-                        val desc = characteristicNotify.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
-                        if(desc == null){
-                            Log.e("HEAD METAL","BLE DESCRIPTOR NULL")
-                        }
-                        else {
+                        val desc =
+                            characteristicNotify.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
+                        if (desc == null) {
+                            Log.e("HEAD METAL", "BLE DESCRIPTOR NULL")
+                        } else {
                             desc.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                             val success = gatt.writeDescriptor(desc)
-                            Log.d("HEAD METAL","BLE DESCRIPTOR $success")
+                            Log.d("HEAD METAL", "BLE DESCRIPTOR $success")
                         }
                     }
                 }
@@ -283,14 +286,17 @@ fun Helmet(navController: NavController) {
 
         // 데이터 보낼 때
         override fun onCharacteristicWrite(
-            gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic?,
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
             status: Int
         ) {
             super.onCharacteristicWrite(gatt, characteristic, status)
             when (status) { // 상태 확인
                 BluetoothGatt.GATT_SUCCESS -> { // 데이터가 보내졌다면,
-                    Log.d("HEAD METAL", "Data Send Success")
+                    Log.d(
+                        "HEAD METAL",
+                        "Data Send Success " + characteristic.value.toString(Charsets.UTF_8)
+                    )
                 }
 
                 else -> { // 데이터가 안 보내졌다면
@@ -305,9 +311,77 @@ fun Helmet(navController: NavController) {
             characteristic: BluetoothGattCharacteristic
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
-            Log.d("HEAD METAL", "CHANGE " + characteristic.value?.toString(Charsets.UTF_8))
-            if (characteristic.value?.toString(Charsets.UTF_8) == "wifi") {
-                showWIFIDialog = true
+            val receiveValue = characteristic.value?.toString(Charsets.UTF_8)
+            Log.d("HEAD METAL", "RECEIVE $receiveValue")
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                when (receiveValue) {
+                    "user_id" -> {
+                        val characteristicWrite = service?.getCharacteristic(writeUUID)
+                        val userId = "ui " + auto.getString("userid", null).toString()
+                        if (service != null && characteristicWrite != null) {
+                            characteristicWrite.value = userId.toByteArray()
+                            gatt.writeCharacteristic(characteristicWrite)
+                        } else {
+                            Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                        }
+                    }
+
+                    "work_id" -> {
+                        val characteristicWrite = service?.getCharacteristic(writeUUID)
+                        val workId = "wd " + auto.getString("workid", null).toString()
+                        if (service != null && characteristicWrite != null) {
+                            characteristicWrite.value = workId.toByteArray()
+                            gatt.writeCharacteristic(characteristicWrite)
+                        } else {
+                            Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                        }
+                    }
+
+                    "wifi" -> {
+                        if (!showWIFIDialog) {
+                            showWIFIDialog = true
+                        }
+                    }
+
+                    "wifi_id" -> {
+                        val characteristicWrite = service?.getCharacteristic(writeUUID)
+                        if (service != null && characteristicWrite != null) {
+                            Log.d("HEAD METAL", "WIFI Send ID $wifisendID")
+                            characteristicWrite.value = wifisendID.toByteArray()
+                            gatt.writeCharacteristic(characteristicWrite)
+                        } else {
+                            Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                        }
+                    }
+
+                    "wifi_pw" -> {
+                        val characteristicWrite = service?.getCharacteristic(writeUUID)
+                        if (service != null && characteristicWrite != null) {
+                            Log.d("HEAD METAL", "WIFI Send PW $wifisendPW")
+                            characteristicWrite.value = wifisendPW.toByteArray()
+                            gatt.writeCharacteristic(characteristicWrite)
+                        } else {
+                            Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                        }
+                    }
+
+                    "wifi_success" -> {
+                        Toast.makeText(context, "헬멧 인터넷 연결 완료", Toast.LENGTH_SHORT).show()
+                    }
+
+                    "work_id_change" ->{
+                        Toast.makeText(context,"헬멧 작업장 변경 완료!",Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        if (receiveValue?.startsWith("helmet_num") == true) {
+                            autoEdit.putString("helmetid",receiveValue.split(" ")[1])
+                        }
+                    }
+                }
             }
         }
     }
@@ -377,19 +451,8 @@ fun Helmet(navController: NavController) {
                 Row() {
                     TextButton(
                         onClick = {
-                            val service = connectedGatt?.getService(serviceUUID)
-                            val characteristic = service?.getCharacteristic(writeUUID)
-                            val id = "wi " + wifiID.value
-                            val pw = "wp " + wifiPW.value
-                            if (service != null && characteristic != null) {
-                                characteristic.value = id.toByteArray()
-                                connectedGatt?.writeCharacteristic(characteristic)
-
-                                characteristic.value = pw.toByteArray()
-                                connectedGatt?.writeCharacteristic(characteristic)
-                            } else {
-                                Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
-                            }
+                            wifisendID = "wi " + wifiID.value
+                            wifisendPW = "wp " + wifiPW.value
                             showWIFIDialog = false
                         }
                     ) {
@@ -399,6 +462,43 @@ fun Helmet(navController: NavController) {
                         showWIFIDialog = false
                     }) {
                         Text(text = "취소")
+                    }
+                }
+            }
+        )
+    } else if (showReturnDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showReturnDialog = false
+            },
+            title = { Text("반납하시겠습니까?") },
+            buttons = {
+                Row(
+                    modifier = Modifier.padding(all = 8.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = {
+                            connectedGatt?.disconnect()
+                            connectedGatt?.close()
+                            connectedGatt = null
+                            showReturnDialog = false
+                            Toast.makeText(context, "성공적으로 반납되었습니다", Toast.LENGTH_SHORT).show()
+                            helmetid = ""
+                            enableRegister = true
+                            enableInternet = false
+                            autoEdit.putString("helmetid","")
+                        }
+                    ) {
+                        Text("반납하기")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(
+                        onClick = {
+                            showReturnDialog = false
+                        }
+                    ) {
+                        Text("아니오")
                     }
                 }
             }
@@ -547,7 +647,8 @@ fun Helmet(navController: NavController) {
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     TextField(
-                        value = auto.getString("workid", null).toString(),
+                        value = auto.getString("workid", null)
+                            ?.let { if (it == "null") "선택되지 않음" else it } ?: "선택되지 않음",
                         onValueChange = {},
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
@@ -565,6 +666,14 @@ fun Helmet(navController: NavController) {
                                 expanded = false
                                 autoEdit.putString("workid", eachoption)
                                 autoEdit.apply()
+                                val characteristicWrite = service?.getCharacteristic(writeUUID)
+                                val worksendId = "wc " + auto.getString("workid", null).toString()
+                                if (service != null && characteristicWrite != null) {
+                                    characteristicWrite.value = worksendId.toByteArray()
+                                    connectedGatt?.writeCharacteristic(characteristicWrite)
+                                } else {
+                                    Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                                }
                             }) {
                                 Text(text = eachoption, fontSize = 15.sp)
                             }
@@ -685,79 +794,107 @@ fun Helmet(navController: NavController) {
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold
                     )
-                    TextField(
-                        value = helmetid,
-                        onValueChange = { helmetid = it },
-                        shape = RoundedCornerShape(8.dp),
+                    Box(
                         modifier = Modifier
-                            .alpha(0.6f)
-                            .width(350.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        )
-                    )
-                }
-
-                Row {
-                    Button(
-                        onClick = {
-                            // 블루투스가 안 켜져 있을 경우
-                            if (!bluetoothAdapter.isEnabled) {
-                                context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                            } else {
-                                showScanDialog = true
-                            }
-                        },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                        shape = RoundedCornerShape(8.dp),
-                        enabled = connectedGatt == null
+                            .background(
+                                Color(0xFFECD5E3),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Text(
+                            text = helmetid ?: "",
+                            color = Color.Black,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                Button(
+                    onClick = {
+                        // 블루투스가 안 켜져 있을 경우
+                        if (!bluetoothAdapter.isEnabled) {
+                            context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                        } else {
+                            showScanDialog = true
+                        }
+                    },
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = enableRegister
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "등록하기",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
+                            Text(
+                                text = "등록하기",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }
-                Row {
-                    Button(
-                        onClick = {
-                            connectedGatt?.disconnect()
-                            connectedGatt?.close()
-                            connectedGatt = null
-                        },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                        shape = RoundedCornerShape(8.dp)
+                Button(
+                    onClick = {
+                        showWIFIDialog = true
+                    },
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = enableInternet
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "반납하기",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
+                            Text(
+                                text = "인터넷 설정",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
+                Button(
+                    onClick = {
+                        if (connectedGatt != null) {
+                            showReturnDialog = true
+                        } else {
+                            Toast.makeText(context, "등록된 헬멧이 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "반납하기",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }

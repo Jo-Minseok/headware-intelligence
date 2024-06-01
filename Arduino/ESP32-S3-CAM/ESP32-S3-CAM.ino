@@ -65,18 +65,19 @@ class MyCallbacks : public BLECharacteristicCallbacks {
         work_id = bluetooth_data.substring(3);
         Serial.println("[BLE] WORK ID = " + work_id);
       }
+      else if(bluetooth_data.startsWith("wc ")){
+        work_id = bluetooth_data.substring(3);
+        Serial.println("[BLE] WORK ID = " +work_id);
+        pTxCharacteristic->setValue("work_id_change");
+        pTxCharacteristic->notify();
+      }
       else if(bluetooth_data.startsWith("wi ")){
         wifi_id = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI ID = " + wifi_id);
-        WiFi.begin(wifi_id,wifi_pw);
       }
       else if(bluetooth_data.startsWith("wp ")){
         wifi_pw = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI PW = " + wifi_pw);
-        WiFi.begin(wifi_id,wifi_pw);
-      }
-      else{
-        Serial.println("[BLE] RECEIVED DATA " + bluetooth_data);
       }
     }
   }
@@ -102,7 +103,7 @@ void BT_setup() {
   BLEService *pService = pServer->createService(SERVICE_UUID);
   pTxCharacteristic = pService->createCharacteristic(
                         CHARACTERISTIC_READ,
-                        BLECharacteristic::PROPERTY_READ
+                        BLECharacteristic::PROPERTY_NOTIFY
                       );
   pTxCharacteristic->addDescriptor(new BLE2902());
 
@@ -117,7 +118,8 @@ void BT_setup() {
 
   // Wait for user ID
   while (!deviceConnected) {
-    delay(100);
+    tone(PIEZO,melody[0],500);
+    delay(1000);
   }
 
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
@@ -133,11 +135,14 @@ void ID_setup(){
   display.println("USER ID");
   display.display();
 
+  pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
+  pTxCharacteristic->notify();
+
   pTxCharacteristic->setValue("user_id");
   pTxCharacteristic->notify();
   while (user_id == "") {
     delay(1000);
-    tone(PIEZO,melody[0],200);
+    tone(PIEZO,melody[1],200);
   }
   Serial.println("[SETUP] USER ID: SETUP SUCCESS");
 
@@ -172,25 +177,35 @@ void WIFI_setup(){
   display.setCursor(10,24);
   display.println("WIFI");
   display.display();
-
   while (true)
   {
-    tone(PIEZO,melody[1],500);
     pTxCharacteristic->setValue("wifi");
     pTxCharacteristic->notify();
-    Serial.println("[WIFI] ID = " + wifi_id + ", PW = " + wifi_pw);
-    WiFi.begin(wifi_id, wifi_pw);
-    delay(2000);
-    if(WiFi.status() != WL_CONNECTED){
-      Serial.println("[WIFI] CONNECT FAIL");
+
+    tone(PIEZO,melody[2],500);
+    while(wifi_id == ""){
+      pTxCharacteristic->setValue("wifi_id");
+      pTxCharacteristic->notify();
+      delay(1000);
     }
-    else{
-      Serial.println("[WIFI] CONNECT SUCCESS");
+    pTxCharacteristic->setValue("wifi_pw");
+    pTxCharacteristic->notify();
+    delay(5000);
+    Serial.println("WIFI ID = " + wifi_id + " PASSWORD = " + wifi_pw);
+    WiFi.begin(wifi_id, wifi_pw);
+    delay(15000);
+    if(WiFi.status() == WL_CONNECTED){
       break;
     }
+    else{
+      Serial.println("연결안됨");
+    }
+    Serial.println("[SETUP] WIFI ID = " + wifi_id + " WIFI PASSWORD = " + wifi_pw);
   }
   
   Serial.println("[SETUP] WIFI: SETUP SUCCESS");
+  pTxCharacteristic->setValue("wifi_success");
+  pTxCharacteristic->notify();
 }
 
 /*
@@ -290,7 +305,7 @@ void onMessageCallback(WebsocketsMessage message) {
   String send_id = receiveData.substring(0, firstColonIndex);
   String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
   String action = receiveData.substring(secondColonIndex + 1);
-  if (receive_id == "seok3764") {
+  if (user_id==receive_id) {
     if (action == "카메라") {
       client.send(send_id + ":" + action + "전달");
       capture_and_send_image(send_id);
@@ -425,7 +440,7 @@ void capture_and_send_image(String send_id) {
     for (int i = 0; i < 24; i++) {
       boundary += String(random(0, 10));
     }
-    String fileName = "seok3764_admin.jpg";
+    String fileName = user_id+"_"+send_id+".jpg";
     String body = "--";
     body += boundary + "\r\n";
     body += "Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\nContent-Type: image/jpeg\r\n\r\n";
@@ -567,7 +582,9 @@ void setup(){
 
 void loop(){
   mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
-  GYRO_check();
+  if(!deviceConnected){
+    BT_setup();
+  }
   if(WiFi.status() == WL_CONNECTED){
     client.poll();
     if(false){ // SHOCK 센서 조건부

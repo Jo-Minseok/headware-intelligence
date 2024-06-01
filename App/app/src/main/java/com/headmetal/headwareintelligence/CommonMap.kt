@@ -28,7 +28,8 @@ data class AccidentProcessingResponse(
     val no: Int, // 사고 번호
     val situation: String?, // 처리 상황
     val detail: String?, // 사고 처리 세부 내역
-    val victim: String // 사고자 이름
+    val victimId: String,
+    val victimName: String // 사고자 이름
 )
 
 // Accident_Processing 테이블 데이터를 갱신하기 위한 데이터 클래스(Request)

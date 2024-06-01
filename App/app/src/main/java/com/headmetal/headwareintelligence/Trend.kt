@@ -321,7 +321,7 @@ fun ChartPrint(
                 String.format("%02d", if (month == 0) 12 else month)
             }
         ),
-        runInitialAnimation = true, // 그래프 출력 시 애니메이션 동작
+        runInitialAnimation = false, // 그래프 출력 시 애니메이션 동작
         legend = rememberLegend(listOf(Color(0xFF000080), dangerColor)) // 그래프 범례
     )
 }

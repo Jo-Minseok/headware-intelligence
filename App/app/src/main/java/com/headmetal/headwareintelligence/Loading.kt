@@ -91,9 +91,13 @@ fun Loading(navController: NavController) {
                     call_login.enqueue(object : Callback<LoginResponse> {
                         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                             if (response.isSuccessful) {
-                                Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",
-                                    Toast.LENGTH_SHORT).show()
-                                navController.navigate("mainScreen")
+                                if (navController.currentDestination?.route != "mainScreen") {
+                                    Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",
+                                        Toast.LENGTH_SHORT).show()
+                                    navController.navigate("mainScreen") {
+                                        popUpTo("loadingScreen") { inclusive = true }
+                                    }
+                                }
                             } else {
                                 val builder = AlertDialog.Builder(navController.context)
                                 builder.setTitle("자동 로그인 실패")

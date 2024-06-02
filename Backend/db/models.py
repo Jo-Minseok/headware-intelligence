@@ -56,7 +56,6 @@ class UserEmployee(Base):
     password = Column(VARCHAR(length=100), nullable=False)
     name = Column(VARCHAR(length=4), nullable=False)
     email = Column(VARCHAR(length=100), nullable=False)
-    helmet_no = Column(VARCHAR(length=100), nullable=True)
     phone_no = Column(VARCHAR(length=100), nullable=False)
     company = Column(VARCHAR(length=100), ForeignKey(
         "company_list.company"), nullable=True)

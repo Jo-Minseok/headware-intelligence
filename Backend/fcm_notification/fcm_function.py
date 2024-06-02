@@ -7,7 +7,7 @@ from db.db_connection import get_db
 import firebase_admin
 from firebase_admin import credentials
 
-cred = credentials.Certificate("firebase-privatekey.json")
+cred = credentials.Certificate("./fcm_notification/firebase-privatekey.json")
 firebase_admin.initialize_app(cred)
 
 

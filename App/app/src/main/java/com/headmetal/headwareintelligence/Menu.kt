@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.Logout
@@ -42,6 +45,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
 @Composable
 fun Menu(navController: NavController) {
     val context = LocalContext.current
@@ -54,8 +61,68 @@ fun Menu(navController: NavController) {
     val savedSwitchValue = auto.getBoolean("switch_key", false)
     var switchValue by remember { mutableStateOf(savedSwitchValue) }
 
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
+    if (showLogoutDialog) {
+        AlertDialog(onDismissRequest = {
+            showLogoutDialog = false
+        },
+            title = {
+                Text(text = "로그아웃")
+            },
+            text = {
+                Text("로그아웃 하시겠습니까?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (auto.getString("type", null) == "manager") {
+                            val call = RetrofitInstance.apiService.apiLogout(
+                                id = auto.getString("userid", null).toString(),
+                                alertToken = auto.getString("alert_token", null).toString()
+                            )
+                            call.enqueue(object : Callback<Void> {
+                                override fun onResponse(p0: Call<Void>, p1: Response<Void>) {
+                                    showLogoutDialog = false
+                                    Toast.makeText(
+                                        context,
+                                        "로그아웃을 성공하였습니다.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    autoLoginEdit.clear()
+                                    autoLoginEdit.apply()
+                                    navController.navigate("loginScreen")
+                                }
 
+                                override fun onFailure(p0: Call<Void>, p1: Throwable) {
+                                    Toast.makeText(
+                                        context,
+                                        "로그아웃을 실패하였습니다. 인터넷을 확인하세요.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            })
+                        } else {
+                            showLogoutDialog = false
+                            Toast.makeText(context, "로그아웃을 성공하였습니다.", Toast.LENGTH_SHORT).show()
+                            autoLoginEdit.clear()
+                            autoLoginEdit.apply()
+                            navController.navigate("loginScreen")
+                        }
+                    }
+                ) {
+                    Text(text = "예")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                }) {
+                    Text(text = "아니오")
+                }
+            }
+        )
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
@@ -63,9 +130,9 @@ fun Menu(navController: NavController) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
-                modifier = Modifier.
-                padding(20.dp)
-                .clickable {navController.navigateUp()}
+                modifier = Modifier
+                    .padding(20.dp)
+                    .clickable { navController.navigateUp() }
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -86,7 +153,7 @@ fun Menu(navController: NavController) {
                     .padding(horizontal = 30.dp, vertical = 15.5.dp)
             ) {
                 Button(
-                    onClick = {navController.navigate("privacyScreen")},
+                    onClick = { navController.navigate("privacyScreen") },
                     modifier = Modifier.fillMaxWidth(),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                     colors = ButtonDefaults.buttonColors(Color.White),
@@ -128,7 +195,7 @@ fun Menu(navController: NavController) {
 
                 Column(modifier = Modifier.padding(vertical = 10.dp)) {
                     Button(
-                        onClick = {navController.navigate("companyinfoScreen")},
+                        onClick = { navController.navigate("companyinfoScreen") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 2.5.dp)
@@ -158,52 +225,54 @@ fun Menu(navController: NavController) {
                             )
                         }
                     }
-                    Button(
-                        onClick = {
-                            switchValue = !switchValue
-                            autoLoginEdit.putBoolean("switch_key", switchValue).apply()
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .padding(vertical = 2.5.dp)
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                    if (auto.getString("type", null) == "manager") {
+                        Button(
+                            onClick = {
+                                switchValue = !switchValue
+                                autoLoginEdit.putBoolean("switch_key", switchValue).apply()
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier
+                                .padding(vertical = 2.5.dp)
+                                .fillMaxWidth()
+                                .height(60.dp),
+                            colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Notifications,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                "구독 설정",
-                                color = Color.Black,
-                                fontSize = 20.sp
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Switch(
-                                checked = switchValue,
-                                onCheckedChange = { isChecked ->
-                                    switchValue = isChecked
-                                    autoLoginEdit.putBoolean("switch_key", isChecked).apply()
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = Color.White,
-                                    checkedTrackColor = Color(0xFF2FA94E),
-                                    uncheckedThumbColor = Color.White,
-                                    uncheckedTrackColor = Color(0xFF1D2024)
-                                ),
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Notifications,
+                                    contentDescription = null,
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "구독 설정",
+                                    color = Color.Black,
+                                    fontSize = 20.sp
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Switch(
+                                    checked = switchValue,
+                                    onCheckedChange = { isChecked ->
+                                        switchValue = isChecked
+                                        autoLoginEdit.putBoolean("switch_key", isChecked).apply()
+                                    },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = Color(0xFF2FA94E),
+                                        uncheckedThumbColor = Color.White,
+                                        uncheckedTrackColor = Color(0xFF1D2024)
+                                    ),
+                                    modifier = Modifier.align(Alignment.CenterVertically)
+                                )
+                            }
                         }
                     }
                     Button(
-                        onClick = {navController.navigate("etcScreen")},
+                        onClick = { navController.navigate("etcScreen") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 2.5.dp)
@@ -235,9 +304,7 @@ fun Menu(navController: NavController) {
                     }
                     Button(
                         onClick = {
-                            autoLoginEdit.clear()
-                            autoLoginEdit.apply()
-                            navController.navigate("loginScreen")
+                            showLogoutDialog = true
                         },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier

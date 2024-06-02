@@ -11,7 +11,7 @@ cred = credentials.Certificate("./fcm_notification/firebase-privatekey.json")
 firebase_admin.initialize_app(cred)
 
 
-def fcm_subscribe_topic(manager_id: str, alert_token: str, db: Session = Depends(get_db)):
+def fcm_subscribe_all_topic(manager_id: str, alert_token: str, db: Session):
     work_list_rows = db.query(Work_list.work_id).filter(
         Work_list.manager == manager_id)
     work_list_ids = [work_row for work_row in work_list_rows]
@@ -19,7 +19,23 @@ def fcm_subscribe_topic(manager_id: str, alert_token: str, db: Session = Depends
         firebase_admin.messaging.subscribe_to_topic(alert_token, work_id)
 
 
-def fcm_send_messaging(work_id: str, victim_id: str, db: Session = Depends(get_db)):
+def fcm_unsubscribe_all_topic(manager_id: str, alert_token: str, db: Session):
+    work_list_rows = db.query(Work_list.work_id).filter(
+        Work_list.manager == manager_id)
+    work_list_ids = [work_row for work_row in work_list_rows]
+    for work_id in work_list_ids:
+        firebase_admin.messaging.unsubscribe_from_topic(alert_token, work_id)
+
+
+def fcm_subscribe_one_topic(alert_token: str, work_id: str):
+    firebase_admin.messaging.subscribe_to_topic(alert_token, work_id)
+
+
+def fcm_unsubscribe_one_topic(alert_token: str, work_id: str):
+    firebase_admin.messaging.unsubscribe_from_topic(alert_token, work_id)
+
+
+def fcm_send_messaging(work_id: str, victim_id: str, db: Session):
     victim_name = db.query(UserEmployee.name).filter(
         UserEmployee.id == victim_id)
     work_name = db.query(Work_list.name).filter(Work_list.work_id == work_id)

@@ -13,16 +13,16 @@ firebase_admin.initialize_app(cred)
 
 def fcm_subscribe_all_topic(manager_id: str, alert_token: str, db: Session):
     work_list_rows = db.query(Work_list.work_id).filter(
-        Work_list.manager == manager_id)
-    work_list_ids = [work_row for work_row in work_list_rows]
+    Work_list.manager == manager_id)
+    work_list_ids = [work_row.work_id for work_row in work_list_rows]
     for work_id in work_list_ids:
         firebase_admin.messaging.subscribe_to_topic(alert_token, work_id)
 
 
 def fcm_unsubscribe_all_topic(manager_id: str, alert_token: str, db: Session):
     work_list_rows = db.query(Work_list.work_id).filter(
-        Work_list.manager == manager_id)
-    work_list_ids = [work_row for work_row in work_list_rows]
+    Work_list.manager == manager_id)
+    work_list_ids = [work_row.work_id for work_row in work_list_rows]
     for work_id in work_list_ids:
         firebase_admin.messaging.unsubscribe_from_topic(alert_token, work_id)
 

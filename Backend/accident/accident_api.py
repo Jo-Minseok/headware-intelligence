@@ -1,10 +1,7 @@
-import firebase_admin
-from firebase_admin import credentials
 import os
 from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, Depends, status
 from pydantic import BaseModel
 from typing import List
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 import datetime
@@ -25,21 +22,6 @@ class Accident_Json(BaseModel):
     longitude: float
     work_id: str
     victim_id: str
-
-
-class Alert(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=r'./accident/.env', env_file_encoding='utf-8')
-    api_key: str
-
-
-cred = credentials.Certificate("path/to/serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
-FCM_API_KEY = Alert(_env_file=r'./accident/.env', _env_file_encoding='utf-8')
-
-
-class Work_list(BaseModel):
-    work_list: List[str] = []
 
 # Websocket 접속 매니저
 

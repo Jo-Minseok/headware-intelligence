@@ -55,7 +55,7 @@ def get_employee_login(alert_token: str, type: str, account_data: OAuth2Password
 
     if (type == "manager"):
         fcm_function.fcm_subscribe_all_topic(
-            account_data.username, alert_token)
+            account_data.username, alert_token, db)
 
     # Employee_Login 스키마 반환
     return {

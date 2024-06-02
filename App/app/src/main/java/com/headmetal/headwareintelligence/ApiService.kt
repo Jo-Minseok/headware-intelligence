@@ -20,7 +20,7 @@ interface ApiService {
         @Field("password") pw:String?
     ): Call<LoginResponse>
 
-    @GET("/accident/work_list")
+    @GET("/company/work_list")
     fun apiWorklist(
         @Query("user_id") id:String
     ):Call<WorklistResponse>

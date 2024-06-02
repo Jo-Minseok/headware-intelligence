@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from account.register_crud import pwd_context  # 회원가입에서 사용했던 암호화 방식 이용
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from jose import jwt
+from fcm_notification import fcm_function
 
 
 # 토큰 만료 시간, 암호화 키 Github 올리지 않기 위한 클래스 .env Load용
@@ -27,11 +28,12 @@ secure_object = SecureSettings(
 # 라우터 생성
 router = APIRouter()
 
-
 # employee 라우터 연결, 반환 모델은 Employee_Login 스키마
-@router.post("/login", response_model=Login_Output,status_code=status.HTTP_200_OK)
-def get_employee_login(alert_token:str,type:str,account_data: OAuth2PasswordRequestForm=Depends(), db: Session = Depends(get_db)):
-    user_row = login_crud.get_employee(account_data.username,type,db)
+
+
+@router.post("/login", response_model=Login_Output, status_code=status.HTTP_200_OK)
+def get_employee_login(alert_token: str, type: str, account_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user_row = login_crud.get_employee(account_data.username, type, db)
     # ID가 없거나 비밀번호를 확인했을 때 잘 못 됐다면 HTTP 예외 발생
     if not user_row or not pwd_context.verify(account_data.password, user_row.password):
         raise HTTPException(
@@ -50,6 +52,10 @@ def get_employee_login(alert_token:str,type:str,account_data: OAuth2PasswordRequ
     user_row.login_token = access_token
     user_row.alert_token = alert_token
     db.commit()
+
+    if (type == "manager"):
+        fcm_function.fcm_subscribe_topic(account_data.username, alert_token)
+
     # Employee_Login 스키마 반환
     return {
         "id": user_row.id,

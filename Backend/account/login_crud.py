@@ -4,7 +4,7 @@ from db.db_connection import get_db
 from db.models import UserEmployee, UserManager
 
 
-def get_employee(id: str,type:str,db: Session):
+def get_employee(id: str, type: str, db: Session = Depends(get_db)):
     if (type == "employee"):
         return db.query(UserEmployee).filter(UserEmployee.id == id).first()
     elif (type == "manager"):

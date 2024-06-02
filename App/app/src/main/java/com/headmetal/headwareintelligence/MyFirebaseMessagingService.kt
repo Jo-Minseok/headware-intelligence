@@ -14,12 +14,11 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService:FirebaseMessagingService(){
-    private val tag = "FCM MESSAGE"
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
         // 작업 표시줄 알림으로 왔을 경우 Foreground
-        val notificationManager = NotificationManagerCompat.from(getApplicationContext())
+        val notificationManager = NotificationManagerCompat.from(applicationContext)
         var builder:NotificationCompat.Builder?=null
         var CHANNEL_ID:String = remoteMessage.messageId.toString()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -27,16 +26,14 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
                 val channel = NotificationChannel(CHANNEL_ID,"channel", NotificationManager.IMPORTANCE_DEFAULT)
                 notificationManager.createNotificationChannel(channel)
             }
-            builder = NotificationCompat.Builder(getApplicationContext(),CHANNEL_ID)
+            builder = NotificationCompat.Builder(applicationContext,CHANNEL_ID)
         }
         else{
-            builder = NotificationCompat.Builder(getApplicationContext())
+            builder = NotificationCompat.Builder(applicationContext)
         }
         val title:String = remoteMessage.notification?.title.toString()
         val message:String = remoteMessage.notification?.body.toString()
-        builder.setSmallIcon(R.drawable.helmet)
-        builder.setContentTitle(title)
-        builder.setContentText(message)
+        builder.setSmallIcon(R.drawable.helmet).setContentTitle(title).setContentText(message)
         val notification = builder.build()
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -56,17 +53,17 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
 
         // 수신한 데이터 처리
         remoteMessage.data.isNotEmpty().let{
-            Log.d(tag,"data: ${remoteMessage.data}")
+            Log.d("FCM MESSAGE","data: ${remoteMessage.data}")
         }
 
         remoteMessage.notification?.let{
-            Log.d(tag, "notification: ${it.body}")
+            Log.d("FCM MESSAGE", "notification: ${it.body}")
         }
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(tag,"Token: $token")
+        Log.d("FCM MESSAGE","Token: $token")
         // token을 서버로 전송
     }
 }

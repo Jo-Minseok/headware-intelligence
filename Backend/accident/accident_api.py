@@ -2,14 +2,12 @@ import os
 from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, Depends, status
 from pydantic import BaseModel
 from typing import List
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 import datetime
 from db.db_connection import get_db
-from db.models import Accident, Work
-from pyfcm import FCMNotification
-from db.models import UserEmployee
+from db.models import Accident, UserEmployee
+from fcm_notification import fcm_function
 
 
 router = APIRouter(prefix="/accident")
@@ -24,19 +22,6 @@ class Accident_Json(BaseModel):
     longitude: float
     work_id: str
     victim_id: str
-
-
-class Alert(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=r'./accident/.env', env_file_encoding='utf-8')
-    api_key: str
-
-
-FCM_API_KEY = Alert(_env_file=r'./accident/.env', _env_file_encoding='utf-8')
-
-
-class Work_list(BaseModel):
-    work_list: List[str] = []
 
 # Websocket 접속 매니저
 
@@ -80,21 +65,8 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
         UserEmployee.id == accident.victim_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
-    # 사고 발생 시 알림 전송
-    push_service = FCMNotification(FCM_API_KEY.api_key)
-    alert = push_service.multiple_devices_data_message(
-        topic_name=accident.work_id,
-        message_title=f"{accident.category} 사고 발생!",
-        message_body=f"피해자: {user.name} ({accident.victim_id})"
-    )
+    fcm_function.fcm_send_messaging(accident.work_id, accident.victim_id, db)
     return {"status": "success"}
-
-
-@router.get("/work_list", response_model=Work_list, status_code=status.HTTP_200_OK)
-def get_work_list(user_id: str, db: Session = Depends(get_db)):
-    work_rows = db.query(Work).filter(Work.worker_id == user_id)
-    work_ids = [work_row.work_id for work_row in work_rows]
-    return Work_list(work_list=work_ids)
 
 
 @router.post("/upload_image")

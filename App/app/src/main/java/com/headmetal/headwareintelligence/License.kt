@@ -58,7 +58,7 @@ fun License(navController: NavController) {
                 contentDescription = null,
                 modifier = Modifier.
                 padding(20.dp).
-                clickable {navController.navigate("EtcScreen")}
+                clickable {navController.navigateUp()}
 
             )
 

@@ -5,9 +5,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,6 +81,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -331,7 +336,9 @@ fun MapScreen(
 
                     // 지도의 초기 위치 설정
                     val initialCameraPosition =
-                        CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!))
+                        CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
+//                    val initialCameraPosition =
+//                        CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!))
                     map.moveCamera(initialCameraPosition)
 
                     // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성
@@ -452,14 +459,13 @@ fun BottomSheetScreen(
     val client = remember { OkHttpClient() }
     val scope = rememberCoroutineScope()
     var messages by remember { mutableStateOf(listOf<String>()) }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    var imageBitmap by remember { mutableStateOf<Bitmap?>(null)}
 
     val webSocketListener = object : WebSocketListener() {
         override fun onMessage(webSocket: WebSocket, text: String) {
-            messages = messages + text
-        }
-
-        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            messages = messages + bytes.hex()
+            Log.d("HEAD METAL", (messages + text).toString())
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
@@ -481,7 +487,24 @@ fun BottomSheetScreen(
         )
     }
 
+    imageBitmap?.let {
+        Image(
+            bitmap = it.asImageBitmap(),
+            contentDescription = null,
+            modifier = Modifier.size(200.dp)
+        )
+    }
+
     if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
+        val request = Request.Builder().url(
+            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
+                auto.getString(
+                    "userid", null
+                ).toString()
+            }"
+        ).build()
+        val webSocket = client.newWebSocket(request, webSocketListener)
+
         ModalBottomSheet(modifier = Modifier.height(270.dp),
             onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
@@ -526,17 +549,14 @@ fun BottomSheetScreen(
                             "IconClick", "영상통화 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-                            val request = Request.Builder().url(
-                                "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
-                                    auto.getString(
-                                        "userid", null
-                                    ).toString()
-                                }"
-                            ).build()
-                            val webSocket = client.newWebSocket(request, webSocketListener)
+
                             webSocket.send("${victimId.value}:카메라")
+                            isBottomSheetVisible.value = false
+//                            withContext(Dispatchers.Main) {
+//                                imageBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.helmet)
+//                            }
                         }
-                    } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
+                    }
                     ) {
                         Icon(
                             imageVector = Icons.Default.VideoCameraFront,
@@ -560,7 +580,7 @@ fun BottomSheetScreen(
                             val webSocket = client.newWebSocket(request, webSocketListener)
                             webSocket.send("${victimId.value}:소리")
                         }
-                    } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
+                    }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Campaign,

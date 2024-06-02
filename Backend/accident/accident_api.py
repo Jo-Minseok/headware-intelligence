@@ -10,6 +10,7 @@ from db.db_connection import get_db
 from db.models import Accident, Work
 from pyfcm import FCMNotification
 from db.models import UserEmployee
+from pyfcm import FCMNotification
 
 
 router = APIRouter(prefix="/accident")
@@ -82,10 +83,11 @@ def post_accident(accident: Accident_Json, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
     # 사고 발생 시 알림 전송
     push_service = FCMNotification(FCM_API_KEY.api_key)
-    alert = push_service.multiple_devices_data_message(
+    
+    alert = push_service.notify_topic_subscribers(
         topic_name=accident.work_id,
         message_title=f"{accident.category} 사고 발생!",
-        message_body=f"피해자: {user.name} ({accident.victim_id})"
+        message_body=f"피해자: {user.name} ({accident.victim_id})",
     )
     return {"status": "success"}
 

@@ -22,23 +22,27 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
 
 @Composable
 fun Loading(navController: NavController) {
     var autoLogin by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val auto: SharedPreferences = context.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val autoLoginEdit:SharedPreferences.Editor = auto.edit()
+    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
     val userId = auto.getString("userid", null)
-    val userPassword = auto.getString("password",null)
+    val userPassword = auto.getString("password", null)
     val accessToken = auto.getString("token", null)
-    val type = auto.getString("type",null).toString()
+    val type = auto.getString("type", null).toString()
     val builder = AlertDialog.Builder(navController.context)
 
     if (userId != null && accessToken != null) {
@@ -61,13 +65,17 @@ fun Loading(navController: NavController) {
         permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
     }
     permissions.forEach { permission ->
-        if (ContextCompat.checkSelfPermission(LocalContext.current, permission) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             permissionsToRequest.add(permission)
         }
     }
     if (permissionsToRequest.isNotEmpty()) {
         ActivityCompat.requestPermissions(
-            LocalContext.current as Activity, permissionsToRequest.toTypedArray(),
+            context as Activity, permissionsToRequest.toTypedArray(),
             MainActivity.REQUEST_PERMISSIONS_CODE
         )
         Log.d("HEAD METAL", "권한을 요청하였습니다.")
@@ -76,8 +84,7 @@ fun Loading(navController: NavController) {
     }
 
     // 서버 상태 확인
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.apiGetStatus()
+    val call = RetrofitInstance.apiService.apiGetStatus()
     call.enqueue(object : Callback<Void> {
         override fun onResponse(call: Call<Void>, response: Response<Void>) {
             if (response.isSuccessful) {
@@ -89,11 +96,16 @@ fun Loading(navController: NavController) {
                         pw = userPassword
                     )
                     call_login.enqueue(object : Callback<LoginResponse> {
-                        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                        override fun onResponse(
+                            call: Call<LoginResponse>,
+                            response: Response<LoginResponse>
+                        ) {
                             if (response.isSuccessful) {
                                 if (navController.currentDestination?.route != "mainScreen") {
-                                    Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",
-                                        Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        navController.context, response.body()?.name + "님 반갑습니다",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     navController.navigate("mainScreen") {
                                         popUpTo("loadingScreen") { inclusive = true }
                                     }
@@ -155,6 +167,7 @@ fun Loading(navController: NavController) {
             dialog.show()
         }
     })
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),

@@ -14,3 +14,4 @@ Backend/accident/.env
 Backend/marker/__pycache__
 Backend/accident/uploaded_images
 Backend/fcm_notification/firebase-privatekey.json
+Backend/fcm_notification/__pycache__

@@ -74,7 +74,7 @@ fun performLogin(
                 autoLoginEdit.putString("type", if (isManager) "manager" else "employee")
                 autoLoginEdit.apply()
                 navController.navigate("mainScreen")
-                Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",Toast.LENGTH_SHORT)
+                Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",Toast.LENGTH_SHORT).show()
             } else {
                 val builder = AlertDialog.Builder(navController.context)
                 builder.setTitle("로그인 실패")

@@ -109,7 +109,6 @@ async def websocket_endpoint(websocket: WebSocket, work_id: str, user_id: str):
 @router.get('/get_image/{victim}/{manager}')
 async def get_image(victim: str, manager: str):
     image_path = os.path.join('./accident/uploaded_images/', victim + '_' + manager + '.jpg')
-    
     if os.path.exists(image_path):
         return FileResponse(image_path)
-    return {'message' : 'Image not found'}
+    raise HTTPException(status_code=404, detail='image not found')

@@ -5,14 +5,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +25,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.BottomSheetDefaults
@@ -50,7 +50,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,10 +59,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.google.android.gms.location.LocationServices
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
@@ -81,13 +84,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okio.ByteString
 
 // Accident 테이블의 데이터를 수신하는 데이터 클래스(Response)
 data class AccidentResponse(
@@ -458,19 +459,50 @@ fun BottomSheetScreen(
         LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
     val scope = rememberCoroutineScope()
-    var messages by remember { mutableStateOf(listOf<String>()) }
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null)}
+    var imageUrl by remember { mutableStateOf<String?>(null) }
 
     val webSocketListener = object : WebSocketListener() {
         override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d("HEAD METAL", (messages + text).toString())
+            Log.d("HEAD METAL", text)
+
+            val messages = text.split(":")
+            val manager = auto.getString("userid", null).toString()
+
+            if (messages[1] == manager && messages[2] == "카메라완료") {
+                imageUrl =
+                    "http://minseok821lab.kro.kr:8000/accident/get_image/${victimId.value}/${manager}"
+            }
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            messages = messages + "Error: ${t.message}"
+            Log.e("HEAD METAL", "Error: ${t.message}")
         }
+    }
+
+    imageUrl?.let { url ->
+        val painter = rememberAsyncImagePainter(model = url)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Button(
+                onClick = { imageUrl = null },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd)
+                    .zIndex(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
+            }
+        }
+
     }
 
     val isDetailInputDialogVisible: MutableState<Boolean> =
@@ -484,14 +516,6 @@ fun BottomSheetScreen(
             selectedMarker = selectedMarker,
             situationCode = situationCode,
             listIdx = listIdx
-        )
-    }
-
-    imageBitmap?.let {
-        Image(
-            bitmap = it.asImageBitmap(),
-            contentDescription = null,
-            modifier = Modifier.size(200.dp)
         )
     }
 
@@ -549,15 +573,10 @@ fun BottomSheetScreen(
                             "IconClick", "영상통화 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-
                             webSocket.send("${victimId.value}:카메라")
                             isBottomSheetVisible.value = false
-//                            withContext(Dispatchers.Main) {
-//                                imageBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.helmet)
-//                            }
                         }
-                    }
-                    ) {
+                    }) {
                         Icon(
                             imageVector = Icons.Default.VideoCameraFront,
                             contentDescription = null,
@@ -570,18 +589,10 @@ fun BottomSheetScreen(
                             "IconClick", "스피커 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-                            val request = Request.Builder().url(
-                                "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
-                                    auto.getString(
-                                        "userid", null
-                                    ).toString()
-                                }"
-                            ).build()
-                            val webSocket = client.newWebSocket(request, webSocketListener)
                             webSocket.send("${victimId.value}:소리")
+                            isBottomSheetVisible.value = false
                         }
-                    }
-                    ) {
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Campaign,
                             contentDescription = null,

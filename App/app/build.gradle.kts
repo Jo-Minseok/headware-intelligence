@@ -96,6 +96,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.4.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("io.coil-kt:coil-compose:2.0.0")
 
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")

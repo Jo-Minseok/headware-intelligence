@@ -1,8 +1,6 @@
 import firebase_admin.messaging
 from db.models import Work_list, UserEmployee
-from fastapi import Depends
 from sqlalchemy.orm import Session
-from db.db_connection import get_db
 # 알림 객체 생성
 import firebase_admin
 from firebase_admin import credentials
@@ -14,16 +12,14 @@ firebase_admin.initialize_app(cred)
 def fcm_subscribe_all_topic(manager_id: str, alert_token: str, db: Session):
     work_list_rows = db.query(Work_list.work_id).filter(
     Work_list.manager == manager_id)
-    work_list_ids = [work_row.work_id for work_row in work_list_rows]
-    for work_id in work_list_ids:
+    for work_id in work_list_rows:
         firebase_admin.messaging.subscribe_to_topic(alert_token, work_id)
 
 
 def fcm_unsubscribe_all_topic(manager_id: str, alert_token: str, db: Session):
     work_list_rows = db.query(Work_list.work_id).filter(
     Work_list.manager == manager_id)
-    work_list_ids = [work_row.work_id for work_row in work_list_rows]
-    for work_id in work_list_ids:
+    for work_id in work_list_rows:
         firebase_admin.messaging.unsubscribe_from_topic(alert_token, work_id)
 
 

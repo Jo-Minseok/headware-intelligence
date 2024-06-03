@@ -466,7 +466,7 @@ fun BottomSheetScreen(
             Log.d("HEAD METAL", text)
 
             val messages = text.split(":")
-            val manager = auto.getString("userid", null).toString()
+            val manager = sharedAccount.getString("userid", null).toString()
 
             if (messages[1] == manager && messages[2] == "카메라완료") {
                 imageUrl =
@@ -522,7 +522,7 @@ fun BottomSheetScreen(
     if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
         val request = Request.Builder().url(
             "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
-                auto.getString(
+                sharedAccount.getString(
                     "userid", null
                 ).toString()
             }"

@@ -22,8 +22,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val auto: SharedPreferences = this.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-        val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+        val sharedAlert: SharedPreferences = this.getSharedPreferences("Alert", Activity.MODE_PRIVATE)
+        val sharedAlertEdit: SharedPreferences.Editor = sharedAlert.edit()
         // 알림 토큰 생성
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
@@ -35,8 +35,7 @@ class MainActivity : ComponentActivity() {
                 return@OnCompleteListener
             }
             val token = task.result
-            autoLoginEdit.putString("alert_token",token)
-            autoLoginEdit.apply()
+            sharedAlertEdit.putString("alert_token",token).apply()
             Log.d("FCM MESSAGE", "token $token")
         })
 

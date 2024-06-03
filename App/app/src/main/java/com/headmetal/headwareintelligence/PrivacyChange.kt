@@ -48,11 +48,11 @@ import androidx.navigation.NavController
 fun PrivacyChange(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
     {
-        val auto: SharedPreferences = LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-        val userId = auto.getString("userid", null)
-        val username = auto.getString("name", null)
-        val userphone = auto.getString("phone", null)
-        val useremail = auto.getString("email", null)
+        val sharedAccount: SharedPreferences = LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+        val userId = sharedAccount.getString("userid", null)
+        val username = sharedAccount.getString("name", null)
+        val userphone = sharedAccount.getString("phone", null)
+        val useremail = sharedAccount.getString("email", null)
 
         Column(modifier = Modifier.fillMaxSize()) {
             Icon(

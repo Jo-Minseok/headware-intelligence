@@ -52,13 +52,14 @@ fun performLogin(
     username: String?,
     password: String?,
     isManager: Boolean,
-    auto: SharedPreferences,
     navController: NavController,
     pwState:MutableState<String>
 ) {
-    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
+    val sharedAccount: SharedPreferences =navController.context.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val sharedAlert: SharedPreferences = navController.context.getSharedPreferences("Alert",Activity.MODE_PRIVATE)
+    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
     val call = RetrofitInstance.apiService.apiLogin(
-        alertToken = auto.getString("alert_token", null).toString(),
+        alertToken = sharedAlert.getString("alert_token", null).toString(),
         type = if (isManager) "manager" else "employee",
         id = username,
         pw = password
@@ -66,13 +67,13 @@ fun performLogin(
     call.enqueue(object : Callback<LoginResponse> {
         override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
             if (response.isSuccessful) {
-                autoLoginEdit.putString("userid", response.body()?.id)
-                autoLoginEdit.putString("password", password)
-                autoLoginEdit.putString("name", response.body()?.name)
-                autoLoginEdit.putString("token", response.body()?.access_token)
-                autoLoginEdit.putString("token_type", response.body()?.token_type)
-                autoLoginEdit.putString("type", if (isManager) "manager" else "employee")
-                autoLoginEdit.apply()
+                sharedAccountEdit.putString("userid", response.body()?.id)
+                sharedAccountEdit.putString("password", password)
+                sharedAccountEdit.putString("name", response.body()?.name)
+                sharedAccountEdit.putString("token", response.body()?.access_token)
+                sharedAccountEdit.putString("token_type", response.body()?.token_type)
+                sharedAccountEdit.putString("type", if (isManager) "manager" else "employee")
+                sharedAccountEdit.apply()
                 navController.navigate("mainScreen")
                 Toast.makeText(navController.context,response.body()?.name + "님 반갑습니다",Toast.LENGTH_SHORT).show()
             } else {
@@ -108,8 +109,6 @@ fun performLogin(
 @Composable
 fun Login(navController: NavController) {
     BackOnPressed()
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
     val idState = remember {
         mutableStateOf("")
     }
@@ -222,7 +221,7 @@ fun Login(navController: NavController) {
             Row {
                 Button(
                     onClick = {
-                        performLogin(idState.value,pwState.value,isManager,auto,navController,pwState)
+                        performLogin(idState.value,pwState.value,isManager,navController,pwState)
                     },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),

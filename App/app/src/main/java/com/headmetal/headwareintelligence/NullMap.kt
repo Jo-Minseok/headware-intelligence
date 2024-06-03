@@ -215,8 +215,7 @@ fun NullMapScreen(
         )
     }
 
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences = LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val context = LocalContext.current
 
     AndroidView(modifier = Modifier.fillMaxSize(), factory = { _ ->
@@ -228,11 +227,7 @@ fun NullMapScreen(
                         withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
                             CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
                                 val state = nullAccidentViewModel.state // 현재 상태 값을 받아옴
-                                nullAccidentViewModel.getNullAccidentData(
-                                    auto.getString(
-                                        "userid", null
-                                    ).toString()
-                                ) // Accident 테이블 데이터 수신
+                                nullAccidentViewModel.getNullAccidentData(sharedAccount.getString("userid", null).toString()) // Accident 테이블 데이터 수신
                                 while (state == nullAccidentViewModel.state) {
                                     // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
                                 }
@@ -329,8 +324,8 @@ fun NullBottomSheetScreen(
     selectedMarker: MutableState<Marker?>,
     navController: NavController
 ) {
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
     val scope = rememberCoroutineScope()
     var messages by remember { mutableStateOf(listOf<String>()) }
@@ -429,22 +424,21 @@ fun NullBottomSheetScreen(
                                 Text(text = "작업자", color = Color.Gray)
                                 Text(victimName.value)
                             }
-                            IconButton(onClick = {
-                                Log.i(
-                                    "IconClick", "영상통화 아이콘 클릭"
-                                )
-                                scope.launch(Dispatchers.IO) {
-                                    val request = Request.Builder().url(
-                                        "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
-                                            auto.getString(
-                                                "userid", null
-                                            ).toString()
-                                        }"
-                                    ).build()
-                                    val webSocket = client.newWebSocket(request, webSocketListener)
-                                    webSocket.send("${victimId.value}:카메라")
-                                }
-                            } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
+                            IconButton(
+                                onClick = {
+                                    Log.i("IconClick", "영상통화 아이콘 클릭")
+                                    scope.launch(Dispatchers.IO) {
+                                        val request = Request.Builder().url(
+                                            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
+                                                sharedAccount.getString(
+                                                    "userid", null
+                                                ).toString()
+                                            }"
+                                        ).build()
+                                        val webSocket = client.newWebSocket(request, webSocketListener)
+                                        webSocket.send("${victimId.value}:카메라")
+                                    }
+                                } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.VideoCameraFront,
@@ -453,22 +447,21 @@ fun NullBottomSheetScreen(
                                     modifier = Modifier.size(40.dp)
                                 )
                             }
-                            IconButton(onClick = {
-                                Log.i(
-                                    "IconClick", "스피커 아이콘 클릭"
-                                )
-                                scope.launch(Dispatchers.IO) {
-                                    val request = Request.Builder().url(
-                                        "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
-                                            auto.getString(
-                                                "userid", null
-                                            ).toString()
-                                        }"
-                                    ).build()
-                                    val webSocket = client.newWebSocket(request, webSocketListener)
-                                    webSocket.send("${victimId.value}:카메라")
-                                }
-                            } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
+                            IconButton(
+                                onClick = {
+                                    Log.i("IconClick", "스피커 아이콘 클릭")
+                                    scope.launch(Dispatchers.IO) {
+                                        val request = Request.Builder().url(
+                                            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
+                                                sharedAccount.getString(
+                                                    "userid", null
+                                                ).toString()
+                                            }"
+                                        ).build()
+                                        val webSocket = client.newWebSocket(request, webSocketListener)
+                                        webSocket.send("${victimId.value}:소리")
+                                    }
+                                } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Campaign,

@@ -144,8 +144,8 @@ fun Processing(
     navController: NavController,
     accidentProcessingViewModel: AllAccidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }
 ) {
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     val tabIndexState: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -210,7 +210,7 @@ fun Processing(
                         tabIndexState.value = false
                         val state = accidentProcessingViewModel.state
                         accidentProcessingViewModel.getAllAccidentProcessingData(
-                            auto.getString(
+                            sharedAccount.getString(
                                 "userid", null
                             ).toString(), situationCode.value
                         )

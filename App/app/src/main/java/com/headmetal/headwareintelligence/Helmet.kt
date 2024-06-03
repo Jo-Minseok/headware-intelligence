@@ -94,16 +94,16 @@ data class DeviceData(
 fun Helmet(navController: NavController) {
     // UI 관련 유틸 변수들
     val context = LocalContext.current
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val autoEdit = auto.edit()
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val sharedAccountEdit = sharedAccount.edit()
 
     // 작업장 선택 변수들
     var expanded by remember { mutableStateOf(false) }
     var itemOptions by remember { mutableStateOf(listOf<String>()) }
     var selectedOption by remember { mutableStateOf("") }
     val apiServiceWorklist =
-        RetrofitInstance.apiService.apiWorklist(id = auto.getString("userid", null).toString())
+        RetrofitInstance.apiService.apiWorklist(id = sharedAccount.getString("userid", null).toString())
     apiServiceWorklist.enqueue(object : Callback<WorklistResponse> {
         override fun onResponse(
             call: Call<WorklistResponse>,
@@ -169,7 +169,7 @@ fun Helmet(navController: NavController) {
     }
 
     // UI 변수
-    var helmetid by remember { mutableStateOf(auto.getString("helmetid","")) }
+    var helmetid by remember { mutableStateOf(sharedAccount.getString("helmetid","")) }
 
     // BLE 스캔 콜백
     val scanCallback: ScanCallback = object : ScanCallback() {
@@ -321,7 +321,7 @@ fun Helmet(navController: NavController) {
                 when (receiveValue) {
                     "user_id" -> {
                         val characteristicWrite = service?.getCharacteristic(writeUUID)
-                        val userId = "ui " + auto.getString("userid", null).toString()
+                        val userId = "ui " + sharedAccount.getString("userid", null).toString()
                         if (service != null && characteristicWrite != null) {
                             characteristicWrite.value = userId.toByteArray()
                             gatt.writeCharacteristic(characteristicWrite)
@@ -332,7 +332,7 @@ fun Helmet(navController: NavController) {
 
                     "work_id" -> {
                         val characteristicWrite = service?.getCharacteristic(writeUUID)
-                        val workId = "wd " + auto.getString("workid", null).toString()
+                        val workId = "wd " + sharedAccount.getString("workid", null).toString()
                         if (service != null && characteristicWrite != null) {
                             characteristicWrite.value = workId.toByteArray()
                             gatt.writeCharacteristic(characteristicWrite)
@@ -378,7 +378,7 @@ fun Helmet(navController: NavController) {
                     }
                     else -> {
                         if (receiveValue?.startsWith("helmet_num") == true) {
-                            autoEdit.putString("helmetid",receiveValue.split(" ")[1])
+                            sharedAccountEdit.putString("helmetid",receiveValue.split(" ")[1]).apply()
                         }
                     }
                 }
@@ -487,7 +487,7 @@ fun Helmet(navController: NavController) {
                             helmetid = ""
                             enableRegister = true
                             enableInternet = false
-                            autoEdit.putString("helmetid","")
+                            sharedAccountEdit.putString("helmetid","")
                         }
                     ) {
                         Text("반납하기")
@@ -609,7 +609,7 @@ fun Helmet(navController: NavController) {
                     )
 
                     Text(// 로그인 정보 연동 작업자 ID 출력
-                        text = auto.getString("userid", null).toString(),
+                        text = sharedAccount.getString("userid", null).toString(),
                         color = Color.Black,
                         fontSize = 16.sp
                     )
@@ -624,7 +624,7 @@ fun Helmet(navController: NavController) {
                     )
 
                     Text(// 로그인 정보 연동 작업자 이름 출력
-                        text = auto.getString("name", null).toString(),
+                        text = sharedAccount.getString("name", null).toString(),
                         color = Color.Black,
                         fontSize = 16.sp
                     )
@@ -647,7 +647,7 @@ fun Helmet(navController: NavController) {
                     onExpandedChange = { expanded = !expanded }
                 ) {
                     TextField(
-                        value = auto.getString("workid", null)
+                        value = sharedAccount.getString("workid", null)
                             ?.let { if (it == "null") "선택되지 않음" else it } ?: "선택되지 않음",
                         onValueChange = {},
                         trailingIcon = {
@@ -664,10 +664,10 @@ fun Helmet(navController: NavController) {
                             DropdownMenuItem(onClick = {
                                 selectedOption = eachoption
                                 expanded = false
-                                autoEdit.putString("workid", eachoption)
-                                autoEdit.apply()
+                                sharedAccountEdit.putString("workid", eachoption)
+                                sharedAccountEdit.apply()
                                 val characteristicWrite = service?.getCharacteristic(writeUUID)
-                                val worksendId = "wc " + auto.getString("workid", null).toString()
+                                val worksendId = "wc " + sharedAccount.getString("workid", null).toString()
                                 if (service != null && characteristicWrite != null) {
                                     characteristicWrite.value = worksendId.toByteArray()
                                     connectedGatt?.writeCharacteristic(characteristicWrite)

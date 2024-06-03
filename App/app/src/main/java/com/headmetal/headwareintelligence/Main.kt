@@ -107,9 +107,9 @@ fun Main(
     navController: NavController,
     weatherViewModel: WeatherViewModel = remember { WeatherViewModel() }
 ) {
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val username: String = auto.getString("name", null).toString()
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val username: String = sharedAccount.getString("name", null).toString()
     val temperature by weatherViewModel.temperature
     val airVelocity by weatherViewModel.airVelocity
     val precipitation by weatherViewModel.precipitation
@@ -256,7 +256,7 @@ fun Main(
                 }
             }
             Column {
-                if (auto.getString("type", null) == "manager") {
+                if (sharedAccount.getString("type", null) == "manager") {
                     Button(
                         onClick = { navController.navigate("trendScreen") },
                         modifier = Modifier.padding(),
@@ -503,7 +503,7 @@ fun Main(
                         }
                     }
                 }
-                if (auto.getString("type", null) == "manager") {
+                if (sharedAccount.getString("type", null) == "manager") {
                     Box(modifier = Modifier
                         .padding(top = 8.dp)
                         .background(color = Color.White)

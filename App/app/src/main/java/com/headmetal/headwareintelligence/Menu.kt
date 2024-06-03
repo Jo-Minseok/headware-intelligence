@@ -52,13 +52,16 @@ import retrofit2.Response
 @Composable
 fun Menu(navController: NavController) {
     val context = LocalContext.current
-    val auto: SharedPreferences = context.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
-    val userrank = auto.getString("type", null)
-    val username = auto.getString("name", null)
+    val sharedAccount: SharedPreferences = context.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val sharedConfigure: SharedPreferences = context.getSharedPreferences("Configure", Activity.MODE_PRIVATE)
+    val sharedAlert: SharedPreferences = context.getSharedPreferences("Alert",Activity.MODE_PRIVATE)
+    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
+    val sharedConfigureEdit: SharedPreferences.Editor = sharedConfigure.edit()
+    val userrank = sharedAccount.getString("type", null)
+    val username = sharedAccount.getString("name", null)
 
     // 스위치 값 가져오기
-    val savedSwitchValue = auto.getBoolean("switch_key", false)
+    val savedSwitchValue = sharedConfigure.getBoolean("alert", false)
     var switchValue by remember { mutableStateOf(savedSwitchValue) }
 
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -76,10 +79,10 @@ fun Menu(navController: NavController) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (auto.getString("type", null) == "manager") {
+                        if (sharedAccount.getString("type", null) == "manager") {
                             val call = RetrofitInstance.apiService.apiLogout(
-                                id = auto.getString("userid", null).toString(),
-                                alertToken = auto.getString("alert_token", null).toString()
+                                id = sharedAccount.getString("userid", null).toString(),
+                                alertToken = sharedAlert.getString("alert_token", null).toString()
                             )
                             call.enqueue(object : Callback<Void> {
                                 override fun onResponse(p0: Call<Void>, p1: Response<Void>) {
@@ -89,8 +92,10 @@ fun Menu(navController: NavController) {
                                         "로그아웃을 성공하였습니다.",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    autoLoginEdit.clear()
-                                    autoLoginEdit.apply()
+                                    sharedAccountEdit.clear()
+                                    sharedAccountEdit.apply()
+                                    sharedConfigureEdit.clear()
+                                    sharedConfigureEdit.apply()
                                     navController.navigate("loginScreen")
                                 }
 
@@ -105,8 +110,10 @@ fun Menu(navController: NavController) {
                         } else {
                             showLogoutDialog = false
                             Toast.makeText(context, "로그아웃을 성공하였습니다.", Toast.LENGTH_SHORT).show()
-                            autoLoginEdit.clear()
-                            autoLoginEdit.apply()
+                            sharedAccountEdit.clear()
+                            sharedAccountEdit.apply()
+                            sharedConfigureEdit.clear()
+                            sharedConfigureEdit.apply()
                             navController.navigate("loginScreen")
                         }
                     }
@@ -225,11 +232,11 @@ fun Menu(navController: NavController) {
                             )
                         }
                     }
-                    if (auto.getString("type", null) == "manager") {
+                    if (sharedAccount.getString("type", null) == "manager") {
                         Button(
                             onClick = {
                                 switchValue = !switchValue
-                                autoLoginEdit.putBoolean("switch_key", switchValue).apply()
+                                sharedConfigureEdit.putBoolean("alert", switchValue).apply()
                             },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
@@ -258,7 +265,7 @@ fun Menu(navController: NavController) {
                                     checked = switchValue,
                                     onCheckedChange = { isChecked ->
                                         switchValue = isChecked
-                                        autoLoginEdit.putBoolean("switch_key", isChecked).apply()
+                                        sharedConfigureEdit.putBoolean("alert", isChecked).apply()
                                     },
                                     colors = SwitchDefaults.colors(
                                         checkedThumbColor = Color.White,

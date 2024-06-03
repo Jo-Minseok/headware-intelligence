@@ -254,8 +254,8 @@ fun MapScreen(
         )
     }
 
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var initialLatitude by remember { mutableStateOf<Double?>(null) }
@@ -308,7 +308,7 @@ fun MapScreen(
                             CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
                                 val state = accidentViewModel.state // 현재 상태 값을 받아옴
                                 accidentViewModel.getAccidentData(
-                                    auto.getString("userid", null).toString()
+                                    sharedAccount.getString("userid", null).toString()
                                 ) // Accident 테이블 데이터 수신
                                 while (state == accidentViewModel.state) {
                                     // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
@@ -447,8 +447,8 @@ fun BottomSheetScreen(
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
 ) {
-    val auto: SharedPreferences =
-        LocalContext.current.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
     val scope = rememberCoroutineScope()
     var messages by remember { mutableStateOf(listOf<String>()) }
@@ -528,7 +528,7 @@ fun BottomSheetScreen(
                         scope.launch(Dispatchers.IO) {
                             val request = Request.Builder().url(
                                 "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
-                                    auto.getString(
+                                    sharedAccount.getString(
                                         "userid", null
                                     ).toString()
                                 }"
@@ -552,7 +552,7 @@ fun BottomSheetScreen(
                         scope.launch(Dispatchers.IO) {
                             val request = Request.Builder().url(
                                 "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
-                                    auto.getString(
+                                    sharedAccount.getString(
                                         "userid", null
                                     ).toString()
                                 }"

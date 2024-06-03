@@ -37,12 +37,13 @@ import com.google.firebase.messaging.messaging
 fun Loading(navController: NavController) {
     var autoLogin by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val auto: SharedPreferences = context.getSharedPreferences("autoLogin", Activity.MODE_PRIVATE)
-    val autoLoginEdit: SharedPreferences.Editor = auto.edit()
-    val userId = auto.getString("userid", null)
-    val userPassword = auto.getString("password", null)
-    val accessToken = auto.getString("token", null)
-    val type = auto.getString("type", null).toString()
+    val sharedAccount: SharedPreferences = context.getSharedPreferences("Account", MODE_PRIVATE)
+    val sharedAlert:SharedPreferences = context.getSharedPreferences("Alert",MODE_PRIVATE)
+    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
+    val userId = sharedAccount.getString("userid", null)
+    val userPassword = sharedAccount.getString("password", null)
+    val accessToken = sharedAccount.getString("token", null)
+    val type = sharedAccount.getString("type", null).toString()
     val builder = AlertDialog.Builder(navController.context)
 
     if (userId != null && accessToken != null) {
@@ -90,7 +91,7 @@ fun Loading(navController: NavController) {
             if (response.isSuccessful) {
                 if (autoLogin) {
                     val call_login = RetrofitInstance.apiService.apiLogin(
-                        alertToken = auto.getString("alert_token", null).toString(),
+                        alertToken = sharedAlert.getString("alert_token", null).toString(),
                         type = type,
                         id = userId,
                         pw = userPassword
@@ -118,8 +119,8 @@ fun Loading(navController: NavController) {
                                 builder.setPositiveButton("확인") { dialog, _ ->
                                     dialog.dismiss()
                                     navController.navigate("loginScreen")
-                                    autoLoginEdit.clear()
-                                    autoLoginEdit.apply()
+                                    sharedAccountEdit.clear()
+                                    sharedAccountEdit.apply()
                                 }
                                 // 다이얼로그 표시
                                 val dialog = builder.create()

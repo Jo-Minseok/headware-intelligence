@@ -84,65 +84,80 @@ fun Loading(navController: NavController) {
     }
 
     // 서버 상태 확인
-    val call = RetrofitInstance.apiService.apiGetStatus()
-    call.enqueue(object : Callback<Void> {
-        override fun onResponse(call: Call<Void>, response: Response<Void>) {
-            if (response.isSuccessful) {
-                if (autoLogin) {
-                    val call_login = RetrofitInstance.apiService.apiLogin(
-                        alertToken = auto.getString("alert_token", null).toString(),
-                        type = type,
-                        id = userId,
-                        pw = userPassword
-                    )
-                    call_login.enqueue(object : Callback<LoginResponse> {
-                        override fun onResponse(
-                            call: Call<LoginResponse>,
-                            response: Response<LoginResponse>
-                        ) {
-                            if (response.isSuccessful) {
-                                if (navController.currentDestination?.route != "mainScreen") {
-                                    Toast.makeText(
-                                        navController.context, response.body()?.name + "님 반갑습니다",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    navController.navigate("mainScreen") {
-                                        popUpTo("loadingScreen") { inclusive = true }
+    LaunchedEffect(Unit) {
+        val call = RetrofitInstance.apiService.apiGetStatus()
+        call.enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    if (autoLogin) {
+                        val call_login = RetrofitInstance.apiService.apiLogin(
+                            alertToken = auto.getString("alert_token", null).toString(),
+                            type = type,
+                            id = userId,
+                            pw = userPassword
+                        )
+                        call_login.enqueue(object : Callback<LoginResponse> {
+                            override fun onResponse(
+                                call: Call<LoginResponse>,
+                                response: Response<LoginResponse>
+                            ) {
+                                if (response.isSuccessful) {
+                                    if (navController.currentDestination?.route != "mainScreen") {
+                                        Toast.makeText(
+                                            navController.context,
+                                            response.body()?.name + "님 반갑습니다",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        navController.navigate("mainScreen") {
+                                            popUpTo("loadingScreen") { inclusive = true }
+                                        }
                                     }
+                                } else {
+                                    val builder = AlertDialog.Builder(navController.context)
+                                    builder.setTitle("자동 로그인 실패")
+                                    builder.setMessage("변경된 비밀번호를 확인하세요.")
+                                    // 확인 버튼 설정
+                                    builder.setPositiveButton("확인") { dialog, _ ->
+                                        dialog.dismiss()
+                                        navController.navigate("loginScreen")
+                                        autoLoginEdit.clear()
+                                        autoLoginEdit.apply()
+                                    }
+                                    // 다이얼로그 표시
+                                    val dialog = builder.create()
+                                    dialog.show()
                                 }
-                            } else {
-                                val builder = AlertDialog.Builder(navController.context)
-                                builder.setTitle("자동 로그인 실패")
-                                builder.setMessage("변경된 비밀번호를 확인하세요.")
+                            }
+
+                            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                                builder.setTitle("로그인 실패")
+                                builder.setMessage("서버 상태 및 네트워크 접속 불안정")
                                 // 확인 버튼 설정
                                 builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                    navController.navigate("loginScreen")
-                                    autoLoginEdit.clear()
-                                    autoLoginEdit.apply()
+                                    (navController.context as Activity).finish()
                                 }
                                 // 다이얼로그 표시
                                 val dialog = builder.create()
                                 dialog.show()
                             }
-                        }
-
-                        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                            builder.setTitle("로그인 실패")
-                            builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                            // 확인 버튼 설정
-                            builder.setPositiveButton("확인") { dialog, _ ->
-                                (navController.context as Activity).finish()
-                            }
-                            // 다이얼로그 표시
-                            val dialog = builder.create()
-                            dialog.show()
-                        }
-                    })
+                        })
+                    } else {
+                        navController.navigate("loginScreen")
+                    }
                 } else {
-                    navController.navigate("loginScreen")
+                    builder.setTitle("서버 접속 실패")
+                    builder.setMessage("서버 상태 및 네트워크 접속 불안정")
+                    // 확인 버튼 설정
+                    builder.setPositiveButton("확인") { dialog, _ ->
+                        (navController.context as Activity).finish()
+                    }
+                    // 다이얼로그 표시
+                    val dialog = builder.create()
+                    dialog.show()
                 }
-            } else {
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
                 builder.setTitle("서버 접속 실패")
                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")
                 // 확인 버튼 설정
@@ -153,20 +168,9 @@ fun Loading(navController: NavController) {
                 val dialog = builder.create()
                 dialog.show()
             }
-        }
+        })
+    }
 
-        override fun onFailure(call: Call<Void>, t: Throwable) {
-            builder.setTitle("서버 접속 실패")
-            builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-            // 확인 버튼 설정
-            builder.setPositiveButton("확인") { dialog, _ ->
-                (navController.context as Activity).finish()
-            }
-            // 다이얼로그 표시
-            val dialog = builder.create()
-            dialog.show()
-        }
-    })
 
 
     Surface(

@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import android.graphics.Typeface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -51,11 +53,13 @@ import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.legend.verticalLegendItem
+import com.patrykandpatrick.vico.core.axis.Axis
 import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
 import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.line.LineChart.LineSpec
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.component.text.TextComponent
 import com.patrykandpatrick.vico.core.component.text.textComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
@@ -238,7 +242,7 @@ fun Trend(
                         )
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(5.dp)
+                            modifier = Modifier.padding(5.dp).fillMaxSize()
                         ) {
                             ChartPrint(
                                 monthData = monthData,
@@ -312,9 +316,11 @@ fun ChartPrint(
         ),
         chartModelProducer = monthDataProducer.plus(trendDataProducer), // 그래프 데이터 모델 선정
         startAxis = startAxis( // y축 label
+            label = textComponent { typeface = Typeface.SERIF },
             valueFormatter = { value, _ -> String.format("%.1f", value) }
         ),
         bottomAxis = bottomAxis( // x축 label
+            label = textComponent { typeface = Typeface.SERIF },
             valueFormatter = { value, _ ->
                 val startMonth = if (selectedOption.contains("상반기")) 1 else 7
                 val month = (startMonth + value.toInt()) % 12

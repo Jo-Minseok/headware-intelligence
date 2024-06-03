@@ -1,5 +1,6 @@
 import os
 from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, Depends, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 from starlette.websockets import WebSocketDisconnect
@@ -104,3 +105,11 @@ async def websocket_endpoint(websocket: WebSocket, work_id: str, user_id: str):
             await manager.broadcast(work_id, f"{user_id}:{data}")
     except WebSocketDisconnect:
         manager.disconnect(work_id, websocket)
+
+@router.get('/get_image/{victim}/{manager}')
+async def get_image(victim: str, manager: str):
+    image_path = os.path.join('./accident/uploaded_images/', victim + '_' + manager + '.jpg')
+    
+    if os.path.exists(image_path):
+        return FileResponse(image_path)
+    return {'message' : 'Image not found'}

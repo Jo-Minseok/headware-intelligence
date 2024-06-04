@@ -42,8 +42,19 @@ def fcm_send_messaging(work_id: str, victim_id: str, db: Session):
         Work_list.work_id == work_id).scalar()
     message = firebase_admin.messaging.Message(
         notification=firebase_admin.messaging.Notification(
-            title="사고 발생 삐용삐용",
-            body=work_name + "에서 " + victim_name + "("+victim_id+")"+"님께서 사고가 발생했습니다!"),
+            title="사고 발생!",
+            body=work_name + "에서 " + victim_name + "("+victim_id+")님께서 사고가 발생했습니다!"),
         topic=work_id
     )
     response = firebase_admin.messaging.send(message)
+
+def fcm_send_emergency(work_id:str,user_id:str, db:Session):
+    victim_name = db.query(UserEmployee.name).filter(UserEmployee.id == user_id).scalr()
+    work_name = db.query(Work_list.name).filter(Work_list.work_id==work_id).scalar()
+    message = firebase_admin.messaging.Message(
+        notification = firebase_admin.messaging.Notification(
+            title="긴급 호출 발생!",
+            body=work_name + "에서 " + victim_name + "(" + user_id + ")님께서 위기 호출을 하셨습니다!"),
+        topic=work_id
+    )
+    firebase_admin.messaging.send(message)

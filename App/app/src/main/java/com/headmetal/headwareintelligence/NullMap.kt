@@ -4,8 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.BottomSheetDefaults
@@ -44,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,9 +54,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
 import com.naver.maps.map.MapView
@@ -69,7 +75,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okio.ByteString
 
 // Accident 테이블의 데이터를 수신하는 데이터 클래스(Response)
 data class NullAccidentResponse(
@@ -215,7 +220,8 @@ fun NullMapScreen(
         )
     }
 
-    val sharedAccount: SharedPreferences = LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val context = LocalContext.current
 
     AndroidView(modifier = Modifier.fillMaxSize(), factory = { _ ->
@@ -227,7 +233,11 @@ fun NullMapScreen(
                         withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
                             CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
                                 val state = nullAccidentViewModel.state // 현재 상태 값을 받아옴
-                                nullAccidentViewModel.getNullAccidentData(sharedAccount.getString("userid", null).toString()) // Accident 테이블 데이터 수신
+                                nullAccidentViewModel.getNullAccidentData(
+                                    sharedAccount.getString(
+                                        "userid", null
+                                    ).toString()
+                                ) // Accident 테이블 데이터 수신
                                 while (state == nullAccidentViewModel.state) {
                                     // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
                                 }
@@ -324,23 +334,64 @@ fun NullBottomSheetScreen(
     selectedMarker: MutableState<Marker?>,
     navController: NavController
 ) {
+    val soundCompleteDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
+
+    if (soundCompleteDialogVisible.value) {
+        SoundCompleteDialog(onClose = { soundCompleteDialogVisible.value = false })
+    }
+
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
     val scope = rememberCoroutineScope()
-    var messages by remember { mutableStateOf(listOf<String>()) }
+    var imageUrl by remember { mutableStateOf<String?>(null) }
 
     val webSocketListener = object : WebSocketListener() {
         override fun onMessage(webSocket: WebSocket, text: String) {
-            messages = messages + text
-        }
+            Log.d("HEAD METAL", text)
 
-        override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-            messages = messages + bytes.hex()
+            val messages = text.split(":")
+            val manager = sharedAccount.getString("userid", null).toString()
+
+            if (messages[1] == manager && messages[2] == "카메라완료") {
+                imageUrl =
+                    "http://minseok821lab.kro.kr:8000/accident/get_image/${victimId.value}/${manager}"
+            } else if (messages[1] == manager && messages[2] == "소리완료") {
+                LoadingState.hide()
+                soundCompleteDialogVisible.value = true
+            }
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            messages = messages + "Error: ${t.message}"
+            Log.e("HEAD METAL", "Error: ${t.message}")
+        }
+    }
+
+    imageUrl?.let { url ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            val painter =
+                rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+                    .data(url).build(),
+                    onSuccess = { LoadingState.hide() })
+            Image(
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Button(
+                onClick = { imageUrl = null },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd)
+                    .zIndex(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
+            }
         }
     }
 
@@ -354,6 +405,7 @@ fun NullBottomSheetScreen(
             isBottomSheetVisible = isBottomSheetVisible,
             isNoDataDialogVisible = isNoDataDialogVisible,
             accidentNo = accidentNo,
+            workId = workId,
             accidentNoList = accidentNoList,
             markerList = markerList,
             markerListIdx = markerListIdx,
@@ -366,6 +418,15 @@ fun NullBottomSheetScreen(
     }
 
     if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
+        val request = Request.Builder().url(
+            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
+                sharedAccount.getString(
+                    "userid", null
+                ).toString()
+            }"
+        ).build()
+        val webSocket = client.newWebSocket(request, webSocketListener)
+
         ModalBottomSheet(modifier = Modifier.height(270.dp),
             onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
@@ -404,12 +465,6 @@ fun NullBottomSheetScreen(
                                 fontSize = 20.sp,
                                 modifier = Modifier.weight(1f)
                             )
-                            Text(
-                                text = "0.0KM", // 현재 위치로부터 선택한 마커까지의 거리(차후 기능 추가 필요)
-                                color = Color(0xFFFF6600), modifier = Modifier.background(
-                                    Color(0x26FF6600), RoundedCornerShape(4.dp)
-                                ), textAlign = TextAlign.End
-                            )
                         }
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Icon(
@@ -424,22 +479,16 @@ fun NullBottomSheetScreen(
                                 Text(text = "작업자", color = Color.Gray)
                                 Text(victimName.value)
                             }
-                            IconButton(
-                                onClick = {
-                                    Log.i("IconClick", "영상통화 아이콘 클릭")
-                                    scope.launch(Dispatchers.IO) {
-                                        val request = Request.Builder().url(
-                                            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
-                                                sharedAccount.getString(
-                                                    "userid", null
-                                                ).toString()
-                                            }"
-                                        ).build()
-                                        val webSocket = client.newWebSocket(request, webSocketListener)
-                                        webSocket.send("${victimId.value}:카메라")
-                                    }
-                                } // 안전모의 카메라 연결(차후 이벤트 작성 필요)
-                            ) {
+                            IconButton(onClick = {
+                                Log.i(
+                                    "IconClick", "카메라 아이콘 클릭"
+                                )
+                                scope.launch(Dispatchers.IO) {
+                                    webSocket.send("${victimId.value}:카메라")
+                                    isBottomSheetVisible.value = false
+                                    LoadingState.show()
+                                }
+                            }) {
                                 Icon(
                                     imageVector = Icons.Default.VideoCameraFront,
                                     contentDescription = null,
@@ -447,22 +496,16 @@ fun NullBottomSheetScreen(
                                     modifier = Modifier.size(40.dp)
                                 )
                             }
-                            IconButton(
-                                onClick = {
-                                    Log.i("IconClick", "스피커 아이콘 클릭")
-                                    scope.launch(Dispatchers.IO) {
-                                        val request = Request.Builder().url(
-                                            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[markerListIdx.value]}/${
-                                                sharedAccount.getString(
-                                                    "userid", null
-                                                ).toString()
-                                            }"
-                                        ).build()
-                                        val webSocket = client.newWebSocket(request, webSocketListener)
-                                        webSocket.send("${victimId.value}:소리")
-                                    }
-                                } // 안전모의 스피커 출력(차후 이벤트 작성 필요)
-                            ) {
+                            IconButton(onClick = {
+                                Log.i(
+                                    "IconClick", "스피커 아이콘 클릭"
+                                )
+                                scope.launch(Dispatchers.IO) {
+                                    webSocket.send("${victimId.value}:소리")
+                                    isBottomSheetVisible.value = false
+                                    LoadingState.show()
+                                }
+                            }) {
                                 Icon(
                                     imageVector = Icons.Default.Campaign,
                                     contentDescription = null,
@@ -520,7 +563,7 @@ fun NullBottomSheetScreen(
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                             isNoDataDialogVisible.value =
-                                markerDelete(accidentNoList, markerList, markerListIdx)
+                                markerDelete(workId, accidentNoList, markerList, markerListIdx)
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
@@ -544,7 +587,7 @@ fun NullBottomSheetScreen(
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                             isNoDataDialogVisible.value =
-                                markerDelete(accidentNoList, markerList, markerListIdx)
+                                markerDelete(workId, accidentNoList, markerList, markerListIdx)
                         },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(Color.Gray),
@@ -568,7 +611,7 @@ fun NullBottomSheetScreen(
                             selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                             isBottomSheetVisible.value = false // 바텀 시트 off
                             isNoDataDialogVisible.value =
-                                markerDelete(accidentNoList, markerList, markerListIdx)
+                                markerDelete(workId, accidentNoList, markerList, markerListIdx)
                         },
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
                         modifier = Modifier.weight(1f),
@@ -591,10 +634,12 @@ fun NullBottomSheetScreen(
 }
 
 fun markerDelete(
+    workId: MutableList<String>,
     accidentNoList: MutableList<Int>,
     markerList: MutableList<Marker>,
     markerListIdx: MutableState<Int>
 ): Boolean {
+    workId.removeAt(markerListIdx.value)
     accidentNoList.removeAt(markerListIdx.value)
     markerList.removeAt(markerListIdx.value)
 
@@ -618,6 +663,7 @@ fun NullDetailInputDialog(
     isBottomSheetVisible: MutableState<Boolean>,
     isNoDataDialogVisible: MutableState<Boolean>,
     accidentNo: MutableState<Int>,
+    workId: MutableList<String>,
     accidentNoList: MutableList<Int>,
     markerList: MutableList<Marker>,
     markerListIdx: MutableState<Int>,
@@ -662,7 +708,7 @@ fun NullDetailInputDialog(
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
                                 isNoDataDialogVisible.value =
-                                    markerDelete(accidentNoList, markerList, markerListIdx)
+                                    markerDelete(workId, accidentNoList, markerList, markerListIdx)
                                 onClose() // 사고 처리 세부 내역 입력창 off
                             }
                         }, colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E))

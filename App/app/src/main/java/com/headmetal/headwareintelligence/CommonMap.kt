@@ -28,8 +28,7 @@ data class AccidentProcessingResponse(
     val no: Int, // 사고 번호
     val situation: String?, // 처리 상황
     val detail: String?, // 사고 처리 세부 내역
-    val victimId: String,
-    val victimName: String // 사고자 이름
+    val victimId: String, val victimName: String // 사고자 이름
 )
 
 // Accident_Processing 테이블 데이터를 갱신하기 위한 데이터 클래스(Request)
@@ -110,6 +109,33 @@ fun EndDialog(onEnd: () -> Unit, message: String) {
                 Button(
                     onClick = onEnd, colors = ButtonDefaults.buttonColors(Color.Gray)
                 ) { Text(text = "종료") }
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+    })
+}
+
+@Composable
+fun SoundCompleteDialog(onClose: () -> Unit) {
+    Dialog(onDismissRequest = onClose, content = {
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = Color.White,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "알림")
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "소리 출력이 완료되었습니다.")
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)
+                ) { Text(text = "닫기") }
                 Spacer(modifier = Modifier.height(4.dp))
             }
         }

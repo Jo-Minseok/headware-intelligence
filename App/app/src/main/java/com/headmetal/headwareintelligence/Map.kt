@@ -9,7 +9,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +63,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.google.android.gms.location.LocationServices
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
@@ -455,6 +454,12 @@ fun BottomSheetScreen(
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
 ) {
+    val soundCompleteDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
+
+    if (soundCompleteDialogVisible.value) {
+        SoundCompleteDialog(onClose = { soundCompleteDialogVisible.value = false })
+    }
+
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
@@ -472,6 +477,10 @@ fun BottomSheetScreen(
                 imageUrl =
                     "http://minseok821lab.kro.kr:8000/accident/get_image/${victimId.value}/${manager}"
             }
+            else if (messages[1] == manager && messages[2] == "소리완료") {
+                LoadingState.hide()
+                soundCompleteDialogVisible.value = true
+            }
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
@@ -480,8 +489,11 @@ fun BottomSheetScreen(
     }
 
     imageUrl?.let { url ->
-        val painter = rememberAsyncImagePainter(model = url)
         Box(modifier = Modifier.fillMaxSize()) {
+            val painter =
+                rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+                    .data(url).build(),
+                    onSuccess = { LoadingState.hide() })
             Image(
                 painter = painter,
                 contentDescription = null,
@@ -502,7 +514,6 @@ fun BottomSheetScreen(
                 )
             }
         }
-
     }
 
     val isDetailInputDialogVisible: MutableState<Boolean> =
@@ -548,12 +559,6 @@ fun BottomSheetScreen(
                         fontSize = 20.sp,
                         modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = "0.0KM", // 현재 위치로부터 선택한 마커까지의 거리(차후 기능 추가 필요)
-                        color = Color(0xFFFF6600),
-                        modifier = Modifier.background(Color(0x26FF6600), RoundedCornerShape(4.dp)),
-                        textAlign = TextAlign.End
-                    )
                 }
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Icon(
@@ -570,11 +575,12 @@ fun BottomSheetScreen(
                     }
                     IconButton(onClick = {
                         Log.i(
-                            "IconClick", "영상통화 아이콘 클릭"
+                            "IconClick", "카메라 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
                             webSocket.send("${victimId.value}:카메라")
                             isBottomSheetVisible.value = false
+                            LoadingState.show()
                         }
                     }) {
                         Icon(
@@ -591,6 +597,7 @@ fun BottomSheetScreen(
                         scope.launch(Dispatchers.IO) {
                             webSocket.send("${victimId.value}:소리")
                             isBottomSheetVisible.value = false
+                            LoadingState.show()
                         }
                     }) {
                         Icon(

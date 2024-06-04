@@ -9,7 +9,7 @@
 #include <HTTPClient.h>
 #include <NTPClient.h>
 #include <ArduinoWebsockets.h>
-#include <MPU6050.h>
+//#include <MPU6050.h>
 
 #include "esp_camera.h"
 #include "camera_pins.h"
@@ -229,15 +229,31 @@ void TIME_setup() {
 ############################################################################
 */
 void HTTP_setup(){
-  HTTPClient http;
-  http.begin("http://"+server_address + "/");
-  int httpResponseCode = http.GET();
-  while(httpResponseCode != 200){
-    Serial.println("[ERROR] SERVER: CONNECT FAIL");
-    tone(PIEZO,251);
-    delay(5000);
+  if(WiFi.status() == WL_CONNECTED){
+    HTTPClient http;
+    http.begin("http://"+server_address + "/");
+    int httpResponseCode = http.GET();
+    while(httpResponseCode != 200){
+      Serial.println("[ERROR] SERVER: CONNECT FAIL");
+      tone(PIEZO,251);
+      delay(5000);
+    }
+    Serial.println("[SETUP] SERVER: CONNECT SUCCESS");
   }
-  Serial.println("[SETUP] SERVER: CONNECT SUCCESS");
+  else{
+    WIFI_setup();
+  }
+}
+
+void Emergency(){
+  if(WiFi.status() == WL_CONNECTED){
+    HTTPClient http;
+    http.begin("http://" + server_address + "/accident/emergency?work_id=" + work_id + "&user_id="+user_id);
+    int httpResponseCode = http.POST();
+  }
+  else{
+    WIFI_setup();
+  }
 }
 
 void SendingData(String type)
@@ -362,12 +378,13 @@ void PIEZO_setup(){
 
 /*
 ############################################################################
-                    PIN SETUP(SHOCK, BUTTON, CDS, LED)
+                    PIN SETUP(SHOCK, BUTTON)
 ############################################################################
 */
 void PIN_setup(){
   Serial.println("[SETUP] PIN: SETUP START");
   pinMode(SHOCK,INPUT); // 충격
+  pinMode(BUTTON,INPUT); // 긴급 버튼
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -505,6 +522,7 @@ void HELMETNUM_display(){
                                   GYRO
 ############################################################################
 */
+/*
 MPU6050 mpu;
 const int MPU_addr=0x68;
 int16_t ax,ay,az,gx,gy,gz;
@@ -544,6 +562,7 @@ void GYRO_check(){
   Serial.print("    |    Z=");
   Serial.println(gz / 1310);
 }
+*/
 
 /*
 ############################################################################
@@ -573,25 +592,27 @@ void setup(){
   delay(1000);
   WEBSOCKET_setup(); // WEBSOCKET
   delay(1000);
+  /*
   GYRO_setup(); // 자이로스코프
   delay(1000);
+  */
   SUCCESS_setup(); // 셋업 완료
   delay(1000);
   CAMERA_setup(); // 카메라
 }
 
 void loop(){
-  mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
+  //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
   if(!deviceConnected){
     BT_setup();
+  }
+  if(digitalRead(BUTTON) == HIGH){
+    Serial.println("BUTTON PUSH");
   }
   if(WiFi.status() == WL_CONNECTED){
     client.poll();
     if(false){ // SHOCK 센서 조건부
       SendingData("낙하");
-    }
-    else if(false){ // MPU6050 센서 조건부
-      SendingData("낙상");
     }
   }
   else{

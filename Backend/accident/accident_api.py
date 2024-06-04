@@ -106,13 +106,16 @@ async def websocket_endpoint(websocket: WebSocket, work_id: str, user_id: str):
     except WebSocketDisconnect:
         manager.disconnect(work_id, websocket)
 
+
 @router.get('/get_image/{victim}/{manager}')
 async def get_image(victim: str, manager: str):
-    image_path = os.path.join('./accident/uploaded_images/', victim + '_' + manager + '.jpg')
+    image_path = os.path.join(
+        './accident/uploaded_images/', victim + '_' + manager + '.jpg')
     if os.path.exists(image_path):
         return FileResponse(image_path)
     raise HTTPException(status_code=404, detail='image not found')
 
-@router.post("/emergency")
-async def emergency_call(work_id:str, user_id:str,db:Session = Depends(get_db)):
-    fcm_function.fcm_send_emergency(work_id,user_id,db)
+
+@router.get("/emergency")
+async def emergency_call(work_id: str, user_id: str, db: Session = Depends(get_db)):
+    fcm_function.fcm_send_emergency(work_id, user_id, db)

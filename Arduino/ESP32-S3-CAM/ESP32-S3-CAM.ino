@@ -249,7 +249,7 @@ void Emergency(){
   if(WiFi.status() == WL_CONNECTED){
     HTTPClient http;
     http.begin("http://" + server_address + "/accident/emergency?work_id=" + work_id + "&user_id="+user_id);
-    int httpResponseCode = http.POST();
+    int httpResponseCode = http.GET();
   }
   else{
     WIFI_setup();

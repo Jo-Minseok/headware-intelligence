@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -88,7 +86,6 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
@@ -484,10 +481,9 @@ fun BottomSheetScreen(
     imageUrl?.let { url ->
         Box(modifier = Modifier.fillMaxSize()) {
             val painter =
-                rememberAsyncImagePainter(
-                    model = ImageRequest.Builder(LocalContext.current).data(url).build(),
-                    onSuccess = { LoadingState.hide() }
-                )
+                rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+                    .data(url).build(),
+                    onSuccess = { LoadingState.hide() })
             Image(
                 painter = painter,
                 contentDescription = null,

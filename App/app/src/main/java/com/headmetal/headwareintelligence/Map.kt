@@ -454,6 +454,12 @@ fun BottomSheetScreen(
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>
 ) {
+    val soundCompleteDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
+
+    if (soundCompleteDialogVisible.value) {
+        SoundCompleteDialog(onClose = { soundCompleteDialogVisible.value = false })
+    }
+
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val client = remember { OkHttpClient() }
@@ -470,6 +476,10 @@ fun BottomSheetScreen(
             if (messages[1] == manager && messages[2] == "카메라완료") {
                 imageUrl =
                     "http://minseok821lab.kro.kr:8000/accident/get_image/${victimId.value}/${manager}"
+            }
+            else if (messages[1] == manager && messages[2] == "소리완료") {
+                LoadingState.hide()
+                soundCompleteDialogVisible.value = true
             }
         }
 
@@ -587,6 +597,7 @@ fun BottomSheetScreen(
                         scope.launch(Dispatchers.IO) {
                             webSocket.send("${victimId.value}:소리")
                             isBottomSheetVisible.value = false
+                            LoadingState.show()
                         }
                     }) {
                         Icon(

@@ -116,7 +116,7 @@ fun EndDialog(onEnd: () -> Unit, message: String) {
 }
 
 @Composable
-fun SoundCompleteDialog(onClose: () -> Unit) {
+fun WebSocketDialog(onClose: () -> Unit, message: String) {
     Dialog(onDismissRequest = onClose, content = {
         Surface(
             shape = RoundedCornerShape(8.dp),
@@ -131,7 +131,7 @@ fun SoundCompleteDialog(onClose: () -> Unit) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "알림")
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "소리 출력이 완료되었습니다.")
+                Text(text = message)
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)

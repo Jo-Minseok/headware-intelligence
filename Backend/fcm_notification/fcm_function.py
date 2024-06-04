@@ -48,11 +48,14 @@ def fcm_send_messaging(work_id: str, victim_id: str, db: Session):
     )
     response = firebase_admin.messaging.send(message)
 
-def fcm_send_emergency(work_id:str,user_id:str, db:Session):
-    victim_name = db.query(UserEmployee.name).filter(UserEmployee.id == user_id).scalr()
-    work_name = db.query(Work_list.name).filter(Work_list.work_id==work_id).scalar()
+
+def fcm_send_emergency(work_id: str, user_id: str, db: Session):
+    victim_name = db.query(UserEmployee.name).filter(
+        UserEmployee.id == user_id).scalar()
+    work_name = db.query(Work_list.name).filter(
+        Work_list.work_id == work_id).scalar()
     message = firebase_admin.messaging.Message(
-        notification = firebase_admin.messaging.Notification(
+        notification=firebase_admin.messaging.Notification(
             title="긴급 호출 발생!",
             body=work_name + "에서 " + victim_name + "(" + user_id + ")님께서 위기 호출을 하셨습니다!"),
         topic=work_id

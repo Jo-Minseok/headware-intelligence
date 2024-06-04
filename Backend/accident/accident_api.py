@@ -112,3 +112,7 @@ async def get_image(victim: str, manager: str):
     if os.path.exists(image_path):
         return FileResponse(image_path)
     raise HTTPException(status_code=404, detail='image not found')
+
+@router.post("/emergency")
+async def emergency_call(work_id:str, user_id:str,db:Session = Depends(get_db)):
+    fcm_function.fcm_send_emergency(work_id,user_id,db)

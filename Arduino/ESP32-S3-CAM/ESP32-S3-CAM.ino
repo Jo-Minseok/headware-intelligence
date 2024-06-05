@@ -449,7 +449,7 @@ void CAMERA_setup(){
 }  
 
 void capture_and_send_image(String send_id) {
-  client.close();
+//  client.close();
   HTTPClient http;
   camera_fb_t * fb = esp_camera_fb_get();
   if (fb != NULL && fb->format == PIXFORMAT_JPEG) {
@@ -485,8 +485,8 @@ void capture_and_send_image(String send_id) {
   }
   Serial.println("[SYSTEM] CAMERA: TAKE SUCCESS");
 
-  WEBSOCKET_setup();
-  client.send("admin:카메라완료");
+//  WEBSOCKET_setup();
+  client.send(send_id+":카메라완료");
 }
 
 /*

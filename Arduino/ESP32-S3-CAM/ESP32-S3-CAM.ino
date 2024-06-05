@@ -126,6 +126,12 @@ void BT_setup() {
 }
 
 void ID_setup(){
+  pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
+  pTxCharacteristic->notify();
+
+  pTxCharacteristic->setValue("user_id");
+  pTxCharacteristic->notify();
+
   Serial.println("[SETUP] USER ID: SETUP START");
   display.clearDisplay();
   HELMETNUM_display();
@@ -135,17 +141,14 @@ void ID_setup(){
   display.println("USER ID");
   display.display();
 
-  pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
-  pTxCharacteristic->notify();
-
-  pTxCharacteristic->setValue("user_id");
-  pTxCharacteristic->notify();
   while (user_id == "") {
     delay(1000);
     tone(PIEZO,melody[1],200);
   }
   Serial.println("[SETUP] USER ID: SETUP SUCCESS");
 
+  pTxCharacteristic->setValue("work_id");
+  pTxCharacteristic->notify();
   Serial.println("[SETUP] WORK ID: SETUP START");
   display.clearDisplay();
   HELMETNUM_display();
@@ -155,8 +158,6 @@ void ID_setup(){
   display.println("WORK ID");
   display.display();
 
-  pTxCharacteristic->setValue("work_id");
-  pTxCharacteristic->notify();
   while (work_id == "") {
     delay(1000);
     tone(PIEZO,melody[1],200);

@@ -28,7 +28,8 @@ data class AccidentProcessingResponse(
     val no: Int, // 사고 번호
     val situation: String?, // 처리 상황
     val detail: String?, // 사고 처리 세부 내역
-    val victimId: String, val victimName: String // 사고자 이름
+    val victimId: String,
+    val victimName: String // 사고자 이름
 )
 
 // Accident_Processing 테이블 데이터를 갱신하기 위한 데이터 클래스(Request)
@@ -61,7 +62,7 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
 
 // 알림창 Composable
 @Composable
-fun AlertDialog(onClose: () -> Unit) {
+fun AlertDialog(onClose: () -> Unit, content: String) {
     Dialog(onDismissRequest = onClose, content = {
         Surface(
             shape = RoundedCornerShape(8.dp),
@@ -76,62 +77,7 @@ fun AlertDialog(onClose: () -> Unit) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "알림")
                 Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "사고 처리 세부 내역은 최소\n한 글자 이상 입력해야 합니다.", textAlign = TextAlign.Center)
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)
-                ) { Text(text = "닫기") }
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
-    })
-}
-
-// 종료 알림창 Composable
-@Composable
-fun EndDialog(onEnd: () -> Unit, message: String) {
-    Dialog(onDismissRequest = onEnd, content = {
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = Color.White,
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "알림")
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = message, textAlign = TextAlign.Center)
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
-                    onClick = onEnd, colors = ButtonDefaults.buttonColors(Color.Gray)
-                ) { Text(text = "종료") }
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
-    })
-}
-
-@Composable
-fun WebSocketDialog(onClose: () -> Unit, message: String) {
-    Dialog(onDismissRequest = onClose, content = {
-        Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = Color.White,
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = "알림")
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(text = message)
+                Text(text = content, textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)

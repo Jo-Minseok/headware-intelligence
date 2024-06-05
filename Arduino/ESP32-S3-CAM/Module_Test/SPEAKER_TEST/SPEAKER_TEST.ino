@@ -8,7 +8,7 @@ void PIEZO_setup(){
 }
 
 void PIEZO_check(){
-	tone(SPEAKER,261);
+	tone(SPEAKER,261,1000);
 }
 
 void setup(){

@@ -1,8 +1,14 @@
 package com.headmetal.headwareintelligence
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,8 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Icon
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -57,12 +61,8 @@ fun Menu(navController: NavController) {
     val sharedAlert: SharedPreferences = context.getSharedPreferences("Alert",Activity.MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
     val sharedConfigureEdit: SharedPreferences.Editor = sharedConfigure.edit()
-    val userrank = sharedAccount.getString("type", null)
-    val username = sharedAccount.getString("name", null)
-
-    // 스위치 값 가져오기
-    val savedSwitchValue = sharedConfigure.getBoolean("alert", false)
-    var switchValue by remember { mutableStateOf(savedSwitchValue) }
+    val userRank = sharedAccount.getString("type", null)
+    val userName = sharedAccount.getString("name", null)
 
     var showLogoutDialog by remember { mutableStateOf(false) }
 
@@ -181,16 +181,16 @@ fun Menu(navController: NavController) {
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            if (userrank != null) {
+                            if (userRank != null) {
                                 Text(
-                                    text = userrank,
+                                    text = if(userRank == "manager") "관리자" else "근무자",
                                     color = Color.Gray,
                                     fontSize = 16.sp
                                 )
                             }
-                            if (username != null) {
+                            if (userName != null) {
                                 Text(
-                                    text = username,
+                                    text = userName,
                                     color = Color.Black,
                                     fontSize = 20.sp
                                 )
@@ -235,8 +235,16 @@ fun Menu(navController: NavController) {
                     if (sharedAccount.getString("type", null) == "manager") {
                         Button(
                             onClick = {
-                                switchValue = !switchValue
-                                sharedConfigureEdit.putBoolean("alert", switchValue).apply()
+                                val intent = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                                    notificationSettingOreo(context)
+                                }else{
+                                    notificationSettingOreoLess(context)
+                                }
+                                try{
+                                    context.startActivity(intent)
+                                }catch(e: ActivityNotFoundException){
+                                    e.printStackTrace()
+                                }
                             },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
@@ -256,25 +264,11 @@ fun Menu(navController: NavController) {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "구독 설정",
+                                    "알림 설정",
                                     color = Color.Black,
                                     fontSize = 20.sp
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
-                                Switch(
-                                    checked = switchValue,
-                                    onCheckedChange = { isChecked ->
-                                        switchValue = isChecked
-                                        sharedConfigureEdit.putBoolean("alert", isChecked).apply()
-                                    },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = Color.White,
-                                        checkedTrackColor = Color(0xFF2FA94E),
-                                        uncheckedThumbColor = Color.White,
-                                        uncheckedTrackColor = Color(0xFF1D2024)
-                                    ),
-                                    modifier = Modifier.align(Alignment.CenterVertically)
-                                )
                             }
                         }
                     }
@@ -342,5 +336,25 @@ fun Menu(navController: NavController) {
             }
 
         }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun notificationSettingOreo(context: Context): Intent {
+    return Intent().also{
+        intent ->
+        intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+        intent.putExtra(Settings.EXTRA_APP_PACKAGE,context.packageName)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    }
+}
+
+fun notificationSettingOreoLess(context:Context):Intent{
+    return Intent().also{
+        intent->
+        intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
+        intent.putExtra("app_package",context.packageName)
+        intent.putExtra("app_uid",context.applicationInfo?.uid)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 }

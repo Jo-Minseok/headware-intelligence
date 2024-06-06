@@ -136,10 +136,6 @@ class AccidentViewModel : ViewModel() {
 class AccidentProcessingViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
-    private val _no = mutableStateOf<Int?>(null)
-
-    private val _situation = mutableStateOf<String?>(null)
-
     private val _detail = mutableStateOf<String?>(null)
     val detail: State<String?> = _detail
 
@@ -154,8 +150,6 @@ class AccidentProcessingViewModel : ViewModel() {
     fun getAccidentProcessingData(no: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             val response = apiService.getAccidentProcessingData(no)
-            _no.value = response.no
-            _situation.value = response.situation
             _detail.value = response.detail
             _victimId.value = response.victimId
             _victimName.value = response.victimName
@@ -178,7 +172,7 @@ class ItemKey(val id: Int, private val position: LatLng = LatLng(0.0, 0.0)) : Cl
     override fun hashCode() = id
 }
 
-@SuppressLint("UnrememberedMutableState")
+@SuppressLint("UnrememberedMutableState", "CoroutineCreationDuringComposition")
 @Composable
 @ExperimentalNaverMapApi
 fun Map(
@@ -197,6 +191,42 @@ fun Map(
     val cluster: MutableState<Clusterer<ItemKey>?> = remember { mutableStateOf(null) } // 클러스터
     val selectedMarker: MutableState<Marker?> = remember { mutableStateOf(null) } // 마지막으로 선택된 마커
 
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+
+    val imageUrl: MutableState<String?> = remember { mutableStateOf(null) }
+    val webSocketSendData: MutableState<String?> = remember { mutableStateOf(null) }
+    val imageDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val soundDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
+
+    val isWebSocketDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val webSocketMessage: MutableState<String> = remember { mutableStateOf("") }
+
+    val client = remember { OkHttpClient() }
+    val webSocketListener = object : WebSocketListener() {
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            Log.d("HEAD METAL", text)
+
+            val messages = text.split(":")
+            val manager = sharedAccount.getString("userid", null).toString()
+
+            if (webSocketSendData.value == "카메라" && messages[1] == manager && messages[2] == "카메라완료") {
+                imageUrl.value =
+                    "http://minseok821lab.kro.kr:8000/accident/get_image/${victimId.value}/${manager}"
+                imageDataReception.value = true
+            } else if (webSocketSendData.value == "소리" && messages[1] == manager && messages[2] == "소리완료") {
+                LoadingState.hide()
+                webSocketMessage.value = "소리 출력이 완료되었습니다."
+                isWebSocketDialogVisible.value = true
+                soundDataReception.value = true
+            }
+        }
+
+        override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+            Log.e("HEAD METAL", "Error: ${t.message}")
+        }
+    }
+
     Surface(modifier = Modifier.fillMaxSize()) {
         LoadingScreen()
         MapScreen(
@@ -210,10 +240,13 @@ fun Map(
             victimId,
             victimName,
             cluster,
-            selectedMarker
+            selectedMarker,
+            sharedAccount
         )
         BottomSheetScreen(
             isBottomSheetVisible,
+            isWebSocketDialogVisible,
+            webSocketMessage,
             accidentNo,
             situationCode,
             workId,
@@ -221,7 +254,14 @@ fun Map(
             victimId,
             victimName,
             cluster,
-            selectedMarker
+            selectedMarker,
+            sharedAccount,
+            client,
+            webSocketListener,
+            imageUrl,
+            webSocketSendData,
+            imageDataReception,
+            soundDataReception
         )
     }
 }
@@ -238,7 +278,8 @@ fun MapScreen(
     victimId: MutableState<String>,
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
-    selectedMarker: MutableState<Marker?>
+    selectedMarker: MutableState<Marker?>,
+    sharedAccount: SharedPreferences
 ) {
     val detail: MutableState<String> = remember { mutableStateOf("") } // 사고 처리 세부 내역
 
@@ -253,14 +294,9 @@ fun MapScreen(
     }
 
     if (isEndDialogVisible.value) { // 스위치가 on이 될 경우 종료 알림창 출력
-        EndDialog(
-            onEnd = { android.os.Process.killProcess(android.os.Process.myPid()) },
-            message = "데이터 로딩에 실패하여\n앱을 종료합니다."
-        )
+
     }
 
-    val sharedAccount: SharedPreferences =
-        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var initialLatitude by remember { mutableStateOf<Double?>(null) }
@@ -325,116 +361,116 @@ fun MapScreen(
                     if (accidentResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
                         Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
                         isEndDialogVisible.value = true // 종료 알림창 on
-                    }
+                    } else {
+                        // 수신한 Accident 테이블 데이터를 캡쳐
+                        val no by accidentViewModel.no
+                        val latitude by accidentViewModel.latitude
+                        val longitude by accidentViewModel.longitude
+                        situationCode.addAll(accidentViewModel.situationCode.value)
+                        workId.addAll(accidentViewModel.workId.value)
 
-                    // 수신한 Accident 테이블 데이터를 캡쳐
-                    val no by accidentViewModel.no
-                    val latitude by accidentViewModel.latitude
-                    val longitude by accidentViewModel.longitude
-                    situationCode.addAll(accidentViewModel.situationCode.value)
-                    workId.addAll(accidentViewModel.workId.value)
-
-                    // 지도의 초기 위치 설정
-                    val initialCameraPosition =
-                        CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
+                        // 지도의 초기 위치 설정
+                        val initialCameraPosition =
+                            CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
 //                    val initialCameraPosition =
 //                        CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!))
-                    map.moveCamera(initialCameraPosition)
+                        map.moveCamera(initialCameraPosition)
 
-                    // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성
-                    cluster.value = Clusterer.Builder<ItemKey>().clusterMarkerUpdater(object :
-                        DefaultClusterMarkerUpdater() { // 클러스터 마커를 불러올 때마다 실행되는 이벤트
-                        override fun updateClusterMarker(
-                            info: ClusterMarkerInfo, marker: Marker
-                        ) {
-                            super.updateClusterMarker(info, marker)
-                            marker.icon = if (info.size < 3) { // 클러스터 내에 존재하는 단말 마커가 3개 미만일 경우
-                                MarkerIcons.CLUSTER_LOW_DENSITY // 연한 주황색 클러스터 아이콘 출력
-                            } else { // 클러스터 내에 존재하는 단말 마커가 3개 이상일 경우
-                                MarkerIcons.CLUSTER_MEDIUM_DENSITY // 진한 주황색 클러스터 아이콘 출력
-                            }
-                        }
-                    }).leafMarkerUpdater(object :
-                        DefaultLeafMarkerUpdater() { // 클러스터 내의 단말 마커를 불러올 때마다 실행되는 이벤트
-                        override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
-                            super.updateLeafMarker(info, marker)
-                            val key = info.key as ItemKey // 단말 마커의 id 값(사고 번호)
-
-                            when (situationCode[no.indexOf(key.id)]) { // 사고 번호에 해당하는 사고의 처리 상황 코드에 따라 마커 아이콘 지정 및 마커 숨김
-                                SituationCode.COMPLETE.ordinal -> {
-                                    marker.icon = MarkerIcons.GREEN
-                                } // 처리 상황 코드가 COMPLETE일 때 초록색 마커 출력(처리 완료)
-                                SituationCode.PROCESSING.ordinal -> {
-                                    marker.icon = MarkerIcons.YELLOW
-                                } // 처리 상황 코드가 PROCESSING일 때 노란색 마커 출력(처리 중)
-                                SituationCode.MALFUNCTION.ordinal -> {
-                                    marker.map = null
-                                } // 처리 상황 코드가 MALFUNCTION일 때 마커를 숨김(오작동)
-                                else -> {
-                                    marker.icon = MarkerIcons.RED
-                                } // 처리 상황 코드가 REPORT119일 때 빨간색 마커 출력(119 신고)
-                            }
-
-                            marker.onClickListener =
-                                Overlay.OnClickListener { // 단말 마커 클릭 시 발생하는 이벤트
-                                    CoroutineScope(Dispatchers.Main).launch { // 코루틴 Main 진입
-                                        accidentNo.value =
-                                            key.id // 이벤트 함수 외부에서 마지막에 선택한 마커의 사고 번호를 사용하기 위해 캡처
-
-                                        LoadingState.show() // 로딩 창 출력
-                                        val accidentProcessingResponseResult =
-                                            withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
-                                                CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
-                                                    val state =
-                                                        accidentProcessingViewModel.state // 현재 상태 값을 받아옴
-                                                    accidentProcessingViewModel.getAccidentProcessingData(
-                                                        key.id
-                                                    ) // Accident Processing 테이블 데이터 수신
-                                                    while (state == accidentProcessingViewModel.state) {
-                                                        // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
-                                                    }
-                                                }.await() // 데이터를 받아올 때까지 대기
-                                            }
-                                        LoadingState.hide() // 로딩 창 숨김
-
-                                        if (accidentProcessingResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
-                                            Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
-                                            isEndDialogVisible.value = true // 종료 알림창 on
-                                        }
-
-                                        listIdx.value = no.indexOf(key.id)
-                                        selectedMarker.value =
-                                            marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
-
-                                        if (situationCode[listIdx.value] == SituationCode.COMPLETE.ordinal) { // 클릭한 단말 마커의 처리 상황 코드가 COMPLETE일 경우
-                                            detail.value =
-                                                accidentProcessingViewModel.detail.value.toString() // 사고 처리 세부 내역 업데이트
-                                            isDetailPrintDialogVisible.value =
-                                                true // 사고 처리 세부 내역 출력창 on
-                                        } else { // 클릭한 단말 마커의 처리 상황 코드가 PROCESSING, MALFUNCTION, REPORT119일 경우
-                                            victimId.value =
-                                                accidentProcessingViewModel.victimId.value.toString()
-                                            victimName.value =
-                                                accidentProcessingViewModel.victimName.value.toString() // 사고자 이름 업데이트
-                                            isBottomSheetVisible.value = true // 바텀 시트 on
-                                        }
-                                    }
-                                    true
+                        // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성
+                        cluster.value = Clusterer.Builder<ItemKey>().clusterMarkerUpdater(object :
+                            DefaultClusterMarkerUpdater() { // 클러스터 마커를 불러올 때마다 실행되는 이벤트
+                            override fun updateClusterMarker(
+                                info: ClusterMarkerInfo, marker: Marker
+                            ) {
+                                super.updateClusterMarker(info, marker)
+                                marker.icon = if (info.size < 3) { // 클러스터 내에 존재하는 단말 마커가 3개 미만일 경우
+                                    MarkerIcons.CLUSTER_LOW_DENSITY // 연한 주황색 클러스터 아이콘 출력
+                                } else { // 클러스터 내에 존재하는 단말 마커가 3개 이상일 경우
+                                    MarkerIcons.CLUSTER_MEDIUM_DENSITY // 진한 주황색 클러스터 아이콘 출력
                                 }
-                        }
-                    }).build() // 클러스터 마커 및 단말 마커를 설정하기 위한 빌더 구성 후 빌드
+                            }
+                        }).leafMarkerUpdater(object :
+                            DefaultLeafMarkerUpdater() { // 클러스터 내의 단말 마커를 불러올 때마다 실행되는 이벤트
+                            override fun updateLeafMarker(info: LeafMarkerInfo, marker: Marker) {
+                                super.updateLeafMarker(info, marker)
+                                val key = info.key as ItemKey // 단말 마커의 id 값(사고 번호)
 
-                    for (i in no.indices) { // 수신한 사고 건수만큼 반복
-                        if (situationCode[i] != SituationCode.MALFUNCTION.ordinal) { // 처리 상황 코드가 MALFUNCTION인 경우 지도에 나타내지 않고 클러스터로 구성하지 않음
-                            cluster.value!!.add(
-                                ItemKey(
-                                    no[i], LatLng(latitude[i], longitude[i])
-                                ), null
-                            ) // 사고 번호, 위도, 경도 값을 사용하여 클러스터를 구성
+                                when (situationCode[no.indexOf(key.id)]) { // 사고 번호에 해당하는 사고의 처리 상황 코드에 따라 마커 아이콘 지정 및 마커 숨김
+                                    SituationCode.COMPLETE.ordinal -> {
+                                        marker.icon = MarkerIcons.GREEN
+                                    } // 처리 상황 코드가 COMPLETE일 때 초록색 마커 출력(처리 완료)
+                                    SituationCode.PROCESSING.ordinal -> {
+                                        marker.icon = MarkerIcons.YELLOW
+                                    } // 처리 상황 코드가 PROCESSING일 때 노란색 마커 출력(처리 중)
+                                    SituationCode.MALFUNCTION.ordinal -> {
+                                        marker.map = null
+                                    } // 처리 상황 코드가 MALFUNCTION일 때 마커를 숨김(오작동)
+                                    else -> {
+                                        marker.icon = MarkerIcons.RED
+                                    } // 처리 상황 코드가 REPORT119일 때 빨간색 마커 출력(119 신고)
+                                }
+
+                                marker.onClickListener =
+                                    Overlay.OnClickListener { // 단말 마커 클릭 시 발생하는 이벤트
+                                        CoroutineScope(Dispatchers.Main).launch { // 코루틴 Main 진입
+                                            accidentNo.value =
+                                                key.id // 이벤트 함수 외부에서 마지막에 선택한 마커의 사고 번호를 사용하기 위해 캡처
+
+                                            LoadingState.show() // 로딩 창 출력
+                                            val accidentProcessingResponseResult =
+                                                withTimeoutOrNull(10000) { // 10초 동안 데이터를 수신하지 못할 경우 종료
+                                                    CoroutineScope(Dispatchers.IO).async { // 데이터를 받아오기 위해 IO 상태로 전환하여 비동기 처리
+                                                        val state =
+                                                            accidentProcessingViewModel.state // 현재 상태 값을 받아옴
+                                                        accidentProcessingViewModel.getAccidentProcessingData(
+                                                            key.id
+                                                        ) // Accident Processing 테이블 데이터 수신
+                                                        while (state == accidentProcessingViewModel.state) {
+                                                            // 상태 값이 전환될 때까지 반복(로딩) = 모든 데이터를 수신할 때까지 반복(로딩)
+                                                        }
+                                                    }.await() // 데이터를 받아올 때까지 대기
+                                                }
+                                            LoadingState.hide() // 로딩 창 숨김
+
+                                            if (accidentProcessingResponseResult == null) { // 정해진 시간 동안 데이터를 수신하지 못한 경우 종료
+                                                Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                                isEndDialogVisible.value = true // 종료 알림창 on
+                                            }
+
+                                            listIdx.value = no.indexOf(key.id)
+                                            selectedMarker.value =
+                                                marker // 이벤트 함수 외부에서 마지막에 선택한 마커의 속성을 변경하기 위해 캡처
+
+                                            if (situationCode[listIdx.value] == SituationCode.COMPLETE.ordinal) { // 클릭한 단말 마커의 처리 상황 코드가 COMPLETE일 경우
+                                                detail.value =
+                                                    accidentProcessingViewModel.detail.value.toString() // 사고 처리 세부 내역 업데이트
+                                                isDetailPrintDialogVisible.value =
+                                                    true // 사고 처리 세부 내역 출력창 on
+                                            } else { // 클릭한 단말 마커의 처리 상황 코드가 PROCESSING, MALFUNCTION, REPORT119일 경우
+                                                victimId.value =
+                                                    accidentProcessingViewModel.victimId.value.toString()
+                                                victimName.value =
+                                                    accidentProcessingViewModel.victimName.value.toString() // 사고자 이름 업데이트
+                                                isBottomSheetVisible.value = true // 바텀 시트 on
+                                            }
+                                        }
+                                        true
+                                    }
+                            }
+                        }).build() // 클러스터 마커 및 단말 마커를 설정하기 위한 빌더 구성 후 빌드
+
+                        for (i in no.indices) { // 수신한 사고 건수만큼 반복
+                            if (situationCode[i] != SituationCode.MALFUNCTION.ordinal) { // 처리 상황 코드가 MALFUNCTION인 경우 지도에 나타내지 않고 클러스터로 구성하지 않음
+                                cluster.value!!.add(
+                                    ItemKey(
+                                        no[i], LatLng(latitude[i], longitude[i])
+                                    ), null
+                                ) // 사고 번호, 위도, 경도 값을 사용하여 클러스터를 구성
+                            }
                         }
+
+                        cluster.value!!.map = map // 구성한 클러스터를 지도에 표현
                     }
-
-                    cluster.value!!.map = map // 구성한 클러스터를 지도에 표현
                 }
             }
         }
@@ -445,6 +481,8 @@ fun MapScreen(
 @Composable
 fun BottomSheetScreen(
     isBottomSheetVisible: MutableState<Boolean>,
+    isWebSocketDialogVisible: MutableState<Boolean>,
+    webSocketMessage: MutableState<String>,
     accidentNo: MutableState<Int>,
     situationCode: MutableList<Int>,
     workId: MutableList<String>,
@@ -452,70 +490,15 @@ fun BottomSheetScreen(
     victimId: MutableState<String>,
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
-    selectedMarker: MutableState<Marker?>
+    selectedMarker: MutableState<Marker?>,
+    sharedAccount: SharedPreferences,
+    client: OkHttpClient,
+    webSocketListener: WebSocketListener,
+    imageUrl: MutableState<String?>,
+    webSocketSendData: MutableState<String?>,
+    imageDataReception: MutableState<Boolean>,
+    soundDataReception: MutableState<Boolean>
 ) {
-    val soundCompleteDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
-
-    if (soundCompleteDialogVisible.value) {
-        SoundCompleteDialog(onClose = { soundCompleteDialogVisible.value = false })
-    }
-
-    val sharedAccount: SharedPreferences =
-        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val client = remember { OkHttpClient() }
-    val scope = rememberCoroutineScope()
-    var imageUrl by remember { mutableStateOf<String?>(null) }
-
-    val webSocketListener = object : WebSocketListener() {
-        override fun onMessage(webSocket: WebSocket, text: String) {
-            Log.d("HEAD METAL", text)
-
-            val messages = text.split(":")
-            val manager = sharedAccount.getString("userid", null).toString()
-
-            if (messages[1] == manager && messages[2] == "카메라완료") {
-                imageUrl =
-                    "http://minseok821lab.kro.kr:8000/accident/get_image/${victimId.value}/${manager}"
-            }
-            else if (messages[1] == manager && messages[2] == "소리완료") {
-                LoadingState.hide()
-                soundCompleteDialogVisible.value = true
-            }
-        }
-
-        override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            Log.e("HEAD METAL", "Error: ${t.message}")
-        }
-    }
-
-    imageUrl?.let { url ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            val painter =
-                rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
-                    .data(url).build(),
-                    onSuccess = { LoadingState.hide() })
-            Image(
-                painter = painter,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-            Button(
-                onClick = { imageUrl = null },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.TopEnd)
-                    .zIndex(1f)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Close",
-                    tint = Color.White
-                )
-            }
-        }
-    }
-
     val isDetailInputDialogVisible: MutableState<Boolean> =
         remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
 
@@ -530,16 +513,44 @@ fun BottomSheetScreen(
         )
     }
 
-    if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
-        val request = Request.Builder().url(
-            "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
-                sharedAccount.getString(
-                    "userid", null
-                ).toString()
-            }"
-        ).build()
-        val webSocket = client.newWebSocket(request, webSocketListener)
+    if (isWebSocketDialogVisible.value) {
+        AlertDialog(
+            onClose = { isWebSocketDialogVisible.value = false },
+            content = webSocketMessage.value
+        )
+    }
 
+    imageUrl.value?.let { url ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            val painter =
+                rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+                    .data(url).build(),
+                    onSuccess = { LoadingState.hide() })
+            Image(
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            Button(
+                onClick = { imageUrl.value = null },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd)
+                    .zIndex(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
+            }
+        }
+    }
+
+    val scope = rememberCoroutineScope()
+
+    if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
         ModalBottomSheet(modifier = Modifier.height(270.dp),
             onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
@@ -578,9 +589,36 @@ fun BottomSheetScreen(
                             "IconClick", "카메라 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-                            webSocket.send("${victimId.value}:카메라")
                             isBottomSheetVisible.value = false
                             LoadingState.show()
+                            val request = Request.Builder().url(
+                                "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
+                                    sharedAccount.getString(
+                                        "userid", null
+                                    ).toString()
+                                }"
+                            ).build()
+                            val webSocket = client.newWebSocket(request, webSocketListener)
+                            val timeOut = withTimeoutOrNull(10000) {
+                                CoroutineScope(Dispatchers.IO).async {
+                                    webSocketSendData.value = "카메라"
+                                    webSocket.send("${victimId.value}:${webSocketSendData.value}")
+                                    while (!imageDataReception.value) {
+                                        //
+                                    }
+                                }.await()
+                            }
+                            LoadingState.hide()
+
+                            if (timeOut == null) {
+                                Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                webSocketMessage.value = "서버에서 데이터를 불러오지 못하였습니다."
+                                isWebSocketDialogVisible.value = true
+                            } else {
+                                imageDataReception.value = false
+                            }
+
+                            webSocket.close(1000, "WebSocket Close")
                         }
                     }) {
                         Icon(
@@ -595,9 +633,36 @@ fun BottomSheetScreen(
                             "IconClick", "스피커 아이콘 클릭"
                         )
                         scope.launch(Dispatchers.IO) {
-                            webSocket.send("${victimId.value}:소리")
                             isBottomSheetVisible.value = false
                             LoadingState.show()
+                            val request = Request.Builder().url(
+                                "ws://minseok821lab.kro.kr:8000/accident/ws/${workId[listIdx.value]}/${
+                                    sharedAccount.getString(
+                                        "userid", null
+                                    ).toString()
+                                }"
+                            ).build()
+                            val webSocket = client.newWebSocket(request, webSocketListener)
+                            val timeOut = withTimeoutOrNull(10000) {
+                                CoroutineScope(Dispatchers.IO).async {
+                                    webSocketSendData.value = "소리"
+                                    webSocket.send("${victimId.value}:${webSocketSendData.value}")
+                                    while (!soundDataReception.value) {
+                                        //
+                                    }
+                                }.await()
+                            }
+                            LoadingState.hide()
+
+                            if (timeOut == null) {
+                                Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                webSocketMessage.value = "서버에서 데이터를 불러오지 못하였습니다."
+                                isWebSocketDialogVisible.value = true
+                            } else {
+                                soundDataReception.value = false
+                            }
+
+                            webSocket.close(1000, "WebSocket Close")
                         }
                     }) {
                         Icon(
@@ -727,7 +792,10 @@ fun DetailInputDialog(
     val isAlertDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 알림창 스위치
 
     if (isAlertDialogVisible.value) { // 스위치가 on이 될 경우 알림창 출력
-        AlertDialog(onClose = { isAlertDialogVisible.value = false })
+        AlertDialog(
+            onClose = { isAlertDialogVisible.value = false },
+            content = "사고 처리 세부 내역은 최소\n한 글자 이상 입력해야 합니다."
+        )
     }
 
     Dialog(onDismissRequest = onClose, content = {

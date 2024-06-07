@@ -30,6 +30,8 @@ Adafruit_SSD1306 display(128,64,&Wire,-1);
 
 String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
 int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
+double latitude = 0.000000;
+double longitude = 0.000000;
 /*
 ############################################################################
                                   BLE
@@ -78,6 +80,18 @@ class MyCallbacks : public BLECharacteristicCallbacks {
       else if(bluetooth_data.startsWith("wp ")){
         wifi_pw = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI PW = " + wifi_pw);
+      }
+      else if(bluetooth_data.startsWith("gps ")){
+        Serial.println("[BLE] GPS = " + bluetooth_data);
+        int latStart = bluetooth_data.indexOf("lat:") + 4;
+        int latEnd = bluetooth_data.indexOf(",", latStart);
+        int lonStart = bluetooth_data.indexOf("lon:") + 4;
+        
+        String latitudeStr = bluetooth_data.substring(latStart, latEnd);
+        String longitudeStr = bluetooth_data.substring(lonStart);
+
+        latitude = latitudeStr.toDouble();
+        longitude = longitudeStr.toDouble();
       }
     }
   }
@@ -142,6 +156,8 @@ void ID_setup(){
   display.display();
 
   while (user_id == "") {
+    pTxCharacteristic->setValue("user_id");
+    pTxCharacteristic->notify();
     delay(1000);
     tone(PIEZO,melody[1],200);
   }
@@ -159,6 +175,8 @@ void ID_setup(){
   display.display();
 
   while (work_id == "") {
+    pTxCharacteristic->setValue("work_id");
+    pTxCharacteristic->notify();
     delay(1000);
     tone(PIEZO,melody[1],200);
   }
@@ -194,7 +212,7 @@ void WIFI_setup(){
     delay(5000);
     Serial.println("WIFI ID = " + wifi_id + " PASSWORD = " + wifi_pw);
     WiFi.begin(wifi_id, wifi_pw);
-    delay(15000);
+    delay(10000);
     if(WiFi.status() == WL_CONNECTED){
       break;
     }
@@ -259,6 +277,8 @@ void Emergency(){
 
 void SendingData(String type)
 {
+  pTxCharacteristic->setValue("GPS");
+  pTxCharacteristic->notify();
   if (WiFi.status() == WL_CONNECTED)
   { // WIFI가 연결되어 있으면
     HTTPClient http;
@@ -271,10 +291,13 @@ void SendingData(String type)
     timeInfo = localtime(&epochTime);
 
     String jsonPayload = "{";
-    jsonPayload += "\"type\":\"" + type + "\",";
+    jsonPayload += "\"category\":\"" + type + "\",";
     jsonPayload += "\"date\":[" + String(timeInfo->tm_year + 1900) + "," + String(timeInfo->tm_mon + 1) + "," + String(timeInfo->tm_mday) + "],";
     jsonPayload += "\"time\":[" + String(timeInfo->tm_hour) + "," + String(timeInfo->tm_min) + "," + String(timeInfo->tm_sec) + "],";
-    jsonPayload += "\"id\":\"" + user_id + "\"";
+    jsonPayload += "\"latitude\":" + String(latitude) + ",";
+    jsonPayload += "\"longitude\":"+ String(longitude) + ",";
+    jsonPayload += "\"work_id\":\"" + work_id + "\",";
+    jsonPayload += "\"victim_id\":\"" + user_id + "\"";
     jsonPayload += "}";
 
     int httpResponseCode = http.POST(jsonPayload);
@@ -388,6 +411,8 @@ void PIN_setup(){
   pinMode(BUTTON,INPUT_PULLDOWN); // 긴급 버튼
   pinMode(CDS,INPUT);
   pinMode(LED,OUTPUT);
+  digitalWrite(RESET,HIGH);
+  pinMode(RESET,OUTPUT);
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -612,15 +637,9 @@ unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
 void loop(){
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
   if(!deviceConnected){
-    BT_setup();
+    digitalWrite(RESET,LOW);
   }
 
-/*
-  if(digitalRead(BUTTON) == HIGH){
-    Emergency();
-    PLAY_SIREN();
-  }
-  */
   // 버튼 상태 읽기
   int reading = digitalRead(BUTTON);
 

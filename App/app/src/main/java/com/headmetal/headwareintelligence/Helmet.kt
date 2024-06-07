@@ -19,6 +19,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -63,16 +64,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.google.android.gms.location.LocationServices
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -147,8 +147,9 @@ fun Helmet(navController: NavController) {
     var showScanDialog by remember { mutableStateOf(false) }
     var showWIFIDialog by remember { mutableStateOf(false) }
     var showReturnDialog by remember { mutableStateOf(false) }
-    var enableRegister by remember {mutableStateOf(true)}
+    var enableRegister by remember {mutableStateOf(false)}
     var enableInternet by remember{ mutableStateOf(false)}
+    var enableReturn by remember {mutableStateOf(false)}
     // wifi ID/PW 변수
     val wifiID = remember { mutableStateOf("") }
     val wifiPW = remember { mutableStateOf("") }
@@ -218,6 +219,7 @@ fun Helmet(navController: NavController) {
             if (newState == BluetoothProfile.STATE_CONNECTED) { // BLE 장치의 새로운 상태가 연결 상태이면
                 enableRegister = false
                 enableInternet = true
+                enableReturn = true
                 if (ActivityCompat.checkSelfPermission( // 만약 권한이 없으면
                         context,
                         Manifest.permission.BLUETOOTH_CONNECT
@@ -235,6 +237,14 @@ fun Helmet(navController: NavController) {
                 Log.d("HEAD METAL", "BLE DISCONNECT")
                 enableRegister = true
                 enableInternet = false
+                enableReturn = false
+                sharedAccountEdit.putString("helmetid",null)
+                sharedAccountEdit.apply()
+                helmetid = ""
+                wifiID.value = ""
+                wifiPW.value = ""
+                wifisendID = ""
+                wifisendPW = ""
             }
         }
 
@@ -376,9 +386,36 @@ fun Helmet(navController: NavController) {
                     "work_id_change" ->{
                         Toast.makeText(context,"헬멧 작업장 변경 완료!",Toast.LENGTH_SHORT).show()
                     }
+                    "GPS" ->{
+                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+                            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                            val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                            if (location != null) {
+                                val latitude = location.latitude
+                                val longitude = location.longitude
+                                val locationString = "gps lat:$latitude,lon:$longitude"
+
+                                val characteristicWrite = service?.getCharacteristic(writeUUID)
+                                if (service != null && characteristicWrite != null) {
+                                    characteristicWrite.value = locationString.toByteArray()
+                                    gatt.writeCharacteristic(characteristicWrite)
+                                } else {
+                                    Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                                }
+                            } else {
+                                Log.e("HEAD METAL", "위치를 찾을 수 없음")
+                            }
+                        } else {
+                            Log.e("HEAD METAL", "위치 권한이 없음")
+                        }
+                    }
                     else -> {
                         if (receiveValue?.startsWith("helmet_num") == true) {
                             sharedAccountEdit.putString("helmetid",receiveValue.split(" ")[1]).apply()
+                            sharedAccountEdit.apply()
+                            helmetid = receiveValue.split(" ")[1]
                         }
                     }
                 }
@@ -487,7 +524,9 @@ fun Helmet(navController: NavController) {
                             helmetid = ""
                             enableRegister = true
                             enableInternet = false
+                            enableReturn = false
                             sharedAccountEdit.putString("helmetid","")
+                            sharedAccountEdit.apply()
                         }
                     ) {
                         Text("반납하기")
@@ -547,6 +586,24 @@ fun Helmet(navController: NavController) {
                     }
                     requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                 }
+            }
+        }
+        if(sharedAccount.getString("workid","").toString() == ""){
+            enableRegister = false
+            enableInternet = false
+            enableReturn = false
+        }
+        else{
+            if(connectedGatt == null){
+                enableRegister = true
+                enableInternet = false
+                enableReturn = false
+            }
+            else{
+                enableRegister = false
+                enableInternet = true
+                enableReturn = true
+                helmetid = sharedAccount.getString("helmetid","")
             }
         }
     }
@@ -666,13 +723,19 @@ fun Helmet(navController: NavController) {
                                 expanded = false
                                 sharedAccountEdit.putString("workid", eachoption)
                                 sharedAccountEdit.apply()
-                                val characteristicWrite = service?.getCharacteristic(writeUUID)
-                                val worksendId = "wc " + sharedAccount.getString("workid", null).toString()
-                                if (service != null && characteristicWrite != null) {
-                                    characteristicWrite.value = worksendId.toByteArray()
-                                    connectedGatt?.writeCharacteristic(characteristicWrite)
-                                } else {
-                                    Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                                if(connectedGatt != null) {
+                                    val characteristicWrite = service?.getCharacteristic(writeUUID)
+                                    val workSendId =
+                                        "wc " + sharedAccount.getString("workid", null).toString()
+                                    if (service != null && characteristicWrite != null) {
+                                        characteristicWrite.value = workSendId.toByteArray()
+                                        connectedGatt?.writeCharacteristic(characteristicWrite)
+                                    } else {
+                                        Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                                    }
+                                }
+                                else{
+                                    enableRegister = true
                                 }
                             }) {
                                 Text(text = eachoption, fontSize = 15.sp)
@@ -879,7 +942,8 @@ fun Helmet(navController: NavController) {
                     },
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
                     colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = enableReturn
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

@@ -22,23 +22,22 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
-import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.firebase.Firebase
-import com.google.firebase.messaging.messaging
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun Loading(navController: NavController) {
     var autoLogin by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val sharedAccount: SharedPreferences = context.getSharedPreferences("Account", MODE_PRIVATE)
-    val sharedAlert:SharedPreferences = context.getSharedPreferences("Alert",MODE_PRIVATE)
+    val sharedAlert: SharedPreferences = context.getSharedPreferences("Alert", MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
     val userId = sharedAccount.getString("userid", null)
     val userPassword = sharedAccount.getString("password", null)
@@ -52,7 +51,7 @@ fun Loading(navController: NavController) {
 
     // 권한 요청
     val permissionsToRequest = mutableListOf<String>()
-    val permissions = mutableListOf<String>(
+    val permissions = mutableListOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.POST_NOTIFICATIONS
@@ -65,6 +64,7 @@ fun Loading(navController: NavController) {
         permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
         permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
     }
+
     permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -74,6 +74,7 @@ fun Loading(navController: NavController) {
             permissionsToRequest.add(permission)
         }
     }
+
     if (permissionsToRequest.isNotEmpty()) {
         ActivityCompat.requestPermissions(
             context as Activity, permissionsToRequest.toTypedArray(),
@@ -91,13 +92,13 @@ fun Loading(navController: NavController) {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     if (autoLogin) {
-                        val call_login = RetrofitInstance.apiService.apiLogin(
+                        val callLogin = RetrofitInstance.apiService.apiLogin(
                             alertToken = sharedAlert.getString("alert_token", null).toString(),
                             type = type,
                             id = userId,
                             pw = userPassword
                         )
-                        call_login.enqueue(object : Callback<LoginResponse> {
+                        callLogin.enqueue(object : Callback<LoginResponse> {
                             override fun onResponse(
                                 call: Call<LoginResponse>,
                                 response: Response<LoginResponse>
@@ -114,7 +115,6 @@ fun Loading(navController: NavController) {
                                         }
                                     }
                                 } else {
-                                    val builder = AlertDialog.Builder(navController.context)
                                     builder.setTitle("자동 로그인 실패")
                                     builder.setMessage("변경된 비밀번호를 확인하세요.")
                                     // 확인 버튼 설정
@@ -129,12 +129,11 @@ fun Loading(navController: NavController) {
                                     dialog.show()
                                 }
                             }
-
                             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                                 builder.setTitle("로그인 실패")
                                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")
                                 // 확인 버튼 설정
-                                builder.setPositiveButton("확인") { dialog, _ ->
+                                builder.setPositiveButton("확인") { _, _ ->
                                     (navController.context as Activity).finish()
                                 }
                                 // 다이얼로그 표시
@@ -149,7 +148,7 @@ fun Loading(navController: NavController) {
                     builder.setTitle("서버 접속 실패")
                     builder.setMessage("서버 상태 및 네트워크 접속 불안정")
                     // 확인 버튼 설정
-                    builder.setPositiveButton("확인") { dialog, _ ->
+                    builder.setPositiveButton("확인") { _, _ ->
                         (navController.context as Activity).finish()
                     }
                     // 다이얼로그 표시
@@ -157,12 +156,11 @@ fun Loading(navController: NavController) {
                     dialog.show()
                 }
             }
-
             override fun onFailure(call: Call<Void>, t: Throwable) {
                 builder.setTitle("서버 접속 실패")
                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")
                 // 확인 버튼 설정
-                builder.setPositiveButton("확인") { dialog, _ ->
+                builder.setPositiveButton("확인") { _, _ ->
                     (navController.context as Activity).finish()
                 }
                 // 다이얼로그 표시
@@ -171,8 +169,6 @@ fun Loading(navController: NavController) {
             }
         })
     }
-
-
 
     Surface(
         modifier = Modifier.fillMaxSize(),

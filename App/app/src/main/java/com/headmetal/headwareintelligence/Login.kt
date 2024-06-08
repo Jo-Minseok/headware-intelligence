@@ -85,6 +85,7 @@ fun performLogin(
                     response.body()?.name + "님 반갑습니다",
                     Toast.LENGTH_SHORT
                 ).show()
+                LoadingState.hide()
             } else {
                 builder.setTitle("로그인 실패")
                 builder.setMessage("아이디 및 비밀번호를 확인하세요.")
@@ -96,6 +97,7 @@ fun performLogin(
                 // 다이얼로그 표시
                 val dialog = builder.create()
                 dialog.show()
+                LoadingState.hide()
             }
         }
 
@@ -109,6 +111,7 @@ fun performLogin(
             // 다이얼로그 표시
             val dialog = builder.create()
             dialog.show()
+            LoadingState.hide()
         }
     })
 }
@@ -130,6 +133,7 @@ fun Login(navController: NavController) {
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
     ) {
+        LoadingScreen()
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -229,6 +233,7 @@ fun Login(navController: NavController) {
                             navController,
                             pwState
                         )
+                        LoadingState.show()
                     },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier

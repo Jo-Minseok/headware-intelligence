@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -21,7 +23,6 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -39,19 +40,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
 data class RegisterInputModel(
     val id: String,
     val password: String,
-    val re_password: String,
+    val rePassword: String,
     val name: String,
     val email: String,
-    val phone_no: String,
+    val phoneNo: String,
     val company: String?,
-    val type:String
+    val type: String
 )
 
 data class CompanyList(
@@ -59,126 +62,112 @@ data class CompanyList(
 )
 
 // 회원가입 함수
-fun performSignup(id: String, password: String, re_password: String, name: String,
-    email: String, phone_no: String, company: String, isManager: Boolean, navController: NavController
+fun performSignup(
+    id: String,
+    password: String,
+    rePassword: String,
+    name: String,
+    email: String,
+    phoneNo: String,
+    company: String,
+    isManager: Boolean,
+    navController: NavController
 ) {
-    if (password != re_password) {
-        showPasswordMismatchDialog(navController)
+    val builder = AlertDialog.Builder(navController.context)
+
+    if (password != rePassword) {
+        builder.setTitle("비밀번호 불일치")
+        builder.setMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
+        builder.setPositiveButton("확인") { dialog, _ ->
+            dialog.dismiss()
+        }
+        val dialog = builder.create()
+        dialog.show()
         return
     }
-    val companyToSend = if(company=="없음") null else company
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.apiRegister(
-        RegisterInputModel(id, password, re_password, name, email, phone_no,companyToSend,if (isManager) "manager" else "employee")
-    )
-    call.enqueue(object : Callback<RegisterInputModel>
-    {
-        override fun onResponse(call: Call<RegisterInputModel>, response: Response<RegisterInputModel>
+
+    val companyToSend = if (company == "없음") null else company
+
+    LoadingState.show()
+    RetrofitInstance.apiService.apiRegister(
+        RegisterInputModel(
+            id,
+            password,
+            rePassword,
+            name,
+            email,
+            phoneNo,
+            companyToSend,
+            if (isManager) "manager" else "employee"
+        )
+    ).enqueue(object : Callback<RegisterInputModel> {
+        override fun onResponse(
+            call: Call<RegisterInputModel>,
+            response: Response<RegisterInputModel>
         ) {
+            Log.d("HEAD METAL", response.message())
             if (response.isSuccessful) {
-                // 회원 가입 성공 시
-                showSignupSuccessDialog(navController)
+                builder.setTitle("회원가입 성공")
+                builder.setMessage("로그인 화면으로 이동합니다.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                    navController.navigate("loginScreen")
+                }
+                val dialog = builder.create()
+                dialog.show()
+                LoadingState.hide()
             } else {
-                // 회원 가입 실패 시 처리할 코드
-                showSignupFailedDialog(navController)
+                builder.setTitle("회원가입 실패")
+                builder.setMessage("이미 존재하는 회원 또는 잘못된 정보입니다.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                val dialog = builder.create()
+                dialog.show()
+                LoadingState.hide()
             }
         }
 
-        override fun onFailure(call: Call<RegisterInputModel>
-                               , t: Throwable) {
-            // 통신 실패 시 처리할 코드
+        override fun onFailure(call: Call<RegisterInputModel>, t: Throwable) {
             Log.e("HEAD METAL", t.message.toString())
+            LoadingState.hide()
         }
     })
 }
 
-// 비밀번호 일치 불일치 확인 함수
-private fun showPasswordMismatchDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("비밀번호 불일치")
-    builder.setMessage("비밀번호와 비밀번호 확인이 일치하지 않습니다.")
-
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    val dialog = builder.create()
-    dialog.show()
-}
-
-//회원가입 실패 다이얼로그
-fun showSignupFailedDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("회원가입 실패")
-    builder.setMessage("이미 존재하는 회원 또는 잘못된 정보입니다.")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
-}
-
-// 회원가입 성공 다이얼로그
-fun showSignupSuccessDialog(navController: NavController) {
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("회원가입 성공")
-    builder.setMessage("로그인 화면으로 이동합니다.")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-        navController.navigate("loginScreen")
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
-}
-
 // 회원가입 화면
 @Composable
-fun Signup(navController: NavController, modifier: Modifier = Modifier) {
+fun Signup(navController: NavController) {
     var id by remember {
         mutableStateOf("")
     }
     var password by remember {
         mutableStateOf("")
     }
-    var re_password by remember {
+    var rePassword by remember {
         mutableStateOf("")
     }
     var name by remember {
         mutableStateOf("")
     }
-    var phone_no by remember {
+    var phoneNo by remember {
         mutableStateOf("")
     }
     var email by remember {
         mutableStateOf("")
     }
-
     var expanded by remember { mutableStateOf(false) }
-    var Company by remember { mutableStateOf("없음") }
-
-
+    var selectCompany by remember { mutableStateOf("없음") }
     var isManager by remember {
         mutableStateOf(false)
     }
+    var companies: List<String> = listOf("없음")
 
-    var companies:List<String> = listOf("없음")
-
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.getCompanyList()
-    call.enqueue(object : Callback<CompanyList>
-    {
+    RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
         override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
             if (response.isSuccessful) {
                 val companyList: CompanyList? = response.body()
-                companyList?.let{
+                companyList?.let {
                     companies = companies + it.companies
                 }
             }
@@ -193,11 +182,12 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
     ) {
-
+        LoadingScreen()
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(top = 10.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -206,11 +196,14 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 contentDescription = null
             )
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "아이디",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = id,
@@ -218,8 +211,8 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .width(350.dp),
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -227,11 +220,14 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 )
             }
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "비밀번호",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = password,
@@ -240,8 +236,8 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .width(350.dp),
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -249,21 +245,24 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 )
             }
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "비밀번호 확인",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
-                    value = re_password,
-                    onValueChange = { re_password = it },
+                    value = rePassword,
+                    onValueChange = { rePassword = it },
                     visualTransformation = PasswordVisualTransformation(),
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .width(350.dp),
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
@@ -271,11 +270,14 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                 )
             }
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "이름",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = name,
@@ -286,86 +288,85 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                     },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
-                    placeholder = { // 워터마크로 사용할 힌트 텍스트
-                        Text("4글자 이내")
-                    },
+                    placeholder = { Text("4글자 이내") },
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .width(350.dp),
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "전화번호",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
-                    value = phone_no,
-                    onValueChange = { phone_no = it },
+                    value = phoneNo,
+                    onValueChange = { phoneNo = it },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .width(350.dp),
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "이메일",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = email,
                     onValueChange = { email = it },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
-                    placeholder = { // 워터마크로 사용할 힌트 텍스트
-                        Text(" '@' 를 포함한 이메일 형식")
-                    },
+                    placeholder = { Text("'@' 를 포함한 이메일 형식") },
                     modifier = Modifier
-                        .alpha(0.6f)
-                        .width(350.dp),
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "건설업체",
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 20.dp)
+                    fontSize = 16.sp
                 )
                 Box(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp))
                 ) {
                     Text(
-                        text = Company.takeUnless { it.isEmpty() } ?: "선택하세요",
+                        text = selectCompany.takeUnless { it.isEmpty() } ?: "없음",
                         modifier = Modifier
+                            .fillMaxWidth()
                             .clickable(onClick = { expanded = true })
                             .background(Color(1f, 1f, 1f, 0.4f))
                             .padding(horizontal = 16.dp, vertical = 12.dp)
-                            .width(350.dp)
                             .height(30.dp)
                     )
                     DropdownMenu(
@@ -375,7 +376,7 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                         companies.forEach { company ->
                             DropdownMenuItem(
                                 onClick = {
-                                    Company = company
+                                    selectCompany = company
                                     expanded = false
                                 }
                             ) {
@@ -385,55 +386,53 @@ fun Signup(navController: NavController, modifier: Modifier = Modifier) {
                     }
                 }
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "직무",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Box(
-                        modifier = Modifier.padding(horizontal = 40.dp)
-                    ) {
-                        Row {
-                            RadioButton(
-                                selected = !isManager,
-                                onClick = { isManager = false }
-                            )
-                            Text(
-                                text = "일반직",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            )
-                        }
-                    }
-                    Box(
-                        modifier = Modifier.padding(horizontal = 40.dp)
-                    ) {
-                        Row {
-                            RadioButton(
-                                selected = isManager,
-                                onClick = { isManager = true }
-                            )
-                            Text(
-                                text = "관리직",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            )
-                        }
-                    }
+                Row {
+                    Button(
+                        onClick = { isManager = false },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        content = { Text(text = "일반직", color = Color.Black) },
+                        colors = ButtonDefaults.buttonColors(if (!isManager) Color(0xFFADD8E6) else Color.LightGray)
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    Button(
+                        onClick = { isManager = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        content = { Text(text = "관리직", color = Color.Black) },
+                        colors = ButtonDefaults.buttonColors(if (isManager) Color(0xFFADD8E6) else Color.LightGray)
+                    )
                 }
             }
-
             Button(
                 onClick = {
                     //DB에 이미 존재하는 ID, E-mail 체크, 입력한 비밀번호와 비밀번호 확인이 일치한지 체크
                     //입력된 내용에 무결성이 존재하지 않을 경우 입력된 정보를 DB에 추가
-                    performSignup(id, password, re_password, name, email, phone_no, Company, isManager, navController)
+                    performSignup(
+                        id,
+                        password,
+                        rePassword,
+                        name,
+                        email,
+                        phoneNo,
+                        selectCompany,
+                        isManager,
+                        navController
+                    )
                 },
                 colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                 modifier = Modifier.padding(vertical = 16.dp),

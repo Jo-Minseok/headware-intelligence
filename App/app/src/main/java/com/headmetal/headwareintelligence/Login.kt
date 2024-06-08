@@ -64,6 +64,7 @@ fun performLogin(
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
     val builder = AlertDialog.Builder(navController.context)
 
+    LoadingState.show()
     RetrofitInstance.apiService.apiLogin(
         alertToken = sharedAlert.getString("alert_token", null).toString(),
         type = if (isManager) "manager" else "employee",
@@ -233,7 +234,6 @@ fun Login(navController: NavController) {
                             navController,
                             pwState
                         )
-                        LoadingState.show()
                     },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier

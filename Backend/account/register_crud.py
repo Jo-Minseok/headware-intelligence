@@ -19,14 +19,14 @@ def create_account(input_data: Account_Input_Create, db: Session):
                                    input_data.password),
                                name=input_data.name,
                                email=input_data.email,
-                               phoneNo=input_data.phoneNo,
+                               phone_no=input_data.phoneNo,
                                company=input_data.company)
     elif (input_data.type == "manager"):
         db_data = UserManager(id=input_data.id,
                               password=pwd_context.hash(input_data.password),
                               name=input_data.name,
                               email=input_data.email,
-                              phoneNo=input_data.phoneNo,
+                              phone_no=input_data.phoneNo,
                               company=input_data.company)
     db.add(db_data)
     db.commit()

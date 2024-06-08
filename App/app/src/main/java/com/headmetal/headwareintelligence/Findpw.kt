@@ -64,7 +64,7 @@ fun makeDialog(title:String,message:String,navController: NavController){
 
 fun sendPasswordChangeRequest(id: String, phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
-    val call = apiService.apiChangepw(ForgotPw(id, phone,password,re_password,if(isManager)"manager" else "employee"))
+    val call = apiService.apiChangePw(ForgotPw(id, phone,password,re_password,if(isManager)"manager" else "employee"))
     call.enqueue(object : Callback<ForgotPw> {
         override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
             if (response.isSuccessful) {

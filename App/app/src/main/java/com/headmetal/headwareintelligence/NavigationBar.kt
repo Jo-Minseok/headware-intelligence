@@ -8,29 +8,25 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
-
-sealed class Destinations(val route: String,val title: String) {
-    object Loading : Destinations("loadingScreen","로딩")
-    object Login : Destinations("loginScreen","로그인")
-    object Signup: Destinations("signupScreen","회원가입")
-    object FindId : Destinations("findidScreen","아이디찾기")
-    object FindPw : Destinations("findpwScreen","비밀번호찾기")
-    object Main : Destinations("mainScreen","홈")
-    object Processing : Destinations("processingScreen","처리내역")
-    object Menu : Destinations("menuScreen","메뉴")
-    object Countermeasures : Destinations("countermeasuresScreen","행동요령")
-    object Map : Destinations("mapScreen","사고현장")
-    object Trend : Destinations("trendScreen","추세선")
-    object Helmet : Destinations("helmetScreen","헬멧등록")
-    object NullMap : Destinations("nullmapScreen","")
-    object CompanyInfo : Destinations("companyinfoScreen","회사정보")
-    object Etc : Destinations("etcScreen","기타")
-    object License : Destinations("licenseScreen","라이센스")
-    object Privacy : Destinations("privacyScreen","개인정보")
-
-
+sealed class Destinations(val route: String) {
+    data object Loading : Destinations("loadingScreen")
+    data object Login : Destinations("loginScreen")
+    data object Signup : Destinations("signupScreen")
+    data object FindId : Destinations("findidScreen")
+    data object FindPw : Destinations("findpwScreen")
+    data object Main : Destinations("mainScreen")
+    data object Processing : Destinations("processingScreen")
+    data object Menu : Destinations("menuScreen")
+    data object Countermeasures : Destinations("countermeasuresScreen")
+    data object Map : Destinations("mapScreen")
+    data object Trend : Destinations("trendScreen")
+    data object Helmet : Destinations("helmetScreen")
+    data object NullMap : Destinations("nullmapScreen")
+    data object CompanyInfo : Destinations("companyinfoScreen")
+    data object Etc : Destinations("etcScreen")
+    data object License : Destinations("licenseScreen")
+    data object Privacy : Destinations("privacyScreen")
 }
-
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
     composable(Destinations.Loading.route) {
@@ -96,28 +92,17 @@ fun NavGraphBuilder.menuNavGraph(navController: NavHostController) {
     }
 }
 
-
-
-
 @Composable
 fun RootNavGraph(navController: NavHostController) {
     NavHost(navController, startDestination = "auth") {
         navigation(startDestination = Destinations.Loading.route, route = "auth") {
             authNavGraph(navController)
         }
-
         navigation(startDestination = Destinations.Main.route, route = "main") {
             mainNavGraph(navController)
         }
-
         navigation(startDestination = Destinations.Menu.route, route = "menu") {
             menuNavGraph(navController)
         }
     }
 }
-
-
-
-
-
-

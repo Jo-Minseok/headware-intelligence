@@ -328,7 +328,8 @@ void onMessageCallback(WebsocketsMessage message) {
     }
     else if(action == "소리"){
       client.send(send_id + ":" + action + "전달");
-      PLAY_SIREN(send_id);
+      PLAY_SIREN();
+      client.send(send_id+":소리완료");
     }
   }
 }
@@ -346,12 +347,11 @@ void onEventsCallback(WebsocketsEvent event, String data) {
                                   SPEAKER
 ############################################################################
 */
-void PLAY_SIREN(String send_id){
+void PLAY_SIREN(){
   for(int i=0;i<10;i++){
     tone(PIEZO,melody[3],250);
     tone(PIEZO,melody[7],250);
   }
-  client.send("admin:소리완료");
 }
 
 void SUCCESS_setup(){
@@ -384,7 +384,7 @@ void PIEZO_setup(){
 void PIN_setup(){
   Serial.println("[SETUP] PIN: SETUP START");
   pinMode(SHOCK,INPUT); // 충격
-  pinMode(BUTTON,INPUT); // 긴급 버튼
+  pinMode(BUTTON,INPUT_PULLDOWN); // 긴급 버튼
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -607,7 +607,8 @@ void loop(){
     BT_setup();
   }
   if(digitalRead(BUTTON) == HIGH){
-    Serial.println("BUTTON PUSH");
+    Emergency();
+    PLAY_SIREN();
   }
   if(WiFi.status() == WL_CONNECTED){
     client.poll();

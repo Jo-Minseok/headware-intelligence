@@ -8,4 +8,4 @@
 #define PIEZO 12
 //#define GYRO_SCL 14
 //#define GYRO_SDA 13
-#define RESET 0
+#define RESET 9

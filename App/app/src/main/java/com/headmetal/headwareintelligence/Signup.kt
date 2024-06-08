@@ -81,9 +81,10 @@ fun performSignup(
         builder.setPositiveButton("확인") { dialog, _ ->
             dialog.dismiss()
         }
+        val dialog = builder.create()
+        dialog.show()
     } else {
         val companyToSend = if (company == "없음") null else company
-
         LoadingState.show()
         RetrofitInstance.apiService.apiRegister(
             RegisterInputModel(
@@ -166,7 +167,7 @@ fun Signup(navController: NavController) {
             }
         }
 
-        override fun onFailure(p0: Call<CompanyList>, t: Throwable) {
+        override fun onFailure(call: Call<CompanyList>, t: Throwable) {
             println("서버 통신 실패: ${t.message}")
         }
     })

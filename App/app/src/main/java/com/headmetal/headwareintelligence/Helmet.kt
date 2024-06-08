@@ -491,6 +491,10 @@ fun Helmet(navController: NavController) {
                             wifisendID = "wi " + wifiID.value
                             wifisendPW = "wp " + wifiPW.value
                             showWIFIDialog = false
+                            val characteristicWrite = service?.getCharacteristic(writeUUID)
+                            characteristicWrite?.value = wifisendID.toByteArray()
+                            connectedGatt?.writeCharacteristic(characteristicWrite)
+                            characteristicWrite?.value = wifisendPW.toByteArray()
                         }
                     ) {
                         Text(text = "설정")
@@ -594,7 +598,7 @@ fun Helmet(navController: NavController) {
             enableReturn = false
         }
         else{
-            if(connectedGatt == null){
+            if(sharedAccount.getString("helmetid","") == ""){
                 enableRegister = true
                 enableInternet = false
                 enableReturn = false
@@ -934,7 +938,7 @@ fun Helmet(navController: NavController) {
                 }
                 Button(
                     onClick = {
-                        if (connectedGatt != null) {
+                        if (sharedAccount.getString("helmetid","") != "") {
                             showReturnDialog = true
                         } else {
                             Toast.makeText(context, "등록된 헬멧이 없습니다.", Toast.LENGTH_SHORT).show()

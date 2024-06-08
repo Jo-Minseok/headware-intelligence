@@ -379,13 +379,15 @@ void PIEZO_setup(){
 
 /*
 ############################################################################
-                    PIN SETUP(SHOCK, BUTTON)
+                  PIN SETUP(SHOCK, BUTTON, CDS ,LED)
 ############################################################################
 */
 void PIN_setup(){
   Serial.println("[SETUP] PIN: SETUP START");
   pinMode(SHOCK,INPUT); // 충격
   pinMode(BUTTON,INPUT_PULLDOWN); // 긴급 버튼
+  pinMode(CDS,INPUT);
+  pinMode(LED,OUTPUT);
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -602,15 +604,55 @@ void setup(){
   CAMERA_setup(); // 카메라
 }
 
+const int debounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
+int lastButtonState = LOW;     // 이전 버튼 상태
+int buttonState;               // 현재 버튼 상태
+unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
+
 void loop(){
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
   if(!deviceConnected){
     BT_setup();
   }
+
+/*
   if(digitalRead(BUTTON) == HIGH){
     Emergency();
     PLAY_SIREN();
   }
+  */
+  // 버튼 상태 읽기
+  int reading = digitalRead(BUTTON);
+
+  // 버튼 상태가 바뀌었는지 확인
+  if (reading != lastButtonState) {
+    // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
+    lastDebounceTime = millis();
+  }
+
+  // 디바운싱 지연 시간을 넘었으면 상태를 업데이트
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // 상태가 변하고 일정 시간 유지된 경우에만 버튼 상태 업데이트
+    if (reading != buttonState) {
+      buttonState = reading;
+
+      // 버튼이 눌렸는지 확인 (버튼이 눌린 상태는 HIGH)
+      if (buttonState == HIGH) {
+        Emergency();
+        PLAY_SIREN();
+        Serial.println("[EMERGENCY] 긴급 호출");
+      }
+    }
+  }
+
+  lastButtonState = reading; // 이전 버튼 상태 업데이트
+  if(analogRead(CDS) == 4095){
+    digitalWrite(LED,1);
+  }
+  else{
+    digitalWrite(LED,0);
+  }
+
   if(WiFi.status() == WL_CONNECTED){
     client.poll();
     if(false){ // SHOCK 센서 조건부

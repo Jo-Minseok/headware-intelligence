@@ -37,29 +37,29 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-data class Forgot_Id_Request(
+data class ForgotIdRequest(
     val name: String,
     val email: String,
     val type: String
 )
 
-data class Forgot_Id_Result(
+data class ForgotIdResult(
     val id: String
 )
 
 fun performFindId(name: String, email: String, isManager: Boolean, navController: NavController) {
     val apiService = RetrofitInstance.apiService
-    val call = apiService.apiFindid(
-        Forgot_Id_Request(
+    val call = apiService.apiFindId(
+        ForgotIdRequest(
             name,
             email,
             if (isManager) "manager" else "employee"
         )
     )
-    call.enqueue(object : Callback<Forgot_Id_Result> {
+    call.enqueue(object : Callback<ForgotIdResult> {
         override fun onResponse(
-            call: Call<Forgot_Id_Result>,
-            response: Response<Forgot_Id_Result>
+            call: Call<ForgotIdResult>,
+            response: Response<ForgotIdResult>
         ) {
             // 서버로부터 응답을 받았을 때
 
@@ -80,7 +80,7 @@ fun performFindId(name: String, email: String, isManager: Boolean, navController
             }
         }
 
-        override fun onFailure(call: Call<Forgot_Id_Result>, t: Throwable) {
+        override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
             // 서버 통신에 실패했을 때
             Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
         }

@@ -27,11 +27,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun Loading(navController: NavController) {
     var autoLogin by remember { mutableStateOf(false) }
@@ -50,7 +48,6 @@ fun Loading(navController: NavController) {
     }
 
     // 권한 요청
-    val permissionsToRequest = mutableListOf<String>()
     val permissions = mutableListOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -65,6 +62,7 @@ fun Loading(navController: NavController) {
         permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
     }
 
+    val permissionsToRequest = mutableListOf<String>()
     permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -156,6 +154,7 @@ fun Loading(navController: NavController) {
                     dialog.show()
                 }
             }
+
             override fun onFailure(call: Call<Void>, t: Throwable) {
                 builder.setTitle("서버 접속 실패")
                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")

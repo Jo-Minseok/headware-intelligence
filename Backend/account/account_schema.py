@@ -14,20 +14,20 @@ class Login_Output(BaseModel):
 class Account_Input_Create(BaseModel):
     id: str
     password: str
-    re_password: str
+    rePassword: str
     name: str
     email: EmailStr
-    phone_no: str
+    phoneNo: str
     company: Optional[str] = None
     type: str
 
-    @field_validator('id', 'password', 'name', 'email', 'phone_no', 'type')
+    @field_validator('id', 'password', 'name', 'email', 'phoneNo', 'type')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
         return v
 
-    @field_validator('re_password')
+    @field_validator('rePassword')
     def passwords_match(cls, v, info: FieldValidationInfo):
         if 'password' in info.data and v != info.data['password']:
             raise ValueError('비밀번호가 일치하지 않습니다')
@@ -55,18 +55,18 @@ class Forgot_Id_Result(BaseModel):
 # 비밀번호 변경 스키마
 class Forgot_Pw(BaseModel):
     id: str
-    phone_no: str
+    phoneNo: str
     password: str
-    re_password: str
+    rePassword: str
     type: str
 
-    @field_validator('password', 're_password', 'id', 'phone_no', 'type')
+    @field_validator('password', 'rePassword', 'id', 'phoneNo', 'type')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
         return v
 
-    @field_validator('re_password')
+    @field_validator('rePassword')
     def passwords_match(cls, v, info: FieldValidationInfo):
         if 'password' in info.data and v != info.data['password']:
             raise ValueError('비밀번호가 일치하지 않습니다')

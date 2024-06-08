@@ -1,6 +1,4 @@
-from fastapi import Depends
 from sqlalchemy.orm import Session
-from db.db_connection import get_db
 from account.account_schema import Account_Input_Create
 from db.models import UserEmployee, UserManager
 from passlib.context import CryptContext
@@ -21,14 +19,14 @@ def create_account(input_data: Account_Input_Create, db: Session):
                                    input_data.password),
                                name=input_data.name,
                                email=input_data.email,
-                               phone_no=input_data.phone_no,
+                               phoneNo=input_data.phoneNo,
                                company=input_data.company)
     elif (input_data.type == "manager"):
         db_data = UserManager(id=input_data.id,
                               password=pwd_context.hash(input_data.password),
                               name=input_data.name,
                               email=input_data.email,
-                              phone_no=input_data.phone_no,
+                              phoneNo=input_data.phoneNo,
                               company=input_data.company)
     db.add(db_data)
     db.commit()

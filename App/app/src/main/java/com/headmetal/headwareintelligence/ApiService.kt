@@ -11,25 +11,32 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
+    @GET("/")
+    fun apiGetStatus(): Call<Void>
+
     @FormUrlEncoded
     @POST("/login")
     fun apiLogin(
-        @Query("alert_token") alertToken:String,
-        @Query("type") type:String,
-        @Field("username") id:String?,
-        @Field("password") pw:String?
+        @Query("alert_token") alertToken: String,
+        @Query("type") type: String,
+        @Field("username") id: String?,
+        @Field("password") pw: String?
     ): Call<LoginResponse>
 
     @POST("/logout")
     fun apiLogout(
-        @Query("id") id:String,
-        @Query("alert_token") alertToken:String
+        @Query("id") id: String,
+        @Query("alert_token") alertToken: String
     ): Call<Void>
 
     @GET("/company/work_list")
     fun apiWorklist(
-        @Query("user_id") id:String
-    ):Call<WorklistResponse>
+        @Query("user_id") id: String
+    ): Call<WorklistResponse>
+
+    @GET("/company/list")
+    fun getCompanyList(): Call<CompanyList>
+
     @POST("/register")
     fun apiRegister(
         @Body requestBody: RegisterInputModel
@@ -44,12 +51,6 @@ interface ApiService {
     fun apiChangepw(
         @Body userEmployee: ForgotPw
     ): Call<ForgotPw>
-
-    @GET("/company/list")
-    fun getCompanyList():Call<CompanyList>
-
-    @GET("/")
-    fun apiGetStatus():Call<Void>
 
     @GET("/weather/{latitude}/{longitude}")
     suspend fun getWeather(

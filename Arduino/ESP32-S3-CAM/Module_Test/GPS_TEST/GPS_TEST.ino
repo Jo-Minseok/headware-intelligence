@@ -30,8 +30,8 @@ Adafruit_SSD1306 display(128,64,&Wire,-1);
 
 String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
 int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
-String latitude;
-String longitude;
+double latitude = 0.000000;
+double longitude = 0.000000;
 /*
 ############################################################################
                                   BLE
@@ -45,8 +45,6 @@ class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
     Serial.println("[BLE] Bluetooth connected");
     deviceConnected = true;
-    pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
-    pTxCharacteristic->notify();
   }
 
   void onDisconnect(BLEServer* pServer) {
@@ -89,8 +87,11 @@ class MyCallbacks : public BLECharacteristicCallbacks {
         int latEnd = bluetooth_data.indexOf(",", latStart);
         int lonStart = bluetooth_data.indexOf("lon:") + 4;
         
-        latitude = bluetooth_data.substring(latStart, latEnd);
-        longitude = bluetooth_data.substring(lonStart);
+        String latitudeStr = bluetooth_data.substring(latStart, latEnd);
+        String longitudeStr = bluetooth_data.substring(lonStart);
+
+        latitude = latitudeStr.toDouble();
+        longitude = longitudeStr.toDouble();
       }
     }
   }
@@ -134,12 +135,14 @@ void BT_setup() {
     tone(PIEZO,melody[0],500);
     delay(1000);
   }
+
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
-  pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
-  pTxCharacteristic->notify();
 }
 
 void ID_setup(){
+  pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
+  pTxCharacteristic->notify();
+
   pTxCharacteristic->setValue("user_id");
   pTxCharacteristic->notify();
 
@@ -291,8 +294,8 @@ void SendingData(String type)
     jsonPayload += "\"category\":\"" + type + "\",";
     jsonPayload += "\"date\":[" + String(timeInfo->tm_year + 1900) + "," + String(timeInfo->tm_mon + 1) + "," + String(timeInfo->tm_mday) + "],";
     jsonPayload += "\"time\":[" + String(timeInfo->tm_hour) + "," + String(timeInfo->tm_min) + "," + String(timeInfo->tm_sec) + "],";
-    jsonPayload += "\"latitude\":" + latitude + ",";
-    jsonPayload += "\"longitude\":"+ longitude + ",";
+    jsonPayload += "\"latitude\":" + String(latitude) + ",";
+    jsonPayload += "\"longitude\":"+ String(longitude) + ",";
     jsonPayload += "\"work_id\":\"" + work_id + "\",";
     jsonPayload += "\"victim_id\":\"" + user_id + "\"";
     jsonPayload += "}";
@@ -360,7 +363,6 @@ void onEventsCallback(WebsocketsEvent event, String data) {
     Serial.println("[SYSTEM] WEBSOCKET: CONNECT");
   } else if (event == WebsocketsEvent::ConnectionClosed) {
     Serial.println("[SYSTEM] WEBSOCKET: CLOSE");
-    client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
   }
 }
 
@@ -634,49 +636,7 @@ unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
 
 void loop(){
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
-  if(!deviceConnected){
-    digitalWrite(RESET,LOW);
-  }
-
-  // 버튼 상태 읽기
-  int reading = digitalRead(BUTTON);
-
-  // 버튼 상태가 바뀌었는지 확인
-  if (reading != lastButtonState) {
-    // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
-    lastDebounceTime = millis();
-  }
-
-  // 디바운싱 지연 시간을 넘었으면 상태를 업데이트
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    // 상태가 변하고 일정 시간 유지된 경우에만 버튼 상태 업데이트
-    if (reading != buttonState) {
-      buttonState = reading;
-
-      // 버튼이 눌렸는지 확인 (버튼이 눌린 상태는 HIGH)
-      if (buttonState == HIGH) {
-        Emergency();
-        PLAY_SIREN();
-        Serial.println("[EMERGENCY] 긴급 호출");
-      }
-    }
-  }
-
-  lastButtonState = reading; // 이전 버튼 상태 업데이트
-  if(analogRead(CDS) == 4095){
-    digitalWrite(LED,1);
-  }
-  else{
-    digitalWrite(LED,0);
-  }
-
-  if(WiFi.status() == WL_CONNECTED){
-    client.poll();
-    if(false){ // SHOCK 센서 조건부
-      SendingData("낙하");
-    }
-  }
-  else{
-    WIFI_setup();
-  }
+  pTxCharacteristic->setValue("GPS");
+  pTxCharacteristic->notify();
+  delay(1000);
 }

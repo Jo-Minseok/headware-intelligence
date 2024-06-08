@@ -88,7 +88,7 @@ fun performFindId(name: String, email: String, isManager: Boolean, navController
 }
 
 
-private fun showFindIdFailedDialog(navController: NavController) {
+fun showFindIdFailedDialog(navController: NavController) {
     val builder = AlertDialog.Builder(navController.context)
     builder.setTitle("아이디 찾기 실패")
     builder.setMessage("일치하는 계정을 찾을 수 없습니다.")
@@ -114,7 +114,7 @@ fun showAccessFailedDialog(navController: NavController) {
     dialog.show()
 }
 
-private fun showIdDialog(navController: NavController, id: String) {
+fun showIdDialog(navController: NavController, id: String) {
     val builder = AlertDialog.Builder(navController.context)
     builder.setTitle("아이디")
     builder.setMessage("ID: $id")
@@ -128,7 +128,7 @@ private fun showIdDialog(navController: NavController, id: String) {
 }
 
 @Composable
-fun Findid(navController: NavController, modifier: Modifier = Modifier) {
+fun FindId(navController: NavController, modifier: Modifier = Modifier) {
     var name by remember {
         mutableStateOf("")
     }

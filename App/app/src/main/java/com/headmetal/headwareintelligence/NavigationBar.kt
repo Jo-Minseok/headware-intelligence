@@ -1,26 +1,10 @@
 package com.headmetal.headwareintelligence
 
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
@@ -29,8 +13,8 @@ sealed class Destinations(val route: String,val title: String) {
     object Loading : Destinations("loadingScreen","로딩")
     object Login : Destinations("loginScreen","로그인")
     object Signup: Destinations("signupScreen","회원가입")
-    object Findid : Destinations("findidScreen","아이디찾기")
-    object Findpw : Destinations("findpwScreen","비밀번호찾기")
+    object FindId : Destinations("findidScreen","아이디찾기")
+    object FindPw : Destinations("findpwScreen","비밀번호찾기")
     object Main : Destinations("mainScreen","홈")
     object Processing : Destinations("processingScreen","처리내역")
     object Menu : Destinations("menuScreen","메뉴")
@@ -58,10 +42,10 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
     composable(Destinations.Signup.route) {
         Signup(navController)
     }
-    composable(Destinations.Findid.route) {
-        Findid(navController)
+    composable(Destinations.FindId.route) {
+        FindId(navController)
     }
-    composable(Destinations.Findpw.route) {
+    composable(Destinations.FindPw.route) {
         Findpw(navController)
     }
 }

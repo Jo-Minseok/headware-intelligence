@@ -81,58 +81,51 @@ fun performSignup(
         builder.setPositiveButton("확인") { dialog, _ ->
             dialog.dismiss()
         }
-        val dialog = builder.create()
-        dialog.show()
-        return
-    }
+    } else {
+        val companyToSend = if (company == "없음") null else company
 
-    val companyToSend = if (company == "없음") null else company
-
-    LoadingState.show()
-    RetrofitInstance.apiService.apiRegister(
-        RegisterInputModel(
-            id,
-            password,
-            rePassword,
-            name,
-            email,
-            phoneNo,
-            companyToSend,
-            if (isManager) "manager" else "employee"
-        )
-    ).enqueue(object : Callback<RegisterInputModel> {
-        override fun onResponse(
-            call: Call<RegisterInputModel>,
-            response: Response<RegisterInputModel>
-        ) {
-            Log.d("HEAD METAL", response.message())
-            if (response.isSuccessful) {
-                builder.setTitle("회원가입 성공")
-                builder.setMessage("로그인 화면으로 이동합니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    navController.navigate("loginScreen")
-                }
-                val dialog = builder.create()
-                dialog.show()
-                LoadingState.hide()
-            } else {
-                builder.setTitle("회원가입 실패")
-                builder.setMessage("이미 존재하는 회원 또는 잘못된 정보입니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
+        LoadingState.show()
+        RetrofitInstance.apiService.apiRegister(
+            RegisterInputModel(
+                id,
+                password,
+                rePassword,
+                name,
+                email,
+                phoneNo,
+                companyToSend,
+                if (isManager) "manager" else "employee"
+            )
+        ).enqueue(object : Callback<RegisterInputModel> {
+            override fun onResponse(
+                call: Call<RegisterInputModel>,
+                response: Response<RegisterInputModel>
+            ) {
+                if (response.isSuccessful) {
+                    builder.setTitle("회원가입 성공")
+                    builder.setMessage("로그인 화면으로 이동합니다.")
+                    builder.setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                        navController.navigate("loginScreen")
+                    }
+                } else {
+                    builder.setTitle("회원가입 실패")
+                    builder.setMessage("이미 존재하는 회원 또는 잘못된 정보입니다.")
+                    builder.setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                    }
                 }
                 val dialog = builder.create()
                 dialog.show()
                 LoadingState.hide()
             }
-        }
 
-        override fun onFailure(call: Call<RegisterInputModel>, t: Throwable) {
-            Log.e("HEAD METAL", t.message.toString())
-            LoadingState.hide()
-        }
-    })
+            override fun onFailure(call: Call<RegisterInputModel>, t: Throwable) {
+                Log.e("HEAD METAL", t.message.toString())
+                LoadingState.hide()
+            }
+        })
+    }
 }
 
 // 회원가입 화면

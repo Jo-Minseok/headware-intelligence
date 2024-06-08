@@ -43,12 +43,12 @@ interface ApiService {
     ): Call<RegisterInputModel>
 
     @POST("/forgot/id")
-    fun apiFindid(
-        @Body request: Forgot_Id_Request
-    ): Call<Forgot_Id_Result>
+    fun apiFindId(
+        @Body request: ForgotIdRequest
+    ): Call<ForgotIdResult>
 
     @PUT("/forgot/pw")
-    fun apiChangepw(
+    fun apiChangePw(
         @Body userEmployee: ForgotPw
     ): Call<ForgotPw>
 

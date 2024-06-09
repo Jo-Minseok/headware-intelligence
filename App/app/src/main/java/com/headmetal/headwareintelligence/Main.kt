@@ -122,6 +122,13 @@ fun Main(
             permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
 
+    val temperature by weatherViewModel.temperature
+    val airVelocity by weatherViewModel.airVelocity
+    val precipitation by weatherViewModel.precipitation
+    val humidity by weatherViewModel.humidity
+    var refreshState by remember { mutableStateOf(false) }
+    var isRefreshClickable by remember { mutableStateOf(true) }
+
     LaunchedEffect(Unit) {
         when {
             ContextCompat.checkSelfPermission(
@@ -150,39 +157,42 @@ fun Main(
         }
     }
 
-    val temperature by weatherViewModel.temperature
-    val airVelocity by weatherViewModel.airVelocity
-    val precipitation by weatherViewModel.precipitation
-    val humidity by weatherViewModel.humidity
-    var refreshState by remember { mutableStateOf(true) }
-    var isRefreshClickable by remember { mutableStateOf(true) }
+    if (refreshState) {
+        LaunchedEffect(Unit) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    hasLocationPermission = true
+                }
 
-    LaunchedEffect(refreshState) {
-        when {
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                hasLocationPermission = true
-            }
-
-            else -> {
-                locationPermissionRequest.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+                else -> {
+                    locationPermissionRequest.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
                     )
-                )
+                }
             }
-        }
 
-        if (hasLocationPermission) {
-            val location = fusedLocationClient.lastLocation.await()
-            location?.let {
-                weatherViewModel.getWeather(it.latitude, it.longitude)
-                refreshState = false
+            if (hasLocationPermission) {
+                val location = fusedLocationClient.lastLocation.await()
+                location?.let {
+                    weatherViewModel.getWeather(it.latitude, it.longitude)
+                    refreshState = false
+                }
+            } else {
+                Log.e("HEAD METAL", "위치 권한이 필요함")
             }
-        } else {
-            Log.e("HEAD METAL", "위치 권한이 필요함")
+
+            Toast
+                .makeText(
+                    navController.context,
+                    "새로고침 되었습니다.",
+                    Toast.LENGTH_SHORT
+                )
+                .show()
         }
     }
 
@@ -215,7 +225,7 @@ fun Main(
                 .fillMaxWidth()
                 .clickable { navController.navigate("privacyScreen") }
             ) {
-                Row {
+                Row(Modifier.padding(vertical = 5.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = "개인정보",
@@ -358,13 +368,6 @@ fun Main(
                             .size(32.dp)
                             .clickable(enabled = isRefreshClickable) {
                                 refreshState = true
-                                Toast
-                                    .makeText(
-                                        navController.context,
-                                        "새로고침 되었습니다.",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                    .show()
                                 isRefreshClickable = false
 
                                 coroutineScope.launch {

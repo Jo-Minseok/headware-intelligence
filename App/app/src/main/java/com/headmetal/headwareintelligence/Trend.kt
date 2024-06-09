@@ -1,7 +1,6 @@
 package com.headmetal.headwareintelligence
 
 import android.graphics.Typeface
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,10 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,13 +49,11 @@ import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.legend.verticalLegendItem
-import com.patrykandpatrick.vico.core.axis.Axis
 import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
 import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.line.LineChart.LineSpec
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.Shapes
-import com.patrykandpatrick.vico.core.component.text.TextComponent
 import com.patrykandpatrick.vico.core.component.text.textComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.FloatEntry
@@ -68,29 +62,29 @@ import com.patrykandpatrick.vico.core.legend.VerticalLegend
 import kotlinx.coroutines.launch
 
 data class TrendResponse(
-    val monthData: List<Int>,
-    val inclination: Double,
-    val intercept: Double
+    val monthData: List<Int>?,
+    val inclination: Double?,
+    val intercept: Double?
 )
 
 class TrendViewModel : ViewModel() {
     private val apiService = RetrofitInstance.apiService
 
-    private val _monthData = mutableStateOf(emptyList<Int>())
-    val monthData: State<List<Int>> = _monthData
+    private val _monthData = mutableStateOf<List<Int>?>(null)
+    val monthData: State<List<Int>?> = _monthData
 
-    private val _inclination = mutableDoubleStateOf(0.0)
-    val inclination: State<Double> = _inclination
+    private val _inclination = mutableStateOf<Double?>(null)
+    val inclination: State<Double?> = _inclination
 
-    private val _intercept = mutableDoubleStateOf(0.0)
-    val intercept: State<Double> = _intercept
+    private val _intercept = mutableStateOf<Double?>(null)
+    val intercept: State<Double?> = _intercept
 
     fun getTrendData(start: String, end: String) {
         viewModelScope.launch {
             val response = apiService.getTrendData(start, end)
             _monthData.value = response.monthData
-            _inclination.doubleValue = response.inclination
-            _intercept.doubleValue = response.intercept
+            _inclination.value = response.inclination
+            _intercept.value = response.intercept
         }
     }
 }
@@ -104,47 +98,28 @@ fun Trend(
     val monthData by trendViewModel.monthData
     val inclination by trendViewModel.inclination
     val intercept by trendViewModel.intercept
-    val refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
-
-    val veryHighDangerLine = 3
-    val highDangerLine = 0
-
-    val dangerColor = when {
-        inclination > veryHighDangerLine -> Color.Red
-        inclination > highDangerLine -> Color(0xFFFF6600)
-        else -> Color.Green
-    }
-    val dangerText = when {
-        inclination > veryHighDangerLine -> "매우 높음"
-        inclination > highDangerLine -> "높음"
-        else -> "보통"
-    }
-    val dangerTextDetail = when {
-        inclination > veryHighDangerLine -> "각별한 안전 사고 주의가 필요해요"
-        inclination > highDangerLine -> "안전 사고 주의가 필요해요"
-        else -> "안전 관심은 항상 필요해요"
-    }
 
     var expanded by remember { mutableStateOf(false) }
     val options = generateOptions()
-    var selectedOption by remember { mutableStateOf(options[options.lastIndex]) }
+    var selectedOption by remember { mutableStateOf("선택") }
 
-    LaunchedEffect(refreshState.value) {
-        val (startMonth, endMonth) = getMonthsFromOption(selectedOption)
-        trendViewModel.getTrendData(startMonth, endMonth)
-        refreshState.value = false
-    }
-
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9F9F9)
+    ) {
+        Column {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 20.dp, bottom = 10.dp)
+                    .padding(20.dp)
                     .clickable { navController.navigateUp() }
             )
-            Box(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 20.dp)
+            ) {
                 Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -182,30 +157,54 @@ fun Trend(
                             )
                             ExposedDropdownMenu(
                                 expanded = expanded,
-                                onDismissRequest = { expanded = false }
+                                onDismissRequest = { expanded = false },
                             ) {
                                 options.forEach { item ->
                                     DropdownMenuItem(
                                         text = { Text(text = item) },
                                         onClick = {
-                                            selectedOption = item
-                                            refreshState.value = true
-                                            expanded = false
+                                            if (selectedOption != item) {
+                                                expanded = false
+                                                selectedOption = item
+                                            }
                                         }
                                     )
                                 }
                             }
                         }
                     }
-
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            if (!expanded) {
+
+            LaunchedEffect(selectedOption) {
+                if (selectedOption != "선택") {
+                    val (startMonth, endMonth) = getMonthsFromOption(selectedOption)
+                    trendViewModel.getTrendData(startMonth, endMonth)
+                }
+            }
+
+            monthData?.let {
+                val veryHighDangerLine = 3
+                val highDangerLine = 0
+                val dangerColor = when {
+                    inclination!! > veryHighDangerLine -> Color.Red
+                    inclination!! > highDangerLine -> Color(0xFFFF6600)
+                    else -> Color.Green
+                }
+                val dangerText = when {
+                    inclination!! > veryHighDangerLine -> "매우 높음"
+                    inclination!! > highDangerLine -> "높음"
+                    else -> "보통"
+                }
+                val dangerTextDetail = when {
+                    inclination!! > veryHighDangerLine -> "각별한 안전 사고 주의가 필요해요"
+                    inclination!! > highDangerLine -> "안전 사고 주의가 필요해요"
+                    else -> "안전 관심은 항상 필요해요"
+                }
+
                 Box(
                     modifier = Modifier
-                        .padding(start = 8.dp, end = 8.dp)
-                        .background(color = Color.White)
+                        .padding(horizontal = 8.dp)
                         .border(
                             width = 1.dp,
                             color = Color(0xFFE0E0E0),
@@ -224,16 +223,12 @@ fun Trend(
                                 imageVector = Icons.Default.Circle,
                                 contentDescription = null,
                                 tint = dangerColor,
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 10.dp, top = 5.dp)
+                                modifier = Modifier.padding(start = 10.dp, top = 5.dp)
                             )
                             Text(
                                 text = dangerText,
                                 fontSize = 16.sp,
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 5.dp, top = 5.dp)
+                                modifier = Modifier.padding(start = 5.dp, top = 5.dp)
                             )
                         }
                         Text(
@@ -241,13 +236,14 @@ fun Trend(
                             modifier = Modifier.padding(start = 40.dp, bottom = 5.dp)
                         )
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(5.dp).fillMaxSize()
+                            Modifier
+                                .padding(horizontal = 8.dp)
+                                .padding(5.dp)
                         ) {
                             ChartPrint(
-                                monthData = monthData,
-                                inclination = inclination,
-                                intercept = intercept,
+                                monthData = monthData!!,
+                                inclination = inclination!!,
+                                intercept = intercept!!,
                                 selectedOption = selectedOption,
                                 dangerColor = dangerColor
                             )
@@ -268,15 +264,15 @@ fun ChartPrint(
     dangerColor: Color
 ) {
     val trendData = mutableListOf<Double>()
-    for (x in monthData.indices) { // 기울기와 절편 값으로 사고 추세 직선 구하기
+    for (x in monthData.indices) {
         trendData.add(x * inclination + intercept)
     }
-    val monthDataProducer = ChartEntryModelProducer( // 월별 사고 건수 데이터 모델
+    val monthDataProducer = ChartEntryModelProducer(
         monthData.mapIndexed { index, value ->
             FloatEntry(index.toFloat(), value.toFloat())
         }
     )
-    val trendDataProducer = ChartEntryModelProducer( // 사고 추세 모델
+    val trendDataProducer = ChartEntryModelProducer(
         trendData.mapIndexed { index, value ->
             FloatEntry(index.toFloat(), value.toFloat())
         }
@@ -298,8 +294,7 @@ fun ChartPrint(
         ).plus(
             com.patrykandpatrick.vico.compose.chart.line.lineChart( // 추세선 차트 부분
                 lines = listOf(
-                    LineSpec(
-                        // 추세선 속성 지정
+                    LineSpec( // 추세선 속성 지정
                         lineColor = when (dangerColor) { // 선 색상 지정
                             Color.Red -> android.graphics.Color.RED
                             Color(0xFFFF6600) -> android.graphics.Color.rgb(255, 102, 0)
@@ -332,7 +327,6 @@ fun ChartPrint(
     )
 }
 
-// 그래프 범례
 @Composable
 fun rememberLegend(colors: List<Color>): VerticalLegend {
     val labelTextList = listOf("월별 사고 건수", "사고 추세")
@@ -353,7 +347,6 @@ fun rememberLegend(colors: List<Color>): VerticalLegend {
     )
 }
 
-// 드롭다운 메뉴박스 각 항목 이름
 fun getMonthsFromOption(option: String): Pair<String, String> {
     val year = option.substringBefore("년").toInt()
     val half = option.substringAfter("년 ").substringBefore("반기")
@@ -362,7 +355,6 @@ fun getMonthsFromOption(option: String): Pair<String, String> {
     return Pair("$year-${startMonth.padStart(2, '0')}", "$year-${endMonth.padStart(2, '0')}")
 }
 
-// 드롭다운 메뉴박스 항목 추가
 fun generateOptions(): List<String> {
     val startDate = Calendar.getInstance()
     startDate.set(2023, Calendar.JANUARY, 1)
@@ -381,6 +373,5 @@ fun generateOptions(): List<String> {
     }
 
     options[options.lastIndex] += "(현재)"
-
     return options
 }

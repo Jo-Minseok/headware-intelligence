@@ -372,11 +372,8 @@ fun MapScreen(
                         workId.addAll(accidentViewModel.workId.value)
 
                         // 지도의 초기 위치 설정
-                        val initialCameraPosition =
-                            CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287))
-//                    val initialCameraPosition =
-//                        CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!))
-                        map.moveCamera(initialCameraPosition)
+                        // map.moveCamera(CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287)))
+                        map.moveCamera(CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!)))
 
                         // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성
                         cluster.value = Clusterer.Builder<ItemKey>().clusterMarkerUpdater(object :

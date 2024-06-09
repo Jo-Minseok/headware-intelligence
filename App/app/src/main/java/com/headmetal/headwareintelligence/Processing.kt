@@ -3,10 +3,8 @@ package com.headmetal.headwareintelligence
 import android.app.Activity
 import android.content.SharedPreferences
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -155,7 +153,7 @@ fun Processing(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     val tabIndexState: MutableState<Boolean> = remember { mutableStateOf(false) }
-    var refreshState by remember { mutableStateOf(true) }
+    var refreshState by remember { mutableStateOf(false) }
     var isRefreshClickable by remember { mutableStateOf(true) }
 
     Surface(
@@ -192,14 +190,6 @@ fun Processing(
                                 refreshState = true
                                 isRefreshClickable = false
 
-                                Toast
-                                    .makeText(
-                                        navController.context,
-                                        "새로고침 되었습니다.",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                    .show()
-
                                 coroutineScope.launch {
                                     delay(3000)
                                     isRefreshClickable = true
@@ -212,12 +202,10 @@ fun Processing(
                 selectedTabIndex = selectedTabIndex,
                 modifier = Modifier.border(
                     width = 1.dp,
-                    color = Color(0xFFE0E0E0),
-                    shape = RoundedCornerShape(8.dp)
+                    color = Color(0xFFE0E0E0)
                 )
             ) {
                 Tab(
-                    modifier = Modifier.background(color = Color.White),
                     selected = selectedTabIndex == 0,
                     onClick = {
                         selectedTabIndex = 0
@@ -226,7 +214,6 @@ fun Processing(
                     },
                     text = { Text(text = "사고 처리", fontSize = 20.sp, color = Color.Black) })
                 Tab(
-                    modifier = Modifier.background(color = Color.White),
                     selected = selectedTabIndex == 1,
                     onClick = {
                         selectedTabIndex = 1
@@ -235,12 +222,28 @@ fun Processing(
                     },
                     text = { Text(text = "오작동 처리", fontSize = 20.sp, color = Color.Black) })
             }
-            Box(modifier = Modifier.weight(1f)) {
-                LaunchedEffect(refreshState || tabIndexState.value) {
+
+            LaunchedEffect(tabIndexState.value) {
+                LoadingState.show()
+                CoroutineScope(Dispatchers.IO).async {
+                    val state = accidentProcessingViewModel.state
+                    accidentProcessingViewModel.getAllAccidentProcessingData(
+                        sharedAccount.getString(
+                            "userid", null
+                        ).toString(), situationCode.value
+                    )
+                    while (state == accidentProcessingViewModel.state) {
+                        //
+                    }
+                }.await()
+                LoadingState.hide()
+                tabIndexState.value = false
+            }
+
+            if (refreshState) {
+                LaunchedEffect(Unit) {
                     LoadingState.show()
                     CoroutineScope(Dispatchers.IO).async {
-                        refreshState = false
-                        tabIndexState.value = false
                         val state = accidentProcessingViewModel.state
                         accidentProcessingViewModel.getAllAccidentProcessingData(
                             sharedAccount.getString(
@@ -252,139 +255,149 @@ fun Processing(
                         }
                     }.await()
                     LoadingState.hide()
-                }
+                    refreshState = false
 
-                val no by accidentProcessingViewModel.no
-                val date by accidentProcessingViewModel.date
-                val time by accidentProcessingViewModel.time
-                val latitude by accidentProcessingViewModel.latitude
-                val longitude by accidentProcessingViewModel.longitude
-                val category by accidentProcessingViewModel.category
-                val victim by accidentProcessingViewModel.victim
-                val situation by accidentProcessingViewModel.situation
-                val processingDate by accidentProcessingViewModel.processingDate
-                val processingTime by accidentProcessingViewModel.processingTime
-                val detail by accidentProcessingViewModel.detail
-
-                val itemList = mutableListOf<Item>()
-
-                for (i in no.indices) {
-                    itemList.add(
-                        Item(
-                            no[i],
-                            date[i],
-                            time[i],
-                            latitude[i],
-                            longitude[i],
-                            category[i],
-                            victim[i],
-                            situation[i] ?: "미처리",
-                            processingDate[i] ?: "",
-                            processingTime[i] ?: "",
-                            detail[i] ?: ""
+                    Toast
+                        .makeText(
+                            navController.context,
+                            "새로고침 되었습니다.",
+                            Toast.LENGTH_SHORT
                         )
-                    )
+                        .show()
                 }
-                LazyColumn {
-                    items(itemList) { item ->
-                        if (item.situation != "미처리") {
-                            val color = when (item.situation) {
-                                "처리 완료" -> Color(0xD0D9F7BE)
-                                "처리 중" -> Color(0xD0FFC832)
-                                "119 신고" -> Color(0xD0FFCCC7)
-                                else -> Color.Gray
-                            }
-                            Card(
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp),
-                                colors = CardDefaults.cardColors(containerColor = color)
-                            ) {
-                                Column {
-                                    Row {
-                                        Text(
-                                            text = "# 사고번호 ${item.no}",
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(start = 10.dp, top = 10.dp)
-                                        )
-                                        Text(
-                                            text = "처리내역 : ${item.situation}",
-                                            style = TextStyle(textAlign = TextAlign.End),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(end = 10.dp, top = 10.dp)
-                                        )
-                                    }
-                                    Divider(
-                                        color = Color.LightGray,
-                                        thickness = 1.dp,
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                    Row {
-                                        Icon(
-                                            imageVector = Icons.Default.TripOrigin,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .align(Alignment.CenterVertically)
-                                                .padding(start = 10.dp, top = 1.dp)
-                                        )
-                                        Text(
-                                            text = "사고 위치",
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(start = 5.dp)
-                                        )
-                                    }
+            }
+
+            val no by accidentProcessingViewModel.no
+            val date by accidentProcessingViewModel.date
+            val time by accidentProcessingViewModel.time
+            val latitude by accidentProcessingViewModel.latitude
+            val longitude by accidentProcessingViewModel.longitude
+            val category by accidentProcessingViewModel.category
+            val victim by accidentProcessingViewModel.victim
+            val situation by accidentProcessingViewModel.situation
+            val processingDate by accidentProcessingViewModel.processingDate
+            val processingTime by accidentProcessingViewModel.processingTime
+            val detail by accidentProcessingViewModel.detail
+
+            val itemList = mutableListOf<Item>()
+
+            for (i in no.indices) {
+                itemList.add(
+                    Item(
+                        no[i],
+                        date[i],
+                        time[i],
+                        latitude[i],
+                        longitude[i],
+                        category[i],
+                        victim[i],
+                        situation[i] ?: "미처리",
+                        processingDate[i] ?: "",
+                        processingTime[i] ?: "",
+                        detail[i] ?: ""
+                    )
+                )
+            }
+
+            LazyColumn {
+                items(itemList) { item ->
+                    if (item.situation != "미처리") {
+                        val color = when (item.situation) {
+                            "처리 완료" -> Color(0xD0D9F7BE)
+                            "처리 중" -> Color(0xD0FFC832)
+                            "119 신고" -> Color(0xD0FFCCC7)
+                            else -> Color.Gray
+                        }
+                        Card(
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = color)
+                        ) {
+                            Column {
+                                Row {
                                     Text(
-                                        text = "위도 : ${item.latitude}\n경도 : ${item.longitude}",
+                                        text = "# 사고번호 ${item.no}",
                                         fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 38.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(30.dp))
-                                    Row {
-                                        Icon(
-                                            imageVector = Icons.Default.TripOrigin,
-                                            contentDescription = null,
-                                            tint = Color(0xFFFF6600),
-                                            modifier = Modifier
-                                                .align(Alignment.CenterVertically)
-                                                .padding(start = 10.dp, top = 1.dp)
-                                        )
-                                        Text(
-                                            text = "사고 발생자",
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(start = 5.dp)
-                                        )
-                                    }
-                                    Text(
-                                        text = item.victim,
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(
-                                            start = 38.dp,
-                                            bottom = 10.dp
-                                        )
-                                    )
-                                    Divider(
-                                        color = Color.LightGray,
-                                        thickness = 1.dp,
-                                        modifier = Modifier.padding(vertical = 8.dp)
+                                        modifier = Modifier.padding(start = 10.dp, top = 10.dp)
                                     )
                                     Text(
-                                        text = "사고 내역 : ${item.category}",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                    )
-                                    Text(
-                                        text = "사고 발생 일시 : ${item.date} ${item.time}",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                    )
-                                    Text(
-                                        text = "사고 처리 일시 : ${item.processingDate} ${item.processingTime}",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                                        text = "처리내역 : ${item.situation}",
+                                        style = TextStyle(textAlign = TextAlign.End),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(end = 10.dp, top = 10.dp)
                                     )
                                 }
+                                Divider(
+                                    color = Color.LightGray,
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                                Row {
+                                    Icon(
+                                        imageVector = Icons.Default.TripOrigin,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterVertically)
+                                            .padding(start = 10.dp)
+                                    )
+                                    Text(
+                                        text = "사고 위치",
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(start = 5.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "위도 : ${item.latitude}\n경도 : ${item.longitude}",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 38.dp)
+                                )
+                                Spacer(modifier = Modifier.height(30.dp))
+                                Row {
+                                    Icon(
+                                        imageVector = Icons.Default.TripOrigin,
+                                        contentDescription = null,
+                                        tint = Color(0xFFFF6600),
+                                        modifier = Modifier
+                                            .align(Alignment.CenterVertically)
+                                            .padding(start = 10.dp)
+                                    )
+                                    Text(
+                                        text = "사고 발생자",
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(start = 5.dp)
+                                    )
+                                }
+                                Text(
+                                    text = item.victim,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(
+                                        start = 38.dp,
+                                        bottom = 10.dp
+                                    )
+                                )
+                                Divider(
+                                    color = Color.LightGray,
+                                    thickness = 1.dp,
+                                    modifier = Modifier.padding(vertical = 8.dp)
+                                )
+                                Text(
+                                    text = "사고 내역 : ${item.category}",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                                )
+                                Text(
+                                    text = "사고 발생 일시 : ${item.date} ${item.time}",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                                )
+                                Text(
+                                    text = "사고 처리 일시 : ${item.processingDate} ${item.processingTime}",
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                                )
                             }
                         }
                     }

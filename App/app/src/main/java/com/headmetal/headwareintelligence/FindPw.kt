@@ -41,16 +41,16 @@ import retrofit2.Response
 
 data class ForgotPw(
     val id: String,
-    val phone_no: String,
+    val phoneNo: String,
     val password: String,
-    val re_password: String,
+    val rePassword: String,
     val type:String
 )
 
-fun performChangePw(id: String, phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
-    if (password == re_password && password.isNotEmpty()) {
+fun performChangePw(id: String, phone:String, password: String, rePassword: String, isManager: Boolean, navController: NavController) {
+    if (password == rePassword && password.isNotEmpty()) {
         val apiService = RetrofitInstance.apiService
-        val call = apiService.apiChangePw(ForgotPw(id, phone,password,re_password,if(isManager)"manager" else "employee"))
+        val call = apiService.apiChangePw(ForgotPw(id, phone,password,rePassword,if(isManager)"manager" else "employee"))
         call.enqueue(object : Callback<ForgotPw> {
             override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
                 if (response.isSuccessful) {
@@ -106,7 +106,7 @@ fun FindPw(navController: NavController) {
     var password by remember {
         mutableStateOf("")
     }
-    var re_password by remember {
+    var rePassword by remember {
         mutableStateOf("")
     }
 
@@ -206,8 +206,8 @@ fun FindPw(navController: NavController) {
                     fontSize = 16.sp
                 )
                 TextField(
-                    value = re_password,
-                    onValueChange = { re_password = it },
+                    value = rePassword,
+                    onValueChange = { rePassword = it },
                     shape = RoundedCornerShape(8.dp),
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
@@ -262,7 +262,7 @@ fun FindPw(navController: NavController) {
             }
             Row {
                 Button(
-                    onClick = {performChangePw(id, phone, password, re_password, isManager, navController)},
+                    onClick = {performChangePw(id, phone, password, rePassword, isManager, navController)},
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

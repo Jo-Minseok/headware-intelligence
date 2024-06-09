@@ -9,8 +9,8 @@ def forgot_id(name: str, email: str, type: str, db: Session):
         return db.query(UserManager).filter((UserManager.name == name) & (UserManager.email == email)).first()
 
 
-def search_account(id: str, phone_no: str, type: str, db: Session):
+def search_account(id: str, phoneNo: str, type: str, db: Session):
     if (type == "employee"):
-        return db.query(UserEmployee).filter((UserEmployee.id == id) & (UserEmployee.phone_no == phone_no)).first()
+        return db.query(UserEmployee).filter((UserEmployee.id == id) & (UserEmployee.phone_no == phoneNo)).first()
     elif (type == "manager"):
-        return db.query(UserManager).filter((UserManager.id == id) & (UserManager.phone_no == phone_no)).first()
+        return db.query(UserManager).filter((UserManager.id == id) & (UserManager.phone_no == phoneNo)).first()

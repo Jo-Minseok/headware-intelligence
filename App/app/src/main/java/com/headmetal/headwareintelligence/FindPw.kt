@@ -4,16 +4,17 @@ import android.app.AlertDialog
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -38,7 +39,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-
 data class ForgotPw(
     val id: String,
     val phone_no: String,
@@ -47,71 +47,53 @@ data class ForgotPw(
     val type:String
 )
 
-fun makeDialog(title:String,message:String,navController: NavController){
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle(title)
-    builder.setMessage(message)
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
-}
-
-fun sendPasswordChangeRequest(id: String, phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
-    val apiService = RetrofitInstance.apiService
-    val call = apiService.apiChangePw(ForgotPw(id, phone,password,re_password,if(isManager)"manager" else "employee"))
-    call.enqueue(object : Callback<ForgotPw> {
-        override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
-            if (response.isSuccessful) {
-                showPasswordSuccessDialog(navController)
-            }
-            else {
-                Log.e("HEAD METAL","비밀번호 변경 요청 실패: ${response.code()}")
-                val errorBody = response.errorBody()?.string()
-                Log.e("HEAD METAL","에러 응답: $errorBody")
-            }
-        }
-
-        override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
-            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-        }
-    })
-}
-
-fun showPasswordSuccessDialog(navController: NavController){
-    val builder = AlertDialog.Builder(navController.context)
-    builder.setTitle("비밀번호 변경 성공")
-    builder.setMessage("로그인 화면으로 이동합니다.")
-
-    // 확인 버튼 설정
-    builder.setPositiveButton("확인") { dialog, _ ->
-        dialog.dismiss()
-        navController.navigate("loginScreen")
-    }
-
-    // 다이얼로그 표시
-    val dialog = builder.create()
-    dialog.show()
-}
-
-// 변경된 OnPasswordChangeButtonClick 함수
-fun OnPasswordChangeButtonClick(id: String,phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
+fun performChangePw(id: String, phone:String, password: String, re_password: String, isManager: Boolean, navController: NavController) {
     if (password == re_password && password.isNotEmpty()) {
-        // 새 비밀번호와 비밀번호 확인 값이 일치하고 비밀번호가 비어 있지 않은 경우에만 서버로 요청을 보냄
-        sendPasswordChangeRequest(id, phone, password,re_password, isManager, navController)
+        val apiService = RetrofitInstance.apiService
+        val call = apiService.apiChangePw(ForgotPw(id, phone,password,re_password,if(isManager)"manager" else "employee"))
+        call.enqueue(object : Callback<ForgotPw> {
+            override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
+                if (response.isSuccessful) {
+                    val builder = AlertDialog.Builder(navController.context)
+                    builder.setTitle("비밀번호 변경 성공")
+                    builder.setMessage("로그인 화면으로 이동합니다.")
+
+                    // 확인 버튼 설정
+                    builder.setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                        navController.navigate("loginScreen")
+                    }
+
+                    // 다이얼로그 표시
+                    val dialog = builder.create()
+                    dialog.show()
+                }
+                else {
+                    Log.e("HEAD METAL","비밀번호 변경 요청 실패: ${response.code()}")
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("HEAD METAL","에러 응답: $errorBody")
+                }
+            }
+
+            override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
+                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+            }
+        })
     } else {
-        makeDialog("비밀번호 변경 실패","정보나 새 비밀번호와 비밀번호 확인을 다시 확인하세요!",navController)
+        val builder = AlertDialog.Builder(navController.context)
+        builder.setTitle("비밀번호 변경 실패")
+        builder.setMessage("입력한 정보를 다시 확인하세요!")
+        builder.setPositiveButton("확인") { dialog, _ ->
+            dialog.dismiss()
+        }
+        val dialog = builder.create()
+        dialog.show()
     }
 }
 
 // App UI 부분
 @Composable
-fun Findpw(navController: NavController) {
+fun FindPw(navController: NavController) {
     var id by remember {
         mutableStateOf("")
     }
@@ -127,6 +109,7 @@ fun Findpw(navController: NavController) {
     var re_password by remember {
         mutableStateOf("")
     }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
@@ -139,136 +122,147 @@ fun Findpw(navController: NavController) {
                 painter = painterResource(id = R.drawable.helmet),
                 contentDescription = null
             )
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "아이디",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = id,
                     onValueChange = { id = it },
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "전화번호",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = phone,
                     onValueChange = { phone = it },
                     shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "새 비밀번호",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = password,
                     onValueChange = { password = it },
                     shape = RoundedCornerShape(8.dp),
+                    singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "비밀번호 확인",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
                 TextField(
                     value = re_password,
                     onValueChange = { re_password = it },
                     shape = RoundedCornerShape(8.dp),
+                    singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.alpha(0.6f).width(350.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .alpha(0.6f),
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
             }
-
             Column(
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
             ) {
                 Text(
                     text = "직무",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
                 )
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Box(
-                        modifier = Modifier.padding(horizontal = 40.dp)
-                    ) {
-                        Row {
-                            RadioButton(
-                                selected = !isManager,
-                                onClick = { isManager = false }
+                Row {
+                    Button(
+                        onClick = { isManager = false },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        content = { Text(text = "일반직", color = Color.Black) },
+                        colors = ButtonDefaults.buttonColors(
+                            if (!isManager) Color(0xDFFFFFFF) else Color(
+                                0x5FFFFFFF
                             )
-                            Text(
-                                text = "일반직",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    Button(
+                        onClick = { isManager = true },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        content = { Text(text = "관리직", color = Color.Black) },
+                        colors = ButtonDefaults.buttonColors(
+                            if (isManager) Color(0xDFFFFFFF) else Color(
+                                0x5FFFFFFF
                             )
-                        }
-                    }
-                    Box(
-                        modifier = Modifier.padding(horizontal = 40.dp)
-                    ) {
-                        Row {
-                            RadioButton(
-                                selected = isManager,
-                                onClick = { isManager = true }
-                            )
-                            Text(
-                                text = "관리직",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            )
-                        }
-                    }
+                        )
+                    )
                 }
             }
-
             Row {
-
                 Button(
-                    onClick = {OnPasswordChangeButtonClick(id, phone, password, re_password, isManager, navController)},
+                    onClick = {performChangePw(id, phone, password, re_password, isManager, navController)},
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)
@@ -279,7 +273,6 @@ fun Findpw(navController: NavController) {
                     )
                 }
             }
-
             Text(
                 text = stringResource(id = R.string.app_name),
                 modifier = Modifier.padding(top = 20.dp),

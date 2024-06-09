@@ -61,7 +61,6 @@ data class CompanyList(
     val companies: List<String>
 )
 
-// 회원가입 함수
 fun performSignup(
     id: String,
     password: String,
@@ -85,6 +84,7 @@ fun performSignup(
         dialog.show()
     } else {
         val companyToSend = if (company == "없음") null else company
+
         LoadingState.show()
         RetrofitInstance.apiService.apiRegister(
             RegisterInputModel(
@@ -129,7 +129,6 @@ fun performSignup(
     }
 }
 
-// 회원가입 화면
 @Composable
 fun Signup(navController: NavController) {
     var id by remember {
@@ -398,7 +397,11 @@ fun Signup(navController: NavController) {
                             .height(50.dp),
                         shape = RoundedCornerShape(8.dp),
                         content = { Text(text = "일반직", color = Color.Black) },
-                        colors = ButtonDefaults.buttonColors(if (!isManager) Color(0xFFADD8E6) else Color.LightGray)
+                        colors = ButtonDefaults.buttonColors(
+                            if (!isManager) Color(0xDFFFFFFF) else Color(
+                                0x5FFFFFFF
+                            )
+                        )
                     )
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(
@@ -408,14 +411,16 @@ fun Signup(navController: NavController) {
                             .height(50.dp),
                         shape = RoundedCornerShape(8.dp),
                         content = { Text(text = "관리직", color = Color.Black) },
-                        colors = ButtonDefaults.buttonColors(if (isManager) Color(0xFFADD8E6) else Color.LightGray)
+                        colors = ButtonDefaults.buttonColors(
+                            if (isManager) Color(0xDFFFFFFF) else Color(
+                                0x5FFFFFFF
+                            )
+                        )
                     )
                 }
             }
             Button(
                 onClick = {
-                    //DB에 이미 존재하는 ID, E-mail 체크, 입력한 비밀번호와 비밀번호 확인이 일치한지 체크
-                    //입력된 내용에 무결성이 존재하지 않을 경우 입력된 정보를 DB에 추가
                     performSignup(
                         id,
                         password,

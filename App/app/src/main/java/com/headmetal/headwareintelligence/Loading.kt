@@ -51,7 +51,8 @@ fun Loading(navController: NavController) {
     val permissions = mutableListOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.POST_NOTIFICATIONS
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION
     )
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
         permissions.add(Manifest.permission.BLUETOOTH)
@@ -85,18 +86,16 @@ fun Loading(navController: NavController) {
 
     // 서버 상태 확인
     LaunchedEffect(Unit) {
-        val call = RetrofitInstance.apiService.apiGetStatus()
-        call.enqueue(object : Callback<Void> {
+        RetrofitInstance.apiService.apiGetStatus().enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     if (autoLogin) {
-                        val callLogin = RetrofitInstance.apiService.apiLogin(
+                        RetrofitInstance.apiService.apiLogin(
                             alertToken = sharedAlert.getString("alert_token", null).toString(),
                             type = type,
                             id = userId,
                             pw = userPassword
-                        )
-                        callLogin.enqueue(object : Callback<LoginResponse> {
+                        ).enqueue(object : Callback<LoginResponse> {
                             override fun onResponse(
                                 call: Call<LoginResponse>,
                                 response: Response<LoginResponse>
@@ -115,26 +114,23 @@ fun Loading(navController: NavController) {
                                 } else {
                                     builder.setTitle("자동 로그인 실패")
                                     builder.setMessage("변경된 비밀번호를 확인하세요.")
-                                    // 확인 버튼 설정
                                     builder.setPositiveButton("확인") { dialog, _ ->
                                         dialog.dismiss()
                                         navController.navigate("loginScreen")
                                         sharedAccountEdit.clear()
                                         sharedAccountEdit.apply()
                                     }
-                                    // 다이얼로그 표시
                                     val dialog = builder.create()
                                     dialog.show()
                                 }
                             }
+
                             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                                 builder.setTitle("로그인 실패")
                                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                                // 확인 버튼 설정
                                 builder.setPositiveButton("확인") { _, _ ->
                                     (navController.context as Activity).finish()
                                 }
-                                // 다이얼로그 표시
                                 val dialog = builder.create()
                                 dialog.show()
                             }
@@ -145,11 +141,9 @@ fun Loading(navController: NavController) {
                 } else {
                     builder.setTitle("서버 접속 실패")
                     builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                    // 확인 버튼 설정
                     builder.setPositiveButton("확인") { _, _ ->
                         (navController.context as Activity).finish()
                     }
-                    // 다이얼로그 표시
                     val dialog = builder.create()
                     dialog.show()
                 }
@@ -158,11 +152,9 @@ fun Loading(navController: NavController) {
             override fun onFailure(call: Call<Void>, t: Throwable) {
                 builder.setTitle("서버 접속 실패")
                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                // 확인 버튼 설정
                 builder.setPositiveButton("확인") { _, _ ->
                     (navController.context as Activity).finish()
                 }
-                // 다이얼로그 표시
                 val dialog = builder.create()
                 dialog.show()
             }

@@ -24,7 +24,7 @@ def get_employee_id(input_data: Forgot_Id, db: Session = Depends(get_db)):
 def change_employee_pw(input_data: Forgot_Pw, db: Session = Depends(get_db)):
     pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
     search_result = forgot_crud.search_account(
-        input_data.id, input_data.phone_no, input_data.type, db)
+        input_data.id, input_data.phoneNo, input_data.type, db)
     if not search_result:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="존재하지 않는 계정")

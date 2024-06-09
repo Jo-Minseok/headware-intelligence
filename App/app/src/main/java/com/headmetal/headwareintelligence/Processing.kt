@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +56,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class AllAccidentProcessingResponse(
@@ -148,15 +151,21 @@ fun Processing(
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val coroutineScope = rememberCoroutineScope()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     val tabIndexState: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
+    var refreshState by remember { mutableStateOf(true) }
+    var isRefreshClickable by remember { mutableStateOf(true) }
 
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9F9F9)
+    ) {
         LoadingScreen()
         Column {
-            Icon(imageVector = Icons.Default.ArrowBackIosNew,
+            Icon(
+                imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(20.dp)
@@ -171,23 +180,44 @@ fun Processing(
                         .padding(horizontal = 30.dp)
                         .padding(bottom = 16.dp)
                 )
-                IconButton(onClick = { refreshState.value = true }) {
+                IconButton(onClick = { refreshState = true }) {
                     Icon(
                         imageVector = Icons.Default.Update,
-                        contentDescription = null,
-                        tint = Color.Red,
+                        contentDescription = "새로고침",
+                        tint = Color.Black,
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(32.dp)
                             .padding(end = 3.dp, top = 5.dp)
+                            .clickable(enabled = isRefreshClickable) {
+                                refreshState = true
+                                isRefreshClickable = false
+
+                                Toast
+                                    .makeText(
+                                        navController.context,
+                                        "새로고침 되었습니다.",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                    .show()
+
+                                coroutineScope.launch {
+                                    delay(3000)
+                                    isRefreshClickable = true
+                                }
+                            }
                     )
                 }
             }
             TabRow(
-                selectedTabIndex = selectedTabIndex, modifier = Modifier.border(
-                    width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp)
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = Color(0xFFE0E0E0),
+                    shape = RoundedCornerShape(8.dp)
                 )
             ) {
-                Tab(modifier = Modifier.background(color = Color.White),
+                Tab(
+                    modifier = Modifier.background(color = Color.White),
                     selected = selectedTabIndex == 0,
                     onClick = {
                         selectedTabIndex = 0
@@ -195,7 +225,8 @@ fun Processing(
                         tabIndexState.value = true
                     },
                     text = { Text(text = "사고 처리", fontSize = 20.sp, color = Color.Black) })
-                Tab(modifier = Modifier.background(color = Color.White),
+                Tab(
+                    modifier = Modifier.background(color = Color.White),
                     selected = selectedTabIndex == 1,
                     onClick = {
                         selectedTabIndex = 1
@@ -205,10 +236,10 @@ fun Processing(
                     text = { Text(text = "오작동 처리", fontSize = 20.sp, color = Color.Black) })
             }
             Box(modifier = Modifier.weight(1f)) {
-                LaunchedEffect(refreshState.value || tabIndexState.value) {
+                LaunchedEffect(refreshState || tabIndexState.value) {
                     LoadingState.show()
                     CoroutineScope(Dispatchers.IO).async {
-                        refreshState.value = false
+                        refreshState = false
                         tabIndexState.value = false
                         val state = accidentProcessingViewModel.state
                         accidentProcessingViewModel.getAllAccidentProcessingData(
@@ -254,13 +285,13 @@ fun Processing(
                         )
                     )
                 }
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn {
                     items(itemList) { item ->
                         if (item.situation != "미처리") {
                             val color = when (item.situation) {
-                                "처리 완료" -> Color(0xA000FF00)
-                                "처리 중" -> Color(0xA0FFA500)
-                                "119 신고" -> Color(0xA0FF6600)
+                                "처리 완료" -> Color(0xD0D9F7BE)
+                                "처리 중" -> Color(0xD0FFC832)
+                                "119 신고" -> Color(0xD0FFCCC7)
                                 else -> Color.Gray
                             }
                             Card(
@@ -304,13 +335,11 @@ fun Processing(
                                             modifier = Modifier.padding(start = 5.dp)
                                         )
                                     }
-                                    Row {
-                                        Text(
-                                            text = "위도 : ${item.latitude}\n경도 : ${item.longitude}",
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(start = 38.dp)
-                                        )
-                                    }
+                                    Text(
+                                        text = "위도 : ${item.latitude}\n경도 : ${item.longitude}",
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(start = 38.dp)
+                                    )
                                     Spacer(modifier = Modifier.height(30.dp))
                                     Row {
                                         Icon(
@@ -327,16 +356,14 @@ fun Processing(
                                             modifier = Modifier.padding(start = 5.dp)
                                         )
                                     }
-                                    Row {
-                                        Text(
-                                            text = item.victim,
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(
-                                                start = 38.dp,
-                                                bottom = 10.dp
-                                            )
+                                    Text(
+                                        text = item.victim,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(
+                                            start = 38.dp,
+                                            bottom = 10.dp
                                         )
-                                    }
+                                    )
                                     Divider(
                                         color = Color.LightGray,
                                         thickness = 1.dp,

@@ -35,6 +35,7 @@ class RetryInterceptor(private val maxRetries: Int) : Interceptor {
 
         while (attempt < maxRetries) {
             try {
+                attempt++
                 response = chain.proceed(request)
                 if (response.isSuccessful) {
                     return response
@@ -42,7 +43,6 @@ class RetryInterceptor(private val maxRetries: Int) : Interceptor {
             } catch (e: SocketTimeoutException) {
                 Log.e("HEAD METAL", "서버 통신 재시도 ${attempt}회")
             }
-            attempt++
         }
 
         throw exception ?: IOException("Unknown error")

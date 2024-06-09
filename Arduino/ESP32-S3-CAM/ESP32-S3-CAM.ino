@@ -32,6 +32,23 @@ String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "",
 int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
 String latitude;
 String longitude;
+
+const int buttonDebounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
+int lastButtonState = LOW;     // 이전 버튼 상태
+int buttonState;               // 현재 버튼 상태
+unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
+
+const int shockDebounceDelay = 1000;  // 디바운싱을 위한 지연 시간 (밀리초)
+unsigned long lastShockTime = 0; // 마지막 충격 감지 시간
+unsigned long lastReadTime = 0;  // 마지막 센서 읽기 시간
+const int readInterval = 50;     // 센서 읽기 간격 (밀리초)
+
+const int numReadings = 10;      // 평균값을 계산할 때 사용할 읽기 횟수
+int readings[numReadings];       // 읽은 값을 저장할 배열
+int readIndex = 0;               // 현재 읽기 인덱스
+int total = 0;                   // 읽은 값의 총합
+int average = 0;                 // 평균값
+
 /*
 ############################################################################
                                   BLE
@@ -411,6 +428,9 @@ void PIN_setup(){
   pinMode(LED,OUTPUT);
   digitalWrite(RESET,HIGH);
   pinMode(RESET,OUTPUT);
+  for (int i = 0; i < numReadings; i++) {
+    readings[i] = 0;
+  }
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -422,12 +442,14 @@ void PIN_setup(){
 const int CAM_addr = 0x36;
 void CAMERA_setup(){
   Serial.println("[SETUP] CAMERA: SETUP START");
+  /*
   DFRobot_AXP313A axp;
   while(axp.begin()!=0){
     Serial.println("[SETUP] CAMERA: DFRobot init error");
     delay(100);
   }
   axp.enableCameraPower(axp.eOV2640);//Enable the power for camera
+  */
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -627,18 +649,14 @@ void setup(){
   CAMERA_setup(); // 카메라
 }
 
-const int debounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
-int lastButtonState = LOW;     // 이전 버튼 상태
-int buttonState;               // 현재 버튼 상태
-unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
-
 void loop(){
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
+// BLE 연결 여부
   if(!deviceConnected){
     digitalWrite(RESET,LOW);
   }
 
-  // 버튼 상태 읽기
+// 긴급 버튼
   int reading = digitalRead(BUTTON);
 
   // 버튼 상태가 바뀌었는지 확인
@@ -648,7 +666,7 @@ void loop(){
   }
 
   // 디바운싱 지연 시간을 넘었으면 상태를 업데이트
-  if ((millis() - lastDebounceTime) > debounceDelay) {
+  if ((millis() - lastDebounceTime) > buttonDebounceDelay) {
     // 상태가 변하고 일정 시간 유지된 경우에만 버튼 상태 업데이트
     if (reading != buttonState) {
       buttonState = reading;
@@ -663,6 +681,8 @@ void loop(){
   }
 
   lastButtonState = reading; // 이전 버튼 상태 업데이트
+
+// CDS 조명 설정
   if(analogRead(CDS)>=3800){
     digitalWrite(LED,1);
   }
@@ -670,13 +690,42 @@ void loop(){
     digitalWrite(LED,0);
   }
 
-  if(WiFi.status() == WL_CONNECTED){
-    client.poll();
-    if(false){ // SHOCK 센서 조건부
-      SendingData("낙하");
+// WIFI 상태 확인 및 낙하 데이터 전송
+  unsigned long currentTime = millis();
+  if (currentTime - lastReadTime >= readInterval) {
+    lastReadTime = currentTime;
+
+    // 현재 읽기에서 이전 총합에서 해당 읽기 값을 뺌
+    total = total - readings[readIndex];
+
+    // 새로운 센서 값을 읽고 배열에 저장
+    readings[readIndex] = analogRead(SHOCK);
+
+    // 새로운 읽기 값을 총합에 추가
+    total = total + readings[readIndex];
+
+    // 다음 읽기 인덱스로 이동
+    readIndex = readIndex + 1;
+
+    // 배열의 끝에 도달하면 다시 시작
+    if (readIndex >= numReadings) {
+      readIndex = 0;
+    }
+
+    // 평균값 계산
+    average = total / numReadings;
+
+    if(WiFi.status() == WL_CONNECTED){
+      client.poll();
+      if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
+        SendingData("낙하");
+        lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트
+        average = 0;
+      }
+    }
+    else{
+      WIFI_setup();
     }
   }
-  else{
-    WIFI_setup();
-  }
+  delay(50);
 }

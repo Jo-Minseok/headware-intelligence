@@ -122,42 +122,14 @@ fun Main(
             permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
 
-    LaunchedEffect(Unit) {
-        when {
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                hasLocationPermission = true
-            }
-
-            else -> {
-                locationPermissionRequest.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-            }
-        }
-
-        if (hasLocationPermission) {
-            val location = fusedLocationClient.lastLocation.await()
-            location?.let {
-                weatherViewModel.getWeather(it.latitude, it.longitude)
-            }
-        } else {
-            Log.e("HEAD METAL", "위치 권한이 필요함")
-        }
-    }
-
     val temperature by weatherViewModel.temperature
     val airVelocity by weatherViewModel.airVelocity
     val precipitation by weatherViewModel.precipitation
     val humidity by weatherViewModel.humidity
-    var refreshState by remember { mutableStateOf(true) }
+    var refreshState by remember { mutableStateOf(false) }
     var isRefreshClickable by remember { mutableStateOf(true) }
 
-    LaunchedEffect(refreshState) {
+    LaunchedEffect(Unit) {
         when {
             ContextCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION
@@ -183,6 +155,45 @@ fun Main(
             }
         } else {
             Log.e("HEAD METAL", "위치 권한이 필요함")
+        }
+    }
+
+    if (refreshState) {
+        LaunchedEffect(Unit) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    hasLocationPermission = true
+                }
+
+                else -> {
+                    locationPermissionRequest.launch(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        )
+                    )
+                }
+            }
+
+            if (hasLocationPermission) {
+                val location = fusedLocationClient.lastLocation.await()
+                location?.let {
+                    weatherViewModel.getWeather(it.latitude, it.longitude)
+                    refreshState = false
+                }
+            } else {
+                Log.e("HEAD METAL", "위치 권한이 필요함")
+            }
+
+            Toast
+                .makeText(
+                    navController.context,
+                    "새로고침 되었습니다.",
+                    Toast.LENGTH_SHORT
+                )
+                .show()
         }
     }
 
@@ -358,13 +369,6 @@ fun Main(
                             .size(32.dp)
                             .clickable(enabled = isRefreshClickable) {
                                 refreshState = true
-                                Toast
-                                    .makeText(
-                                        navController.context,
-                                        "새로고침 되었습니다.",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                    .show()
                                 isRefreshClickable = false
 
                                 coroutineScope.launch {

@@ -16,9 +16,36 @@ import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import okhttp3.Interceptor
+import okhttp3.Response
+import java.io.IOException
+import java.net.SocketTimeoutException
 
 enum class SituationCode {
     COMPLETE, PROCESSING, MALFUNCTION, REPORT119 // 처리 완료 : 0, 처리 중 : 1, 오작동 : 2, 119 신고 : 3
+}
+
+class RetryInterceptor(private val maxRetries: Int) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        var request = chain.request()
+        var response: Response? = null
+        var attempt = 0
+        var exception: IOException? = null
+
+        while (attempt < maxRetries) {
+            try {
+                response = chain.proceed(request)
+                if (response.isSuccessful) {
+                    return response
+                }
+            } catch (e: SocketTimeoutException) {
+                exception = e
+            }
+            attempt++
+        }
+
+        throw exception ?: IOException("Unknown error")
+    }
 }
 
 object LoadingState {

@@ -13,9 +13,10 @@ object RetrofitInstance {
             .baseUrl(BASE_URL)
             .client(
                 OkHttpClient.Builder()
-                    .connectTimeout(15, TimeUnit.SECONDS)
-                    .readTimeout(15, TimeUnit.SECONDS)
-                    .writeTimeout(15, TimeUnit.SECONDS)
+                    .connectTimeout(5, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.SECONDS)
+                    .writeTimeout(5, TimeUnit.SECONDS)
+                    .addInterceptor(RetryInterceptor(3))
                     .build()
             )
             .addConverterFactory(GsonConverterFactory.create())

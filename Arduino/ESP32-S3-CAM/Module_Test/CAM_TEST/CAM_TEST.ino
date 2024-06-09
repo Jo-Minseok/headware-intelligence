@@ -13,14 +13,33 @@
 // ===================
 // Select camera model
 // ===================
-#include "camera_pins.h"
+#define PWDN_GPIO_NUM     -1
+#define RESET_GPIO_NUM    -1
+#define XCLK_GPIO_NUM     45
+#define SIOD_GPIO_NUM     1
+#define SIOC_GPIO_NUM     2
+
+#define Y9_GPIO_NUM       48
+#define Y8_GPIO_NUM       46
+#define Y7_GPIO_NUM       8
+#define Y6_GPIO_NUM       7
+#define Y5_GPIO_NUM       4
+#define Y4_GPIO_NUM       41
+#define Y3_GPIO_NUM       40
+#define Y2_GPIO_NUM       39
+#define VSYNC_GPIO_NUM    6
+#define HREF_GPIO_NUM     42
+#define PCLK_GPIO_NUM     5
+
 #include "DFRobot_AXP313A.h"
+
 DFRobot_AXP313A axp;
+
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-const char* ssid = "MIN SEOK";
-const char* password = "beebur3764";
+const char* ssid = "seok3764";
+const char* password = "seok6317";
 
 void startCameraServer();
 
@@ -28,11 +47,11 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
-  while(axp.begin()!=0){
+  while(axp.begin() != 0){
     Serial.println("init error");
     delay(1000);
   }
-  axp.enableCameraPower(axp.eOV2640);
+  axp.enableCameraPower(axp.eOV2640);//Enable the power for camera
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -48,8 +67,8 @@ void setup() {
   config.pin_pclk = PCLK_GPIO_NUM;
   config.pin_vsync = VSYNC_GPIO_NUM;
   config.pin_href = HREF_GPIO_NUM;
-  config.pin_sccb_sda = SIOD_GPIO_NUM;
-  config.pin_sccb_scl = SIOC_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
@@ -60,7 +79,7 @@ void setup() {
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
   config.fb_count = 1;
-  
+
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
   if(config.pixel_format == PIXFORMAT_JPEG){
@@ -112,11 +131,6 @@ void setup() {
 
 #if defined(CAMERA_MODEL_ESP32S3_EYE)
   s->set_vflip(s, 1);
-#endif
-
-// Setup LED FLash if LED pin is defined in camera_pins.h
-#if defined(LED_GPIO_NUM)
-  setupLedFlash(LED_GPIO_NUM);
 #endif
 
   WiFi.begin(ssid, password);

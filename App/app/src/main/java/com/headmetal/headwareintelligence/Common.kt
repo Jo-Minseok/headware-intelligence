@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,10 +28,10 @@ enum class SituationCode {
 
 class RetryInterceptor(private val maxRetries: Int) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
-        var request = chain.request()
-        var response: Response? = null
+        val request = chain.request()
+        var response: Response?
         var attempt = 0
-        var exception: IOException? = null
+        val exception: IOException? = null
 
         while (attempt < maxRetries) {
             try {
@@ -39,7 +40,7 @@ class RetryInterceptor(private val maxRetries: Int) : Interceptor {
                     return response
                 }
             } catch (e: SocketTimeoutException) {
-                exception = e
+                Log.e("HEAD METAL", "서버 통신 재시도 ${attempt}회")
             }
             attempt++
         }

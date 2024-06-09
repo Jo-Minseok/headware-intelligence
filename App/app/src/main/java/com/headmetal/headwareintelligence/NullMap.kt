@@ -490,7 +490,9 @@ fun NullBottomSheetScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
-                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)) {
                             Icon(
                                 imageVector = Icons.Outlined.Person,
                                 contentDescription = null,
@@ -620,7 +622,9 @@ fun NullBottomSheetScreen(
                             },
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
-                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
                         ) {
                             Text(
                                 text = "처리 완료",
@@ -635,7 +639,9 @@ fun NullBottomSheetScreen(
                             onClick = {
                                 Log.i("ButtonClick", "처리 중 버튼 클릭")
                                 updateAccidentSituation(
-                                    accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null
+                                    accidentNo.value,
+                                    SituationCode.PROCESSING.ordinal.toString(),
+                                    null
                                 ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
@@ -644,7 +650,9 @@ fun NullBottomSheetScreen(
                             },
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
-                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
                         ) {
                             Text(
                                 text = "처리 중",
@@ -661,7 +669,9 @@ fun NullBottomSheetScreen(
                             onClick = {
                                 Log.i("ButtonClick", "오작동 버튼 클릭")
                                 updateAccidentSituation(
-                                    accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null
+                                    accidentNo.value,
+                                    SituationCode.MALFUNCTION.ordinal.toString(),
+                                    null
                                 ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
@@ -670,7 +680,9 @@ fun NullBottomSheetScreen(
                             },
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(Color.Gray),
-                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
                         ) {
                             Text(
                                 text = "오작동",
@@ -685,7 +697,9 @@ fun NullBottomSheetScreen(
                             onClick = {
                                 Log.i("ButtonClick", "119 신고 버튼 클릭")
                                 updateAccidentSituation(
-                                    accidentNo.value, SituationCode.REPORT119.ordinal.toString(), null
+                                    accidentNo.value,
+                                    SituationCode.REPORT119.ordinal.toString(),
+                                    null
                                 ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
@@ -694,7 +708,9 @@ fun NullBottomSheetScreen(
                             },
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
                         ) {
                             Text(
                                 text = "119 신고",

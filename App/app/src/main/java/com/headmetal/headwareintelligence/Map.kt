@@ -320,7 +320,6 @@ fun MapScreen(
             ) == PackageManager.PERMISSION_GRANTED -> {
                 hasLocationPermission = true
             }
-
             else -> {
                 locationPermissionRequest.launch(
                     arrayOf(
@@ -576,9 +575,11 @@ fun BottomSheetScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null,

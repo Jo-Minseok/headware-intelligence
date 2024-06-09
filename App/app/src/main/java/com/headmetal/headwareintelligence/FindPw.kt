@@ -55,7 +55,10 @@ fun performChangePw(
     isManager: Boolean,
     navController: NavController
 ) {
+    val builder = AlertDialog.Builder(navController.context)
+
     if (password == rePassword && password.isNotEmpty()) {
+        LoadingState.show()
         RetrofitInstance.apiService.apiChangePw(
             ForgotPw(
                 id,
@@ -67,28 +70,31 @@ fun performChangePw(
         ).enqueue(object : Callback<ForgotPw> {
             override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
                 if (response.isSuccessful) {
-                    val builder = AlertDialog.Builder(navController.context)
                     builder.setTitle("비밀번호 변경 성공")
                     builder.setMessage("로그인 화면으로 이동합니다.")
                     builder.setPositiveButton("확인") { dialog, _ ->
                         dialog.dismiss()
                         navController.navigate("loginScreen")
                     }
-                    val dialog = builder.create()
-                    dialog.show()
                 } else {
                     Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
-                    val errorBody = response.errorBody()?.string()
-                    Log.e("HEAD METAL", "에러 응답: $errorBody")
+                    builder.setTitle("비밀번호 변경 실패")
+                    builder.setMessage("존재하지 않는 계정입니다.")
+                    builder.setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                    }
                 }
+                val dialog = builder.create()
+                dialog.show()
+                LoadingState.hide()
             }
 
             override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
                 Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                LoadingState.hide()
             }
         })
     } else {
-        val builder = AlertDialog.Builder(navController.context)
         builder.setTitle("비밀번호 변경 실패")
         builder.setMessage("입력한 정보를 다시 확인하세요!")
         builder.setPositiveButton("확인") { dialog, _ ->

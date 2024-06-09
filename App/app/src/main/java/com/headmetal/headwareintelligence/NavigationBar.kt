@@ -39,7 +39,7 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
         Signup(navController)
     }
     composable(Destinations.FindId.route) {
-        Findid(navController)
+        FindId(navController)
     }
     composable(Destinations.FindPw.route) {
         Findpw(navController)

@@ -85,7 +85,6 @@ fun performLogin(
                     response.body()?.name + "님 반갑습니다",
                     Toast.LENGTH_SHORT
                 ).show()
-                LoadingState.hide()
             } else {
                 builder.setTitle("로그인 실패")
                 builder.setMessage("아이디 및 비밀번호를 확인하세요.")
@@ -95,8 +94,8 @@ fun performLogin(
                 }
                 val dialog = builder.create()
                 dialog.show()
-                LoadingState.hide()
             }
+            LoadingState.hide()
         }
 
         override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
@@ -244,8 +243,7 @@ fun Login(navController: NavController) {
                             )
                         },
                         colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
@@ -269,8 +267,7 @@ fun Login(navController: NavController) {
                     Button(
                         onClick = { navController.navigate("findidScreen") },
                         colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(

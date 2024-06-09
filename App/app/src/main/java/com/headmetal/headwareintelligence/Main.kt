@@ -151,7 +151,6 @@ fun Main(
             val location = fusedLocationClient.lastLocation.await()
             location?.let {
                 weatherViewModel.getWeather(it.latitude, it.longitude)
-                refreshState = false
             }
         } else {
             Log.e("HEAD METAL", "위치 권한이 필요함")

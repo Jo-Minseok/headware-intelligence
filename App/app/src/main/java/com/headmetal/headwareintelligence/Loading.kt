@@ -128,6 +128,7 @@ fun Loading(navController: NavController) {
                                     dialog.show()
                                 }
                             }
+
                             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                                 builder.setTitle("로그인 실패")
                                 builder.setMessage("서버 상태 및 네트워크 접속 불안정")

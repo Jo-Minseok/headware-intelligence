@@ -42,7 +42,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-// 서버로부터 받는 로그인 응답 데이터 모델 정의
 data class LoginResponse(
     val id: String,
     val name: String,
@@ -90,12 +89,10 @@ fun performLogin(
             } else {
                 builder.setTitle("로그인 실패")
                 builder.setMessage("아이디 및 비밀번호를 확인하세요.")
-                // 확인 버튼 설정
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
                     pwState.value = ""
                 }
-                // 다이얼로그 표시
                 val dialog = builder.create()
                 dialog.show()
                 LoadingState.hide()
@@ -105,11 +102,9 @@ fun performLogin(
         override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
             builder.setTitle("로그인 실패")
             builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-            // 확인 버튼 설정
             builder.setPositiveButton("확인") { _, _ ->
                 (navController.context as Activity).finish()
             }
-            // 다이얼로그 표시
             val dialog = builder.create()
             dialog.show()
             LoadingState.hide()
@@ -210,7 +205,11 @@ fun Login(navController: NavController) {
                             .height(50.dp),
                         shape = RoundedCornerShape(8.dp),
                         content = { Text(text = "일반직", color = Color.Black) },
-                        colors = ButtonDefaults.buttonColors(if (!isManager) Color(0xFFADD8E6) else Color.LightGray)
+                        colors = ButtonDefaults.buttonColors(
+                            if (!isManager) Color(0xDFFFFFFF) else Color(
+                                0x5FFFFFFF
+                            )
+                        )
                     )
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(
@@ -220,57 +219,65 @@ fun Login(navController: NavController) {
                             .height(50.dp),
                         shape = RoundedCornerShape(8.dp),
                         content = { Text(text = "관리직", color = Color.Black) },
-                        colors = ButtonDefaults.buttonColors(if (isManager) Color(0xFFADD8E6) else Color.LightGray)
+                        colors = ButtonDefaults.buttonColors(
+                            if (isManager) Color(0xDFFFFFFF) else Color(
+                                0x5FFFFFFF
+                            )
+                        )
                     )
                 }
             }
-            Row {
-                Button(
-                    onClick = {
-                        performLogin(
-                            idState.value,
-                            pwState.value,
-                            isManager,
-                            navController,
-                            pwState
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(bottom = 16.dp)
+            ) {
+                Row {
+                    Button(
+                        onClick = {
+                            performLogin(
+                                idState.value,
+                                pwState.value,
+                                isManager,
+                                navController,
+                                pwState
+                            )
+                        },
+                        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+                        modifier = Modifier
+                            .weight(1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "로그인",
+                            fontWeight = FontWeight.Bold
                         )
-                    },
-                    colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "로그인",
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Button(
-                    onClick = { navController.navigate("signupScreen") },
-                    colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "회원가입",
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Button(
-                    onClick = { navController.navigate("findidScreen") },
-                    colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "계정 찾기",
-                        fontWeight = FontWeight.Bold
-                    )
+                    }
+                    Button(
+                        onClick = { navController.navigate("signupScreen") },
+                        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 4.dp),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "회원가입",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Button(
+                        onClick = { navController.navigate("findidScreen") },
+                        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+                        modifier = Modifier
+                            .weight(1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "계정 찾기",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             Text(

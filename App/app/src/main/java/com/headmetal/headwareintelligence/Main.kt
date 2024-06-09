@@ -225,7 +225,7 @@ fun Main(
                 .fillMaxWidth()
                 .clickable { navController.navigate("privacyScreen") }
             ) {
-                Row {
+                Row(Modifier.padding(vertical = 5.dp)) {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = "개인정보",

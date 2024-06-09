@@ -56,9 +56,12 @@ import retrofit2.Response
 @Composable
 fun Menu(navController: NavController) {
     val context = LocalContext.current
-    val sharedAccount: SharedPreferences = context.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val sharedConfigure: SharedPreferences = context.getSharedPreferences("Configure", Activity.MODE_PRIVATE)
-    val sharedAlert: SharedPreferences = context.getSharedPreferences("Alert",Activity.MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        context.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val sharedConfigure: SharedPreferences =
+        context.getSharedPreferences("Configure", Activity.MODE_PRIVATE)
+    val sharedAlert: SharedPreferences =
+        context.getSharedPreferences("Alert", Activity.MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
     val sharedConfigureEdit: SharedPreferences.Editor = sharedConfigure.edit()
     val userRank = sharedAccount.getString("type", null)
@@ -67,9 +70,8 @@ fun Menu(navController: NavController) {
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
-        AlertDialog(onDismissRequest = {
-            showLogoutDialog = false
-        },
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
             title = {
                 Text(text = "로그아웃")
             },
@@ -109,7 +111,11 @@ fun Menu(navController: NavController) {
                             })
                         } else {
                             showLogoutDialog = false
-                            Toast.makeText(context, "로그아웃을 성공하였습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "로그아웃을 성공하였습니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             sharedAccountEdit.clear()
                             sharedAccountEdit.apply()
                             sharedConfigureEdit.clear()
@@ -117,48 +123,34 @@ fun Menu(navController: NavController) {
                             navController.navigate("loginScreen")
                         }
                     }
-                ) {
-                    Text(text = "예")
-                }
+                ) { Text(text = "예") }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                }) {
-                    Text(text = "아니오")
-                }
+                TextButton(onClick = { showLogoutDialog = false }) { Text(text = "아니오") }
             }
         )
     }
-
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
-    {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9F9F9)
+    ) {
+        Column {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
-                contentDescription = null,
+                contentDescription = "뒤로 가기",
                 modifier = Modifier
                     .padding(20.dp)
                     .clickable { navController.navigateUp() }
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "메뉴",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 34.sp,
-                    modifier = Modifier.padding(horizontal = 30.dp)
-                )
-                Spacer(modifier = Modifier.width(125.dp))
-            }
-
-            Column(
+            Text(
+                text = "메뉴",
+                fontWeight = FontWeight.Bold,
+                fontSize = 34.sp,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 30.dp, vertical = 15.5.dp)
-            ) {
+                    .padding(horizontal = 30.dp)
+                    .padding(bottom = 10.dp)
+            )
+            Column(modifier = Modifier.padding(horizontal = 30.dp)) {
                 Button(
                     onClick = { navController.navigate("privacyScreen") },
                     modifier = Modifier.fillMaxWidth(),
@@ -172,18 +164,17 @@ fun Menu(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(40.dp),
-                            tint = Color.Black // 아이콘 색상 설정
+                            contentDescription = "개인정보",
+                            tint = Color.Black,
+                            modifier = Modifier.size(40.dp).padding(end = 10.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Column(
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.Center
                         ) {
                             if (userRank != null) {
                                 Text(
-                                    text = if(userRank == "manager") "관리자" else "근무자",
+                                    text = if (userRank == "manager") "관리자" else "근무자",
                                     color = Color.Gray,
                                     fontSize = 16.sp
                                 )
@@ -199,25 +190,22 @@ fun Menu(navController: NavController) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-
-                Column(modifier = Modifier.padding(vertical = 10.dp)) {
+                Column(modifier = Modifier.padding(top = 10.dp)) {
                     Button(
                         onClick = { navController.navigate("companyinfoScreen") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
-                            .padding(vertical = 2.5.dp)
+                            .padding(vertical = 3.dp)
                             .fillMaxWidth()
                             .height(60.dp),
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Outlined.Description,
                                 contentDescription = null,
-                                tint = Color.Black
+                                tint = Color.Black,
+                                modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
@@ -235,27 +223,25 @@ fun Menu(navController: NavController) {
                     if (sharedAccount.getString("type", null) == "manager") {
                         Button(
                             onClick = {
-                                val intent = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                     notificationSettingOreo(context)
-                                }else{
+                                } else {
                                     notificationSettingOreoLess(context)
                                 }
-                                try{
+                                try {
                                     context.startActivity(intent)
-                                }catch(e: ActivityNotFoundException){
+                                } catch (e: ActivityNotFoundException) {
                                     e.printStackTrace()
                                 }
                             },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
-                                .padding(vertical = 2.5.dp)
+                                .padding(vertical = 3.dp)
                                 .fillMaxWidth()
                                 .height(60.dp),
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Outlined.Notifications,
                                     contentDescription = null,
@@ -264,7 +250,7 @@ fun Menu(navController: NavController) {
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    "알림 설정",
+                                    text = "알림 설정",
                                     color = Color.Black,
                                     fontSize = 20.sp
                                 )
@@ -276,14 +262,12 @@ fun Menu(navController: NavController) {
                         onClick = { navController.navigate("etcScreen") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
-                            .padding(vertical = 2.5.dp)
+                            .padding(vertical = 3.dp)
                             .fillMaxWidth()
                             .height(60.dp),
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Outlined.Info,
                                 contentDescription = null,
@@ -292,7 +276,7 @@ fun Menu(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                "기타",
+                                text = "기타",
                                 color = Color.Black,
                                 fontSize = 20.sp
                             )
@@ -304,19 +288,15 @@ fun Menu(navController: NavController) {
                         }
                     }
                     Button(
-                        onClick = {
-                            showLogoutDialog = true
-                        },
+                        onClick = { showLogoutDialog = true },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
-                            .padding(vertical = 2.5.dp)
+                            .padding(vertical = 3.dp)
                             .fillMaxWidth()
                             .height(60.dp),
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.Logout,
                                 contentDescription = null,
@@ -334,27 +314,24 @@ fun Menu(navController: NavController) {
                     }
                 }
             }
-
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun notificationSettingOreo(context: Context): Intent {
-    return Intent().also{
-        intent ->
+    return Intent().also { intent ->
         intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
-        intent.putExtra(Settings.EXTRA_APP_PACKAGE,context.packageName)
+        intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 }
 
-fun notificationSettingOreoLess(context:Context):Intent{
-    return Intent().also{
-        intent->
+fun notificationSettingOreoLess(context: Context): Intent {
+    return Intent().also { intent ->
         intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
-        intent.putExtra("app_package",context.packageName)
-        intent.putExtra("app_uid",context.applicationInfo?.uid)
+        intent.putExtra("app_package", context.packageName)
+        intent.putExtra("app_uid", context.applicationInfo?.uid)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     }
 }

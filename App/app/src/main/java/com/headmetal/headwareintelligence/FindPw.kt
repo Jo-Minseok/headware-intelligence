@@ -44,34 +44,42 @@ data class ForgotPw(
     val phoneNo: String,
     val password: String,
     val rePassword: String,
-    val type:String
+    val type: String
 )
 
-fun performChangePw(id: String, phone:String, password: String, rePassword: String, isManager: Boolean, navController: NavController) {
+fun performChangePw(
+    id: String,
+    phone: String,
+    password: String,
+    rePassword: String,
+    isManager: Boolean,
+    navController: NavController
+) {
     if (password == rePassword && password.isNotEmpty()) {
-        val apiService = RetrofitInstance.apiService
-        val call = apiService.apiChangePw(ForgotPw(id, phone,password,rePassword,if(isManager)"manager" else "employee"))
-        call.enqueue(object : Callback<ForgotPw> {
+        RetrofitInstance.apiService.apiChangePw(
+            ForgotPw(
+                id,
+                phone,
+                password,
+                rePassword,
+                if (isManager) "manager" else "employee"
+            )
+        ).enqueue(object : Callback<ForgotPw> {
             override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
                 if (response.isSuccessful) {
                     val builder = AlertDialog.Builder(navController.context)
                     builder.setTitle("비밀번호 변경 성공")
                     builder.setMessage("로그인 화면으로 이동합니다.")
-
-                    // 확인 버튼 설정
                     builder.setPositiveButton("확인") { dialog, _ ->
                         dialog.dismiss()
                         navController.navigate("loginScreen")
                     }
-
-                    // 다이얼로그 표시
                     val dialog = builder.create()
                     dialog.show()
-                }
-                else {
-                    Log.e("HEAD METAL","비밀번호 변경 요청 실패: ${response.code()}")
+                } else {
+                    Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
                     val errorBody = response.errorBody()?.string()
-                    Log.e("HEAD METAL","에러 응답: $errorBody")
+                    Log.e("HEAD METAL", "에러 응답: $errorBody")
                 }
             }
 
@@ -91,7 +99,6 @@ fun performChangePw(id: String, phone:String, password: String, rePassword: Stri
     }
 }
 
-// App UI 부분
 @Composable
 fun FindPw(navController: NavController) {
     var id by remember {
@@ -262,7 +269,16 @@ fun FindPw(navController: NavController) {
             }
             Row {
                 Button(
-                    onClick = {performChangePw(id, phone, password, rePassword, isManager, navController)},
+                    onClick = {
+                        performChangePw(
+                            id,
+                            phone,
+                            password,
+                            rePassword,
+                            isManager,
+                            navController
+                        )
+                    },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

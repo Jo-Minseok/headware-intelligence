@@ -193,12 +193,10 @@ fun Map(
 
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-
     val imageUrl: MutableState<String?> = remember { mutableStateOf(null) }
     val webSocketSendData: MutableState<String?> = remember { mutableStateOf(null) }
     val imageDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
     val soundDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
-
     val isWebSocketDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val webSocketMessage: MutableState<String> = remember { mutableStateOf("") }
 
@@ -241,7 +239,8 @@ fun Map(
             victimName,
             cluster,
             selectedMarker,
-            sharedAccount
+            sharedAccount,
+            imageUrl
         )
         BottomSheetScreen(
             isBottomSheetVisible,
@@ -279,7 +278,8 @@ fun MapScreen(
     victimName: MutableState<String>,
     cluster: MutableState<Clusterer<ItemKey>?>,
     selectedMarker: MutableState<Marker?>,
-    sharedAccount: SharedPreferences
+    sharedAccount: SharedPreferences,
+    imageUrl: MutableState<String?>
 ) {
     val detail: MutableState<String> = remember { mutableStateOf("") } // 사고 처리 세부 내역
 
@@ -294,7 +294,10 @@ fun MapScreen(
     }
 
     if (isEndDialogVisible.value) { // 스위치가 on이 될 경우 종료 알림창 출력
-
+        AlertDialog(
+            onClose = { android.os.Process.killProcess(android.os.Process.myPid()) },
+            content = "데이터 로딩에 실패하여\n앱을 종료합니다."
+        )
     }
 
     val context = LocalContext.current
@@ -317,7 +320,6 @@ fun MapScreen(
             ) == PackageManager.PERMISSION_GRANTED -> {
                 hasLocationPermission = true
             }
-
             else -> {
                 locationPermissionRequest.launch(
                     arrayOf(
@@ -413,6 +415,7 @@ fun MapScreen(
                                 marker.onClickListener =
                                     Overlay.OnClickListener { // 단말 마커 클릭 시 발생하는 이벤트
                                         CoroutineScope(Dispatchers.Main).launch { // 코루틴 Main 진입
+                                            imageUrl.value = null
                                             accidentNo.value =
                                                 key.id // 이벤트 함수 외부에서 마지막에 선택한 마커의 사고 번호를 사용하기 위해 캡처
 
@@ -521,7 +524,7 @@ fun BottomSheetScreen(
     }
 
     imageUrl.value?.let { url ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(contentAlignment = Alignment.Center) {
             val painter =
                 rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
                     .data(url).build(),
@@ -530,14 +533,15 @@ fun BottomSheetScreen(
                 painter = painter,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(0.6f)
             )
             Button(
                 onClick = { imageUrl.value = null },
                 modifier = Modifier
                     .padding(16.dp)
                     .align(Alignment.TopEnd)
-                    .zIndex(1f)
+                    .zIndex(1f),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFFA500))
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
@@ -551,7 +555,7 @@ fun BottomSheetScreen(
     val scope = rememberCoroutineScope()
 
     if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
-        ModalBottomSheet(modifier = Modifier.height(270.dp),
+        ModalBottomSheet(modifier = Modifier.height(312.dp),
             onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = Color.White,
@@ -571,11 +575,15 @@ fun BottomSheetScreen(
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Person,
                         contentDescription = null,
-                        modifier = Modifier.size(40.dp),
+                        modifier = Modifier.size(44.dp),
                         tint = Color.Black
                     )
                     Column(
@@ -673,111 +681,130 @@ fun BottomSheetScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
                 Divider(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(1.dp), color = Color.Gray
+                        .height(1.dp),
+                    color = Color.Gray
                 )
-                Spacer(Modifier.height(10.dp))
-                Row {
-                    Button( // 바텀 시트의 '처리 완료' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "처리 완료 버튼 클릭")
-                            isDetailInputDialogVisible.value = true // 사고 처리 세부 내역 입력창 on
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "처리 완료",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
+                Column(Modifier.padding(vertical = 10.dp)) {
+                    Row {
+                        Button( // 바텀 시트의 '처리 완료' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "처리 완료 버튼 클릭")
+                                isDetailInputDialogVisible.value = true // 사고 처리 세부 내역 입력창 on
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "처리 완료",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Button( // 바텀 시트의 '처리 중' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "처리 중 버튼 클릭")
+                                updateAccidentSituation(
+                                    accidentNo.value,
+                                    SituationCode.PROCESSING.ordinal.toString(),
+                                    null
+                                ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
+                                situationCode[listIdx.value] =
+                                    SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
+                                selectedMarker.value?.icon =
+                                    MarkerIcons.YELLOW // 단말 마커 아이콘을 노란색 마커로 갱신
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "처리 중",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
-                    Button( // 바텀 시트의 '처리 중' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "처리 중 버튼 클릭")
-                            updateAccidentSituation(
-                                accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null
-                            ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
-                            situationCode[listIdx.value] =
-                                SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
-                            selectedMarker.value?.icon = MarkerIcons.YELLOW // 단말 마커 아이콘을 노란색 마커로 갱신
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "처리 중",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
-                    }
-                    Button( // 바텀 시트의 '오작동' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "오작동 버튼 클릭")
-                            updateAccidentSituation(
-                                accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null
-                            ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
-                            situationCode[listIdx.value] =
-                                SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
-                            selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
-                            cluster.value!!.remove(ItemKey(accidentNo.value)) // 삭제된 마커를 클러스터에서 제외
-                            isBottomSheetVisible.value = false // 바텀 시트 off
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Gray),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "오작동",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
-                    }
-                    Button( // 바텀 시트의 '119 신고' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "119 신고 버튼 클릭")
-                            updateAccidentSituation(
-                                accidentNo.value, SituationCode.REPORT119.ordinal.toString(), null
-                            ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
-                            situationCode[listIdx.value] =
-                                SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
-                            selectedMarker.value?.icon = MarkerIcons.RED // 단말 마커 아이콘을 빨간색 마커로 갱신
-                        },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "119 신고",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
+                    Row {
+                        Button( // 바텀 시트의 '오작동' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "오작동 버튼 클릭")
+                                updateAccidentSituation(
+                                    accidentNo.value,
+                                    SituationCode.MALFUNCTION.ordinal.toString(),
+                                    null
+                                ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
+                                situationCode[listIdx.value] =
+                                    SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
+                                selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
+                                cluster.value!!.remove(ItemKey(accidentNo.value)) // 삭제된 마커를 클러스터에서 제외
+                                isBottomSheetVisible.value = false // 바텀 시트 off
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color.Gray),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "오작동",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Button( // 바텀 시트의 '119 신고' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "119 신고 버튼 클릭")
+                                updateAccidentSituation(
+                                    accidentNo.value,
+                                    SituationCode.REPORT119.ordinal.toString(),
+                                    null
+                                ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
+                                situationCode[listIdx.value] =
+                                    SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
+                                selectedMarker.value?.icon =
+                                    MarkerIcons.RED // 단말 마커 아이콘을 빨간색 마커로 갱신
+                            },
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "119 신고",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(10.dp))
             }
         }
     }
 }
 
 // 사고 처리 세부 내역 입력창 Composable
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailInputDialog(
     onClose: () -> Unit,
@@ -814,7 +841,7 @@ fun DetailInputDialog(
                 Spacer(modifier = Modifier.height(10.dp))
                 TextField(value = detail.value, onValueChange = { detail.value = it })
                 Spacer(modifier = Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(44.dp)) {
+                Row {
                     Button( // 사고 처리 세부 내역 입력창의 '처리' 버튼
                         onClick = {
                             Log.i("ButtonClick", "처리 버튼 클릭")
@@ -833,10 +860,14 @@ fun DetailInputDialog(
                                 isBottomSheetVisible.value = false // 바텀 시트 off
                                 onClose() // 사고 처리 세부 내역 입력창 off
                             }
-                        }, colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E))
+                        },
+                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     ) { Text(text = "처리") }
                     Button(
-                        onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)
+                        onClick = onClose,
+                        colors = ButtonDefaults.buttonColors(Color.Gray),
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     ) { Text(text = "닫기") }
                 }
                 Spacer(modifier = Modifier.height(4.dp))

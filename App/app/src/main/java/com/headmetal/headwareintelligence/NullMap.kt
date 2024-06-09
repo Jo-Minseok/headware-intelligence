@@ -156,12 +156,10 @@ fun NullMap(
 
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-
     val imageUrl: MutableState<String?> = remember { mutableStateOf(null) }
     val webSocketSendData: MutableState<String?> = remember { mutableStateOf(null) }
     val imageDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
     val soundDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
-
     val isWebSocketDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
     val webSocketMessage: MutableState<String> = remember { mutableStateOf("") }
 
@@ -205,7 +203,8 @@ fun NullMap(
             markerListIdx,
             selectedMarker,
             navController,
-            sharedAccount
+            sharedAccount,
+            imageUrl
         )
         NullBottomSheetScreen(
             isBottomSheetVisible,
@@ -245,7 +244,8 @@ fun NullMapScreen(
     markerListIdx: MutableState<Int>,
     selectedMarker: MutableState<Marker?>,
     navController: NavController,
-    sharedAccount: SharedPreferences
+    sharedAccount: SharedPreferences,
+    imageUrl: MutableState<String?>
 ) {
     val isEndDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) } // 종료 알림창 스위치
     val isNoDataDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -306,6 +306,7 @@ fun NullMapScreen(
                                 marker.tag = accidentNoList[i]
                                 marker.setOnClickListener {
                                     CoroutineScope(Dispatchers.Main).launch {
+                                        imageUrl.value = null
                                         accidentNo.value = marker.tag as Int
 
                                         LoadingState.show() // 로딩 창 출력
@@ -347,7 +348,6 @@ fun NullMapScreen(
                                         )
                                         isBottomSheetVisible.value = true // 바텀 시트 on
                                     }
-
                                     true
                                 }
                                 marker.position = LatLng(latitude[i], longitude[i])
@@ -420,7 +420,7 @@ fun NullBottomSheetScreen(
     }
 
     imageUrl.value?.let { url ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(contentAlignment = Alignment.Center) {
             val painter =
                 rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
                     .data(url).build(),
@@ -429,14 +429,15 @@ fun NullBottomSheetScreen(
                 painter = painter,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(0.6f)
             )
             Button(
                 onClick = { imageUrl.value = null },
                 modifier = Modifier
                     .padding(16.dp)
                     .align(Alignment.TopEnd)
-                    .zIndex(1f)
+                    .zIndex(1f),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFFA500))
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
@@ -450,7 +451,7 @@ fun NullBottomSheetScreen(
     val scope = rememberCoroutineScope()
 
     if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
-        ModalBottomSheet(modifier = Modifier.height(270.dp),
+        ModalBottomSheet(modifier = Modifier.height(312.dp),
             onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = Color.White,
@@ -489,11 +490,13 @@ fun NullBottomSheetScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
-                        Row(modifier = Modifier.fillMaxWidth()) {
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)) {
                             Icon(
                                 imageVector = Icons.Outlined.Person,
                                 contentDescription = null,
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(44.dp),
                                 tint = Color.Black
                             )
                             Column(
@@ -605,106 +608,121 @@ fun NullBottomSheetScreen(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
                 Divider(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp), color = Color.Gray
                 )
-                Spacer(Modifier.height(10.dp))
-                Row {
-                    Button( // 바텀 시트의 '처리 완료' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "처리 완료 버튼 클릭")
-                            isDetailInputDialogVisible.value = true // 사고 처리 세부 내역 입력창 on
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "처리 완료",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
+                Column(Modifier.padding(vertical = 10.dp)) {
+                    Row {
+                        Button( // 바텀 시트의 '처리 완료' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "처리 완료 버튼 클릭")
+                                isDetailInputDialogVisible.value = true // 사고 처리 세부 내역 입력창 on
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "처리 완료",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Button( // 바텀 시트의 '처리 중' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "처리 중 버튼 클릭")
+                                updateAccidentSituation(
+                                    accidentNo.value,
+                                    SituationCode.PROCESSING.ordinal.toString(),
+                                    null
+                                ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
+                                selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
+                                isBottomSheetVisible.value = false // 바텀 시트 off
+                                isNoDataDialogVisible.value =
+                                    markerDelete(workId, accidentNoList, markerList, markerListIdx)
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "처리 중",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
-                    Button( // 바텀 시트의 '처리 중' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "처리 중 버튼 클릭")
-                            updateAccidentSituation(
-                                accidentNo.value, SituationCode.PROCESSING.ordinal.toString(), null
-                            ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
-                            selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
-                            isBottomSheetVisible.value = false // 바텀 시트 off
-                            isNoDataDialogVisible.value =
-                                markerDelete(workId, accidentNoList, markerList, markerListIdx)
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFA500)),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "처리 중",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
-                    }
-                    Button( // 바텀 시트의 '오작동' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "오작동 버튼 클릭")
-                            updateAccidentSituation(
-                                accidentNo.value, SituationCode.MALFUNCTION.ordinal.toString(), null
-                            ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
-                            selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
-                            isBottomSheetVisible.value = false // 바텀 시트 off
-                            isNoDataDialogVisible.value =
-                                markerDelete(workId, accidentNoList, markerList, markerListIdx)
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Gray),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "오작동",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
-                    }
-                    Button( // 바텀 시트의 '119 신고' 버튼
-                        onClick = {
-                            Log.i("ButtonClick", "119 신고 버튼 클릭")
-                            updateAccidentSituation(
-                                accidentNo.value, SituationCode.REPORT119.ordinal.toString(), null
-                            ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
-                            selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
-                            isBottomSheetVisible.value = false // 바텀 시트 off
-                            isNoDataDialogVisible.value =
-                                markerDelete(workId, accidentNoList, markerList, markerListIdx)
-                        },
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "119 신고",
-                            color = Color.White,
-                            softWrap = false,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 9.sp
-                        )
+                    Row {
+                        Button( // 바텀 시트의 '오작동' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "오작동 버튼 클릭")
+                                updateAccidentSituation(
+                                    accidentNo.value,
+                                    SituationCode.MALFUNCTION.ordinal.toString(),
+                                    null
+                                ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
+                                selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
+                                isBottomSheetVisible.value = false // 바텀 시트 off
+                                isNoDataDialogVisible.value =
+                                    markerDelete(workId, accidentNoList, markerList, markerListIdx)
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color.Gray),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "오작동",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Button( // 바텀 시트의 '119 신고' 버튼
+                            onClick = {
+                                Log.i("ButtonClick", "119 신고 버튼 클릭")
+                                updateAccidentSituation(
+                                    accidentNo.value,
+                                    SituationCode.REPORT119.ordinal.toString(),
+                                    null
+                                ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
+                                selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
+                                isBottomSheetVisible.value = false // 바텀 시트 off
+                                isNoDataDialogVisible.value =
+                                    markerDelete(workId, accidentNoList, markerList, markerListIdx)
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "119 신고",
+                                color = Color.White,
+                                softWrap = false,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
-                Spacer(Modifier.height(10.dp))
             }
         }
     }
@@ -729,7 +747,6 @@ fun markerDelete(
     }
 
     markerList[markerListIdx.value].performClick()
-
     return false
 }
 
@@ -791,10 +808,14 @@ fun NullDetailInputDialog(
                                     markerDelete(workId, accidentNoList, markerList, markerListIdx)
                                 onClose() // 사고 처리 세부 내역 입력창 off
                             }
-                        }, colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E))
+                        },
+                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     ) { Text(text = "처리") }
                     Button(
-                        onClick = onClose, colors = ButtonDefaults.buttonColors(Color.Gray)
+                        onClick = onClose,
+                        colors = ButtonDefaults.buttonColors(Color.Gray),
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     ) { Text(text = "닫기") }
                 }
                 Spacer(modifier = Modifier.height(4.dp))

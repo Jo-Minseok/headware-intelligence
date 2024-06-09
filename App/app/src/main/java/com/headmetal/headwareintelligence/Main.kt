@@ -6,12 +6,12 @@ import android.app.Activity
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,8 +24,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Surface
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Report
@@ -33,28 +33,24 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -71,7 +67,10 @@ import java.util.Calendar
 import java.util.Locale
 
 data class WeatherResponse(
-    val temperature: Float, val airVelocity: Float, val precipitation: Float, val humidity: Float
+    val temperature: Float?,
+    val airVelocity: Float?,
+    val precipitation: Float?,
+    val humidity: Float?
 )
 
 class WeatherViewModel : ViewModel() {
@@ -108,18 +107,12 @@ fun Main(
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val username: String = sharedAccount.getString("name", null).toString()
-    val temperature by weatherViewModel.temperature
-    val airVelocity by weatherViewModel.airVelocity
-    val precipitation by weatherViewModel.precipitation
-    val humidity by weatherViewModel.humidity
-    val refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val userRank = sharedAccount.getString("type", null)
+    val userName = sharedAccount.getString("name", null)
+    val coroutineScope = rememberCoroutineScope()
 
-    var current by remember { mutableStateOf(Calendar.getInstance().time) }
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    var latitude by remember { mutableStateOf<Double?>(null) }
-    var longitude by remember { mutableStateOf<Double?>(null) }
     var hasLocationPermission by remember { mutableStateOf(false) }
 
     val locationPermissionRequest = rememberLauncherForActivityResult(
@@ -150,208 +143,238 @@ fun Main(
         if (hasLocationPermission) {
             val location = fusedLocationClient.lastLocation.await()
             location?.let {
-                latitude = it.latitude
-                longitude = it.longitude
+                weatherViewModel.getWeather(it.latitude, it.longitude)
             }
         } else {
             Log.e("HEAD METAL", "위치 권한이 필요함")
         }
-
-        refreshState.value = true
-
-        while (true) {
-            delay(1000)
-            current = Calendar.getInstance().time
-        }
     }
 
-    LaunchedEffect(refreshState.value) {
-        if (latitude != null && longitude != null) {
-            weatherViewModel.getWeather(latitude!!, longitude!!)
-            refreshState.value = false
+    val temperature by weatherViewModel.temperature
+    val airVelocity by weatherViewModel.airVelocity
+    val precipitation by weatherViewModel.precipitation
+    val humidity by weatherViewModel.humidity
+    var refreshState by remember { mutableStateOf(true) }
+    var isRefreshClickable by remember { mutableStateOf(true) }
+
+    LaunchedEffect(refreshState) {
+        when {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                hasLocationPermission = true
+            }
+
+            else -> {
+                locationPermissionRequest.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
+        }
+
+        if (hasLocationPermission) {
+            val location = fusedLocationClient.lastLocation.await()
+            location?.let {
+                weatherViewModel.getWeather(it.latitude, it.longitude)
+                refreshState = false
+            }
+        } else {
+            Log.e("HEAD METAL", "위치 권한이 필요함")
         }
     }
 
     BackOnPressed()
-
     Surface(
-        modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9F9F9)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 10.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Column(modifier = Modifier.padding(top = 30.dp)) {
-                Row {
-                    Text(
-                        text = "안녕하세요 ", fontSize = 30.sp
-                    )
-                    Text(
-                        text = username, textDecoration = TextDecoration.Underline, fontSize = 30.sp
-                    )
-                    Text(
-                        text = "님!", fontSize = 30.sp
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = { navController.navigate("menuScreen") }) {
-                        Icon(
-                            imageVector = Icons.Default.Menu, contentDescription = "메뉴"
-                        )
-                    }
-                }
-                Text(
-                    text = "오늘도 안전한 근무 되시길 바랍니다!", fontSize = 15.sp
+            Icon(
+                imageVector = Icons.Default.Menu,
+                contentDescription = "메뉴",
+                modifier = Modifier
+                    .padding(start = 4.dp, top = 20.dp, bottom = 20.dp)
+                    .clickable { navController.navigate("menuScreen") }
+            )
+            Box(modifier = Modifier
+                .padding(top = 8.dp)
+                .background(color = Color.White)
+                .border(
+                    width = 1.dp,
+                    color = Color(0xFFE0E0E0),
+                    shape = RoundedCornerShape(8.dp)
                 )
-            }
-            Column(modifier = Modifier.padding(top = 15.dp)) {
-                Box(
-                    modifier = Modifier
-                        .background(color = Color.White)
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFE0E0E0),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .fillMaxWidth()
-                ) {
+                .fillMaxWidth()
+                .clickable { navController.navigate("privacyScreen") }
+            ) {
+                Row {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = "개인정보",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(start = 10.dp)
+                            .size(40.dp)
+                    )
                     Column {
-                        Row {
+                        userRank?.let { rank ->
                             Text(
-                                text = "일일 안전 알림",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp, top = 2.dp)
-                            )
-                            Text(
-                                text = SimpleDateFormat(
-                                    "EEEE, yyyy년 MM월 dd일", Locale.getDefault()
-                                ).format(current),
-                                style = TextStyle(textAlign = TextAlign.End),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 10.dp, top = 2.dp)
+                                text = if (rank == "manager") "관리자" else "근무자",
+                                modifier = Modifier.padding(start = 10.dp, top = 6.dp),
+                                color = Color.Gray,
+                                fontSize = 16.sp
                             )
                         }
-                        Row {
-                            Icon(
-                                imageVector = Icons.Default.AccessTime,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 10.dp, bottom = 5.dp)
-                            )
+                        userName?.let { name ->
                             Text(
-                                text = SimpleDateFormat(
-                                    "HH:mm", Locale.getDefault()
-                                ).format(current),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 5.dp, bottom = 5.dp)
+                                text = name,
+                                modifier = Modifier.padding(start = 10.dp),
+                                fontSize = 20.sp
                             )
                         }
+                        Text(
+                            text = "Today : " + SimpleDateFormat(
+                                "yyyy년 MM월 dd일, EEEE", Locale.getDefault()
+                            ).format(Calendar.getInstance().time),
+                            modifier = Modifier.padding(start = 10.dp, top = 10.dp),
+                            fontSize = 16.sp
+                        )
+                        Text(
+                            text = "오늘도 안전한 근무 되시길 바랍니다!",
+                            modifier = Modifier.padding(start = 10.dp, bottom = 6.dp),
+                            fontSize = 16.sp
+                        )
                     }
                 }
             }
-            Column {
-                if (sharedAccount.getString("type", null) == "manager") {
+            Column(Modifier.padding(top = 30.dp)) {
+                if (userRank == "manager") {
+                    Text(
+                        text = "관리자 기능",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                     Button(
                         onClick = { navController.navigate("trendScreen") },
-                        modifier = Modifier.padding(),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFF99CCFF)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "사고 추세 확인",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
+                            Text(
+                                text = "사고 추세 확인",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                     Button(
                         onClick = { navController.navigate("mapScreen") },
-                        modifier = Modifier.padding(),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "사고 발생지 확인",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
+                            Text(
+                                text = "사고 발생지 확인",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                     Button(
                         onClick = { navController.navigate("nullmapScreen") },
-                        modifier = Modifier.padding(),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "미처리 사고 발생지 확인",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
+                            Text(
+                                text = "미처리 사고 발생지 확인",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 } else {
+                    Text(
+                        text = "근로자 기능",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
                     Button(
                         onClick = { navController.navigate("helmetScreen") },
-                        modifier = Modifier.padding(),
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                        Box(
+                            modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "안전모 등록",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
+                            Text(
+                                text = "안전모 등록",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black,
+                                fontSize = 16.sp
+                            )
                         }
                     }
                 }
             }
-            if (temperature != null && airVelocity != null && precipitation != null && humidity != null) {
+            temperature?.let {
+                Row(modifier = Modifier.padding(top = 30.dp)) {
+                    Text(
+                        text = "정보",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = Icons.Default.Update,
+                        contentDescription = "새로고침",
+                        tint = Color.Black,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable(enabled = isRefreshClickable) {
+                                refreshState = true
+                                Toast
+                                    .makeText(
+                                        navController.context,
+                                        "새로고침 되었습니다.",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                    .show()
+                                isRefreshClickable = false
+
+                                coroutineScope.launch {
+                                    delay(3000)
+                                    isRefreshClickable = true
+                                }
+                            }
+                    )
+                }
+
                 val weatherInfo: String
                 val weatherIcon: ImageVector
                 val weatherColor: Color
@@ -373,33 +396,8 @@ fun Main(
                     weatherIcon = Icons.Default.WbSunny
                     weatherColor = Color(0xFFFF7F00)
                 }
-
-                Column(modifier = Modifier.padding(top = 30.dp)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Column {
-                            Text(
-                                text = "정보",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                        IconButton(onClick = { refreshState.value = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Update,
-                                contentDescription = "Refresh Icon",
-                                tint = Color.Red,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                }
                 Box(
                     modifier = Modifier
-                        .padding(top = 8.dp)
                         .background(color = Color.White)
                         .border(
                             width = 1.dp,
@@ -408,66 +406,56 @@ fun Main(
                         )
                         .fillMaxWidth()
                 ) {
-                    Column {
-                        Row {
-                            Icon(
-                                imageVector = weatherIcon,
-                                contentDescription = null,
-                                tint = weatherColor,
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 10.dp)
-                                    .size(40.dp)
-                            )
-                            Column {
-                                Text(
-                                    text = "기상 정보 : $weatherInfo",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(
-                                        start = 10.dp, top = 10.dp, bottom = 10.dp
-                                    )
+                    Row {
+                        Icon(
+                            imageVector = weatherIcon,
+                            contentDescription = "날씨",
+                            tint = weatherColor,
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp)
+                                .size(40.dp)
+                        )
+                        Column {
+                            Text(
+                                text = "기상 정보 : $weatherInfo",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(
+                                    start = 10.dp, top = 10.dp, bottom = 10.dp
                                 )
-                                Row {
-                                    Text(
-                                        text = "1시간 강수량 : " + precipitation.toString() + "mm",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                    )
-                                }
-                                Row {
-                                    Text(
-                                        text = "기온 : " + temperature.toString() + "ºC" + if (temperature!! > 35) {
-                                            "(폭염 경보)"
-                                        } else if (temperature!! > 33) {
-                                            "(폭염 주의보)"
-                                        } else {
-                                            ""
-                                        },
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                    )
-                                }
-                                Row {
-                                    Text(
-                                        text = "풍속 : " + airVelocity.toString() + "m/s" + if (airVelocity!! > 21) {
-                                            "(강풍 경보)"
-                                        } else if (airVelocity!! > 14) {
-                                            "(강풍 주의보)"
-                                        } else {
-                                            ""
-                                        },
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                    )
-                                }
-                                Row {
-                                    Text(
-                                        text = "습도 : " + humidity.toString() + "%",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, bottom = 14.dp)
-                                    )
-                                }
-                            }
+                            )
+                            Text(
+                                text = "1시간 강수량 : " + precipitation.toString() + "mm",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                            )
+                            Text(
+                                text = "기온 : " + temperature.toString() + "ºC" + if (temperature!! > 35) {
+                                    "(폭염 경보)"
+                                } else if (temperature!! > 33) {
+                                    "(폭염 주의보)"
+                                } else {
+                                    ""
+                                },
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                            )
+                            Text(
+                                text = "풍속 : " + airVelocity.toString() + "m/s" + if (airVelocity!! > 21) {
+                                    "(강풍 경보)"
+                                } else if (airVelocity!! > 14) {
+                                    "(강풍 주의보)"
+                                } else {
+                                    ""
+                                },
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                            )
+                            Text(
+                                text = "습도 : " + humidity.toString() + "%",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                            )
                         }
                     }
                 }
@@ -475,65 +463,57 @@ fun Main(
                     .padding(top = 8.dp)
                     .background(color = Color.White)
                     .border(
-                        width = 1.dp, color = Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp)
+                        width = 1.dp,
+                        color = Color(0xFFE0E0E0),
+                        shape = RoundedCornerShape(8.dp)
                     )
                     .fillMaxWidth()
-                    .clickable { navController.navigate("countermeasuresScreen") }) {
-                    Column {
-                        Row {
-                            Icon(
-                                imageVector = Icons.Default.Report,
-                                contentDescription = null,
-                                tint = Color(0xFFFFCC00),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
-                                    .size(40.dp)
-                            )
-                            Column {
-                                Row {
-                                    Text(
-                                        text = "주의 행동 요령",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, top = 30.dp)
-                                    )
-                                }
-                            }
-                        }
+                    .clickable { navController.navigate("countermeasuresScreen") }
+                ) {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Default.Report,
+                            contentDescription = "주의 행동 요령",
+                            tint = Color(0xFFFFCC00),
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                                .size(40.dp)
+                        )
+                        Text(
+                            text = "주의 행동 요령",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(start = 10.dp, top = 30.dp)
+                        )
                     }
                 }
-                if (sharedAccount.getString("type", null) == "manager") {
+                if (userRank == "manager") {
                     Box(modifier = Modifier
                         .padding(top = 8.dp)
                         .background(color = Color.White)
-                        .clickable { navController.navigate("processingScreen") }
                         .border(
                             width = 1.dp,
                             color = Color(0xFFE0E0E0),
                             shape = RoundedCornerShape(8.dp)
                         )
-                        .fillMaxWidth()) {
-                        Column {
-                            Row {
-                                Icon(
-                                    imageVector = Icons.Default.Inventory,
-                                    contentDescription = null,
-                                    tint = Color.Gray,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
-                                        .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
-                                        .size(40.dp)
-                                )
-                                Column {
-                                    Row {
-                                        Text(
-                                            text = "사고 처리 내역",
-                                            fontSize = 16.sp,
-                                            modifier = Modifier.padding(start = 10.dp, top = 30.dp)
-                                        )
-                                    }
-                                }
-                            }
+                        .fillMaxWidth()
+                        .clickable { navController.navigate("processingScreen") }
+                    ) {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.Inventory,
+                                contentDescription = null,
+                                tint = Color.Gray,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                                    .size(40.dp)
+                            )
+                            Text(
+                                text = "사고 처리 내역",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 10.dp, top = 30.dp)
+                            )
                         }
                     }
                 }

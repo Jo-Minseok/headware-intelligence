@@ -3,38 +3,21 @@ package com.headmetal.headwareintelligence
 import android.app.Activity
 import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.material.Switch
-import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Call
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Mail
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.PermContactCalendar
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -45,212 +28,117 @@ import androidx.navigation.NavController
 
 @Composable
 fun Privacy(navController: NavController) {
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9))
-    {
-        val sharedAccount: SharedPreferences = LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9F9F9)
+    ) {
+        val sharedAccount: SharedPreferences =
+            LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
         val userId = sharedAccount.getString("userid", null)
-        val username = sharedAccount.getString("name", null)
-        val userphone = sharedAccount.getString("phone", null)
-        val useremail = sharedAccount.getString("email", null)
+        val userName = sharedAccount.getString("name", null)
+        val userPhone = sharedAccount.getString("phone", null)
+        val userEmail = sharedAccount.getString("email", null)
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
-                contentDescription = null,
-                modifier = Modifier.
-                padding(20.dp)
-                    .clickable {navController.navigateUp()}
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "개인 정보",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 34.sp,
-                    modifier = Modifier.padding(horizontal = 30.dp)
-                )
-                Spacer(modifier = Modifier.width(125.dp))
-            }
-
-            Column(
+                contentDescription = "뒤로 가기",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 10.dp, vertical = 15.5.dp)
-            ) {
-                Column(modifier = Modifier.padding(vertical = 10.dp)) {
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .padding(vertical = 2.5.dp)
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Person,
-                                contentDescription = null,
-                                tint = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "아이디",
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            if (userId != null) {
-                                Text(
-                                    text = userId,
-                                    color = Color.Black,
-                                    fontSize = 20.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .padding(vertical = 2.5.dp)
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.PermContactCalendar,
-                                contentDescription = null,
-                                tint = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "이름",
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            if (username != null) {
-                                Text(
-                                    text = username,
-                                    color = Color.Black,
-                                    fontSize = 20.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .padding(vertical = 2.5.dp)
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Call,
-                                contentDescription = null,
-                                tint = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "전화번호",
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            if (userphone != null) {
-                                Text(
-                                    text = userphone,
-                                    color = Color.Black,
-                                    fontSize = 20.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                    Button(
-                        onClick = {},
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .padding(vertical = 2.5.dp)
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Mail,
-                                contentDescription = null,
-                                tint = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "이메일",
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            if (useremail != null) {
-                                Text(
-                                    text = useremail,
-                                    color = Color.Black,
-                                    fontSize = 20.sp
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            navController.navigate("privacychangeScreen")
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
-                            )  {
-                                Text(
-                                    text = "개인 정보 수정",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-
-                    }
+                    .padding(20.dp)
+                    .clickable { navController.navigateUp() }
+            )
+            Text(
+                text = "개인 정보",
+                fontWeight = FontWeight.Bold,
+                fontSize = 34.sp,
+                modifier = Modifier
+                    .padding(horizontal = 30.dp)
+                    .padding(bottom = 10.dp)
+            )
+            Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .size(30.dp)
+                )
+                Text(
+                    text = "아이디",
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = 20.sp
+                )
+                userId?.let { id ->
+                    Text(
+                        text = id,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.PermContactCalendar,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .size(30.dp)
+                )
+                Text(
+                    text = "이름",
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = 20.sp
+                )
+                userName?.let { name ->
+                    Text(
+                        text = name,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Call,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .size(30.dp)
+                )
+                Text(
+                    text = "전화번호",
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = 20.sp
+                )
+                userPhone?.let { phone ->
+                    Text(
+                        text = phone,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Mail,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .size(30.dp)
+                )
+                Text(
+                    text = "이메일",
+                    modifier = Modifier.padding(end = 10.dp),
+                    fontSize = 20.sp
+                )
+                userEmail?.let { email ->
+                    Text(
+                        text = email,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
     }
 }
-

@@ -1,6 +1,6 @@
 //#define GPS_1 43
 //#define GPS_2 44
-#define CDS 14
+#define CDS 11
 #define LED 13
 
 #define SHOCK 10

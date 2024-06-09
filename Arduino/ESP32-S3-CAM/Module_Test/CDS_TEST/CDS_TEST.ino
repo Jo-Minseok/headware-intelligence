@@ -1,19 +1,11 @@
-#define CDS 14
-#define LED 13
+#define CDS 8
 
 void setup(){
 	Serial.begin(115200);
 	pinMode(CDS,INPUT);
-  pinMode(LED,OUTPUT);
 }
-
+int cds_value;
 void loop(){
-  Serial.println(analogRead(CDS));
-  if(analogRead(CDS) == 4095){
-    digitalWrite(LED,1);
-  }
-  else{
-    digitalWrite(LED,0);
-  }
-  
+  cds_value = analogRead(CDS);
+  Serial.println(cds_value);
 }

@@ -663,7 +663,7 @@ void loop(){
   }
 
   lastButtonState = reading; // 이전 버튼 상태 업데이트
-  if(analogRead(CDS) == 4095){
+  if(analogRead(CDS)>=3800){
     digitalWrite(LED,1);
   }
   else{

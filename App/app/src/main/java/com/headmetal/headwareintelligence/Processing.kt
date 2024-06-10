@@ -152,7 +152,6 @@ fun Processing(
     val coroutineScope = rememberCoroutineScope()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
-    val tabIndexState: MutableState<Boolean> = remember { mutableStateOf(false) }
     var refreshState by remember { mutableStateOf(false) }
     var isRefreshClickable by remember { mutableStateOf(true) }
 
@@ -210,7 +209,6 @@ fun Processing(
                     onClick = {
                         selectedTabIndex = 0
                         situationCode.value = SituationCode.PROCESSING.ordinal.toString()
-                        tabIndexState.value = true
                     },
                     text = { Text(text = "사고 처리", fontSize = 20.sp, color = Color.Black) })
                 Tab(
@@ -218,12 +216,11 @@ fun Processing(
                     onClick = {
                         selectedTabIndex = 1
                         situationCode.value = SituationCode.MALFUNCTION.ordinal.toString()
-                        tabIndexState.value = true
                     },
                     text = { Text(text = "오작동 처리", fontSize = 20.sp, color = Color.Black) })
             }
 
-            LaunchedEffect(tabIndexState.value) {
+            LaunchedEffect(selectedTabIndex) {
                 LoadingState.show()
                 CoroutineScope(Dispatchers.IO).async {
                     val state = accidentProcessingViewModel.state
@@ -237,7 +234,6 @@ fun Processing(
                     }
                 }.await()
                 LoadingState.hide()
-                tabIndexState.value = false
             }
 
             if (refreshState) {

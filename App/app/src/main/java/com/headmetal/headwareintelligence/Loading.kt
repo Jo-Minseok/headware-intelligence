@@ -51,8 +51,7 @@ fun Loading(navController: NavController) {
     val permissions = mutableListOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+        Manifest.permission.POST_NOTIFICATIONS
     )
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
         permissions.add(Manifest.permission.BLUETOOTH)

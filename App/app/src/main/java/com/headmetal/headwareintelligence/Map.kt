@@ -561,7 +561,7 @@ fun BottomSheetScreen(
     val scope = rememberCoroutineScope()
 
     if (isBottomSheetVisible.value) { // 스위치가 on이 될 경우 바텀 시트 출력
-        ModalBottomSheet(modifier = Modifier.height(312.dp),
+        ModalBottomSheet(modifier = Modifier.height(336.dp),
             onDismissRequest = { isBottomSheetVisible.value = false },
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = Color.White,

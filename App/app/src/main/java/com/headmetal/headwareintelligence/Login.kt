@@ -45,6 +45,8 @@ import retrofit2.Response
 data class LoginResponse(
     val id: String,
     val name: String,
+    val phoneNo: String,
+    val email: String,
     val access_token: String,
     val token_type: String
 )
@@ -75,6 +77,8 @@ fun performLogin(
                 sharedAccountEdit.putString("userid", response.body()?.id)
                 sharedAccountEdit.putString("password", password)
                 sharedAccountEdit.putString("name", response.body()?.name)
+                sharedAccountEdit.putString("phone", response.body()?.phoneNo)
+                sharedAccountEdit.putString("email", response.body()?.email)
                 sharedAccountEdit.putString("token", response.body()?.access_token)
                 sharedAccountEdit.putString("token_type", response.body()?.token_type)
                 sharedAccountEdit.putString("type", if (isManager) "manager" else "employee")

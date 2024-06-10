@@ -48,7 +48,7 @@ fun Privacy(navController: NavController) {
                     .clickable { navController.navigateUp() }
             )
             Text(
-                text = "개인 정보",
+                text = "사용자 정보",
                 fontWeight = FontWeight.Bold,
                 fontSize = 34.sp,
                 modifier = Modifier
@@ -68,13 +68,14 @@ fun Privacy(navController: NavController) {
                     modifier = Modifier.padding(end = 10.dp),
                     fontSize = 20.sp
                 )
-                userId?.let { id ->
-                    Text(
-                        text = id,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            }
+            userId?.let { id ->
+                Text(
+                    text = id,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 30.dp, top = 5.dp)
+                )
             }
             Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
                 Icon(
@@ -89,13 +90,14 @@ fun Privacy(navController: NavController) {
                     modifier = Modifier.padding(end = 10.dp),
                     fontSize = 20.sp
                 )
-                userName?.let { name ->
-                    Text(
-                        text = name,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            }
+            userName?.let { name ->
+                Text(
+                    text = name,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 30.dp, top = 5.dp)
+                )
             }
             Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
                 Icon(
@@ -110,13 +112,14 @@ fun Privacy(navController: NavController) {
                     modifier = Modifier.padding(end = 10.dp),
                     fontSize = 20.sp
                 )
-                userPhone?.let { phone ->
-                    Text(
-                        text = phone,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            }
+            userPhone?.let { phone ->
+                Text(
+                    text = phone,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 30.dp, top = 5.dp)
+                )
             }
             Row(Modifier.padding(start = 30.dp, top = 30.dp)) {
                 Icon(
@@ -131,13 +134,14 @@ fun Privacy(navController: NavController) {
                     modifier = Modifier.padding(end = 10.dp),
                     fontSize = 20.sp
                 )
-                userEmail?.let { email ->
-                    Text(
-                        text = email,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            }
+            userEmail?.let { email ->
+                Text(
+                    text = email,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 30.dp, top = 5.dp)
+                )
             }
         }
     }

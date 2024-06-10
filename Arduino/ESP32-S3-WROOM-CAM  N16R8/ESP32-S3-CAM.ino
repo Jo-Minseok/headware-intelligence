@@ -9,7 +9,7 @@
 #include <HTTPClient.h>
 #include <NTPClient.h>
 #include <ArduinoWebsockets.h>
-//#include <MPU6050.h>
+// #include <MPU6050.h>
 
 #include "esp_camera.h"
 #include "camera_pins.h"
@@ -26,28 +26,28 @@
 using namespace websockets;
 unsigned int HELMET_NUM = 1;
 
-Adafruit_SSD1306 display(128,64,&Wire,-1);
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
-String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
+String user_id = "", work_id = "", bluetooth_data = "", wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
 int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
 String latitude;
 String longitude;
 
-const int buttonDebounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
-int lastButtonState = LOW;     // 이전 버튼 상태
-int buttonState;               // 현재 버튼 상태
-unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
+const int buttonDebounceDelay = 50; // 디바운싱을 위한 지연 시간 (밀리초)
+int lastButtonState = LOW;          // 이전 버튼 상태
+int buttonState;                    // 현재 버튼 상태
+unsigned long lastDebounceTime = 0; // 마지막 디바운스 시간
 
-const int shockDebounceDelay = 1000;  // 디바운싱을 위한 지연 시간 (밀리초)
-unsigned long lastShockTime = 0; // 마지막 충격 감지 시간
-unsigned long lastReadTime = 0;  // 마지막 센서 읽기 시간
-const int readInterval = 50;     // 센서 읽기 간격 (밀리초)
+const int shockDebounceDelay = 1000; // 디바운싱을 위한 지연 시간 (밀리초)
+unsigned long lastShockTime = 0;     // 마지막 충격 감지 시간
+unsigned long lastReadTime = 0;      // 마지막 센서 읽기 시간
+const int readInterval = 50;         // 센서 읽기 간격 (밀리초)
 
-const int numReadings = 10;      // 평균값을 계산할 때 사용할 읽기 횟수
-int readings[numReadings];       // 읽은 값을 저장할 배열
-int readIndex = 0;               // 현재 읽기 인덱스
-int total = 0;                   // 읽은 값의 총합
-int average = 0;                 // 평균값
+const int numReadings = 10; // 평균값을 계산할 때 사용할 읽기 횟수
+int readings[numReadings];  // 읽은 값을 저장할 배열
+int readIndex = 0;          // 현재 읽기 인덱스
+int total = 0;              // 읽은 값의 총합
+int average = 0;            // 평균값
 
 /*
 ############################################################################
@@ -58,54 +58,66 @@ bool deviceConnected = false;
 BLECharacteristic *pTxCharacteristic;
 BLECharacteristic *pRxCharacteristic;
 
-class MyServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer* pServer) {
+class MyServerCallbacks : public BLEServerCallbacks
+{
+  void onConnect(BLEServer *pServer)
+  {
     Serial.println("[BLE] Bluetooth connected");
     deviceConnected = true;
     pTxCharacteristic->setValue(("helmet_num " + String(HELMET_NUM)).c_str());
     pTxCharacteristic->notify();
   }
 
-  void onDisconnect(BLEServer* pServer) {
+  void onDisconnect(BLEServer *pServer)
+  {
     Serial.println("[BLE] Bluetooth disconnected");
     deviceConnected = false;
     pServer->startAdvertising();
   }
 };
 
-class MyCallbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
+class MyCallbacks : public BLECharacteristicCallbacks
+{
+  void onWrite(BLECharacteristic *pCharacteristic)
+  {
     String rxValue = pCharacteristic->getValue().c_str();
-    if (rxValue.length() > 0) {
+    if (rxValue.length() > 0)
+    {
       bluetooth_data = rxValue;
-      if(bluetooth_data.startsWith("ui ")){
+      if (bluetooth_data.startsWith("ui "))
+      {
         user_id = bluetooth_data.substring(3);
         Serial.println("[BLE] USER ID = " + user_id);
       }
-      else if(bluetooth_data.startsWith("wd ")){
+      else if (bluetooth_data.startsWith("wd "))
+      {
         work_id = bluetooth_data.substring(3);
         Serial.println("[BLE] WORK ID = " + work_id);
       }
-      else if(bluetooth_data.startsWith("wc ")){
+      else if (bluetooth_data.startsWith("wc "))
+      {
         work_id = bluetooth_data.substring(3);
-        Serial.println("[BLE] WORK ID = " +work_id);
+        Serial.println("[BLE] WORK ID = " + work_id);
         pTxCharacteristic->setValue("work_id_change");
         pTxCharacteristic->notify();
       }
-      else if(bluetooth_data.startsWith("wi ")){
+      else if (bluetooth_data.startsWith("wi "))
+      {
         wifi_id = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI ID = " + wifi_id);
       }
-      else if(bluetooth_data.startsWith("wp ")){
+      else if (bluetooth_data.startsWith("wp "))
+      {
         wifi_pw = bluetooth_data.substring(3);
         Serial.println("[BLE] WIFI PW = " + wifi_pw);
       }
-      else if(bluetooth_data.startsWith("gps ")){
+      else if (bluetooth_data.startsWith("gps "))
+      {
         Serial.println("[BLE] GPS = " + bluetooth_data);
         int latStart = bluetooth_data.indexOf("lat:") + 4;
         int latEnd = bluetooth_data.indexOf(",", latStart);
         int lonStart = bluetooth_data.indexOf("lon:") + 4;
-        
+
         latitude = bluetooth_data.substring(latStart, latEnd);
         longitude = bluetooth_data.substring(lonStart);
       }
@@ -113,7 +125,8 @@ class MyCallbacks : public BLECharacteristicCallbacks {
   }
 };
 
-void BT_setup() {
+void BT_setup()
+{
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP START");
   String bluetooth_name = "HEADWARE " + String(HELMET_NUM) + "번 헬멧";
 
@@ -121,34 +134,33 @@ void BT_setup() {
   HELMETNUM_display();
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(10,24);
+  display.setCursor(10, 24);
   display.println("BLUETOOTH");
   display.display();
 
   BLEDevice::init(bluetooth_name.c_str());
-  
+
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 
   BLEService *pService = pServer->createService(SERVICE_UUID);
   pTxCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_READ,
-                        BLECharacteristic::PROPERTY_NOTIFY
-                      );
+      CHARACTERISTIC_READ,
+      BLECharacteristic::PROPERTY_NOTIFY);
   pTxCharacteristic->addDescriptor(new BLE2902());
 
   pRxCharacteristic = pService->createCharacteristic(
-                        CHARACTERISTIC_WRITE,
-                        BLECharacteristic::PROPERTY_WRITE
-                      );
+      CHARACTERISTIC_WRITE,
+      BLECharacteristic::PROPERTY_WRITE);
   pRxCharacteristic->setCallbacks(new MyCallbacks());
 
   pService->start();
   pServer->getAdvertising()->start();
 
   // Wait for user ID
-  while (!deviceConnected) {
-    tone(PIEZO,melody[0],500);
+  while (!deviceConnected)
+  {
+    tone(PIEZO, melody[0], 500);
     delay(1000);
   }
   Serial.println("[SETUP] BLUETOOTH: " + String(HELMET_NUM) + ".NO HELMET BLUETOOTH SETUP SUCCESS");
@@ -156,7 +168,8 @@ void BT_setup() {
   pTxCharacteristic->notify();
 }
 
-void ID_setup(){
+void ID_setup()
+{
   pTxCharacteristic->setValue("user_id");
   pTxCharacteristic->notify();
 
@@ -165,15 +178,16 @@ void ID_setup(){
   HELMETNUM_display();
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(10,24);
+  display.setCursor(10, 24);
   display.println("USER ID");
   display.display();
 
-  while (user_id == "") {
+  while (user_id == "")
+  {
     pTxCharacteristic->setValue("user_id");
     pTxCharacteristic->notify();
     delay(1000);
-    tone(PIEZO,melody[1],200);
+    tone(PIEZO, melody[1], 200);
   }
   Serial.println("[SETUP] USER ID: SETUP SUCCESS");
 
@@ -184,15 +198,16 @@ void ID_setup(){
   HELMETNUM_display();
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(10,24);
+  display.setCursor(10, 24);
   display.println("WORK ID");
   display.display();
 
-  while (work_id == "") {
+  while (work_id == "")
+  {
     pTxCharacteristic->setValue("work_id");
     pTxCharacteristic->notify();
     delay(1000);
-    tone(PIEZO,melody[1],200);
+    tone(PIEZO, melody[1], 200);
   }
   Serial.println("[SETUP] WORK ID: SETUP SUCCESS");
 }
@@ -201,13 +216,14 @@ void ID_setup(){
                                   WIFI
 ############################################################################
 */
-void WIFI_setup(){
+void WIFI_setup()
+{
   Serial.println("[SETUP] WIFI: SETUP START");
   display.clearDisplay();
   HELMETNUM_display();
   display.setTextSize(3);
   display.setTextColor(WHITE);
-  display.setCursor(10,24);
+  display.setCursor(10, 24);
   display.println("WIFI");
   display.display();
   while (true)
@@ -215,8 +231,9 @@ void WIFI_setup(){
     pTxCharacteristic->setValue("wifi");
     pTxCharacteristic->notify();
 
-    tone(PIEZO,melody[2],500);
-    while(wifi_id == ""){
+    tone(PIEZO, melody[2], 500);
+    while (wifi_id == "")
+    {
       pTxCharacteristic->setValue("wifi_id");
       pTxCharacteristic->notify();
       delay(1000);
@@ -228,15 +245,17 @@ void WIFI_setup(){
     WiFi.begin(wifi_id, wifi_pw);
     WiFi.setSleep(false);
     delay(10000);
-    if(WiFi.status() == WL_CONNECTED){
+    if (WiFi.status() == WL_CONNECTED)
+    {
       break;
     }
-    else{
+    else
+    {
       Serial.println("연결안됨");
     }
     Serial.println("[SETUP] WIFI ID = " + wifi_id + " WIFI PASSWORD = " + wifi_pw);
   }
-  
+
   Serial.println("[SETUP] WIFI: SETUP SUCCESS");
   pTxCharacteristic->setValue("wifi_success");
   pTxCharacteristic->notify();
@@ -248,8 +267,9 @@ void WIFI_setup(){
 ############################################################################
 */
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP,"pool.ntp.org",32400);
-void TIME_setup() {
+NTPClient timeClient(ntpUDP, "pool.ntp.org", 32400);
+void TIME_setup()
+{
   Serial.println("[SETUP] TIME: SETUP START");
   timeClient.begin();
   timeClient.setTimeOffset(32400);
@@ -262,30 +282,37 @@ void TIME_setup() {
                                   HTTP
 ############################################################################
 */
-void HTTP_setup(){
-  if(WiFi.status() == WL_CONNECTED){
+void HTTP_setup()
+{
+  if (WiFi.status() == WL_CONNECTED)
+  {
     HTTPClient http;
-    http.begin("http://"+server_address + "/");
+    http.begin("http://" + server_address + "/");
     int httpResponseCode = http.GET();
-    while(httpResponseCode != 200){
+    while (httpResponseCode != 200)
+    {
       Serial.println("[ERROR] SERVER: CONNECT FAIL");
-      tone(PIEZO,251);
+      tone(PIEZO, 251);
       delay(5000);
     }
     Serial.println("[SETUP] SERVER: CONNECT SUCCESS");
   }
-  else{
+  else
+  {
     WIFI_setup();
   }
 }
 
-void Emergency(){
-  if(WiFi.status() == WL_CONNECTED){
+void Emergency()
+{
+  if (WiFi.status() == WL_CONNECTED)
+  {
     HTTPClient http;
-    http.begin("http://" + server_address + "/accident/emergency?work_id=" + work_id + "&user_id="+user_id);
+    http.begin("http://" + server_address + "/accident/emergency?work_id=" + work_id + "&user_id=" + user_id);
     int httpResponseCode = http.GET();
   }
-  else{
+  else
+  {
     WIFI_setup();
   }
 }
@@ -310,7 +337,7 @@ void SendingData(String type)
     jsonPayload += "\"date\":[" + String(timeInfo->tm_year + 1900) + "," + String(timeInfo->tm_mon + 1) + "," + String(timeInfo->tm_mday) + "],";
     jsonPayload += "\"time\":[" + String(timeInfo->tm_hour) + "," + String(timeInfo->tm_min) + "," + String(timeInfo->tm_sec) + "],";
     jsonPayload += "\"latitude\":" + latitude + ",";
-    jsonPayload += "\"longitude\":"+ longitude + ",";
+    jsonPayload += "\"longitude\":" + longitude + ",";
     jsonPayload += "\"work_id\":\"" + work_id + "\",";
     jsonPayload += "\"victim_id\":\"" + user_id + "\"";
     jsonPayload += "}";
@@ -340,45 +367,55 @@ void SendingData(String type)
 ############################################################################
 */
 WebsocketsClient client;
-void WEBSOCKET_setup() {
+void WEBSOCKET_setup()
+{
   client.close();
   Serial.println("[SETUP] WEBSOCKET: SETUP START");
   client.onMessage(onMessageCallback);
   client.onEvent(onEventsCallback);
-  client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
+  client.connect("ws://" + server_address + "/accident/ws/" + work_id + "/" + user_id);
   Serial.println("[SETUP] WEBSOCKET: SETUP SUCCESS");
 }
 
-void onMessageCallback(WebsocketsMessage message) {
+void onMessageCallback(WebsocketsMessage message)
+{
   String receiveData = message.data();
   int firstColonIndex = receiveData.indexOf(":");
   int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
-  if (firstColonIndex == -1 || secondColonIndex == -1) {
+  if (firstColonIndex == -1 || secondColonIndex == -1)
+  {
     Serial.println("[ERROR] WEBSOCKET: NOT FORMAT");
     return;
   }
   String send_id = receiveData.substring(0, firstColonIndex);
   String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
   String action = receiveData.substring(secondColonIndex + 1);
-  if (user_id==receive_id) {
-    if (action == "카메라") {
+  if (user_id == receive_id)
+  {
+    if (action == "카메라")
+    {
       client.send(send_id + ":" + action + "전달");
       capture_and_send_image(send_id);
     }
-    else if(action == "소리"){
+    else if (action == "소리")
+    {
       client.send(send_id + ":" + action + "전달");
       PLAY_SIREN();
-      client.send(send_id+":소리완료");
+      client.send(send_id + ":소리완료");
     }
   }
 }
 
-void onEventsCallback(WebsocketsEvent event, String data) {
-  if (event == WebsocketsEvent::ConnectionOpened) {
+void onEventsCallback(WebsocketsEvent event, String data)
+{
+  if (event == WebsocketsEvent::ConnectionOpened)
+  {
     Serial.println("[SYSTEM] WEBSOCKET: CONNECT");
-  } else if (event == WebsocketsEvent::ConnectionClosed) {
+  }
+  else if (event == WebsocketsEvent::ConnectionClosed)
+  {
     Serial.println("[SYSTEM] WEBSOCKET: CLOSE");
-    client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
+    client.connect("ws://" + server_address + "/accident/ws/" + work_id + "/" + user_id);
   }
 }
 
@@ -387,31 +424,35 @@ void onEventsCallback(WebsocketsEvent event, String data) {
                                   SPEAKER
 ############################################################################
 */
-void PLAY_SIREN(){
-  for(int i=0;i<10;i++){
-    tone(PIEZO,melody[3],250);
-    tone(PIEZO,melody[7],250);
+void PLAY_SIREN()
+{
+  for (int i = 0; i < 10; i++)
+  {
+    tone(PIEZO, melody[3], 250);
+    tone(PIEZO, melody[7], 250);
   }
 }
 
-void SUCCESS_setup(){
+void SUCCESS_setup()
+{
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(0,26);
+  display.setCursor(0, 26);
   display.println("SUCCESS");
   display.display();
-  tone(PIEZO,melody[0],500);
-  tone(PIEZO,melody[2],500);
-  tone(PIEZO,melody[4],500);
+  tone(PIEZO, melody[0], 500);
+  tone(PIEZO, melody[2], 500);
+  tone(PIEZO, melody[4], 500);
   delay(2000);
   display.clearDisplay();
   display.display();
 }
 
-void PIEZO_setup(){
+void PIEZO_setup()
+{
   Serial.println("[SETUP] PIEZO: SETUP START");
-  ledcSetup(LEDC_CHANNEL_0, 5000, 8); // LEDC 초기화
+  ledcSetup(LEDC_CHANNEL_0, 5000, 8);   // LEDC 초기화
   ledcAttachPin(PIEZO, LEDC_CHANNEL_0); // PIEZO 핀에 LEDC 채널 연결
   Serial.println("[SETUP] PIEZO: SETUP SUCCESS");
 }
@@ -421,15 +462,17 @@ void PIEZO_setup(){
                   PIN SETUP(SHOCK, BUTTON, CDS ,LED)
 ############################################################################
 */
-void PIN_setup(){
+void PIN_setup()
+{
   Serial.println("[SETUP] PIN: SETUP START");
-  pinMode(SHOCK,INPUT); // 충격
-  pinMode(BUTTON,INPUT_PULLDOWN); // 긴급 버튼
-  pinMode(CDS,INPUT);
-  pinMode(LED,OUTPUT);
-  digitalWrite(RESET,HIGH);
-  pinMode(RESET,OUTPUT);
-  for (int i = 0; i < numReadings; i++) {
+  pinMode(SHOCK, INPUT);           // 충격
+  pinMode(BUTTON, INPUT_PULLDOWN); // 긴급 버튼
+  pinMode(CDS, INPUT);
+  pinMode(LED, OUTPUT);
+  digitalWrite(RESET, HIGH);
+  pinMode(RESET, OUTPUT);
+  for (int i = 0; i < numReadings; i++)
+  {
     readings[i] = 0;
   }
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
@@ -441,7 +484,8 @@ void PIN_setup(){
 ############################################################################
 */
 const int CAM_addr = 0x36;
-void CAMERA_setup(){
+void CAMERA_setup()
+{
   Serial.println("[SETUP] CAMERA: SETUP START");
   /*
   DFRobot_AXP313A axp;
@@ -473,45 +517,53 @@ void CAMERA_setup(){
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_HVGA;
   config.pixel_format = PIXFORMAT_JPEG; // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  // config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
   config.fb_count = 1;
 
-  if(psramFound()){
-      config.jpeg_quality = 10;
-      config.fb_count = 2;
-      config.grab_mode = CAMERA_GRAB_LATEST;
-  } else {
-      // Limit the frame size when PSRAM is not available
-      config.frame_size = FRAMESIZE_SVGA;
-      config.fb_location = CAMERA_FB_IN_DRAM;
+  if (psramFound())
+  {
+    config.jpeg_quality = 10;
+    config.fb_count = 2;
+    config.grab_mode = CAMERA_GRAB_LATEST;
+  }
+  else
+  {
+    // Limit the frame size when PSRAM is not available
+    config.frame_size = FRAMESIZE_SVGA;
+    config.fb_location = CAMERA_FB_IN_DRAM;
   }
 
-  while (esp_camera_init(&config) != ESP_OK) {
-      Serial.println("[ERROR] CAMERA: SETUP FAIL");
-      delay(500);
+  while (esp_camera_init(&config) != ESP_OK)
+  {
+    Serial.println("[ERROR] CAMERA: SETUP FAIL");
+    delay(500);
   }
   Serial.println("[SETUP] CAMERA: SETUP SUCCESS");
-}  
+}
 
-void capture_and_send_image(String send_id) {
-//  client.close();
+void capture_and_send_image(String send_id)
+{
+  //  client.close();
   HTTPClient http;
-  camera_fb_t * fb = esp_camera_fb_get();
-  if (fb != NULL && fb->format == PIXFORMAT_JPEG) {
-    http.begin("http://"+server_address+"/accident/upload_image");
+  camera_fb_t *fb = esp_camera_fb_get();
+  if (fb != NULL && fb->format == PIXFORMAT_JPEG)
+  {
+    http.begin("http://" + server_address + "/accident/upload_image");
     String boundary = "--------------------------";
-    for (int i = 0; i < 24; i++) {
+    for (int i = 0; i < 24; i++)
+    {
       boundary += String(random(0, 10));
     }
-    String fileName = user_id+"_"+send_id+".jpg";
+    String fileName = user_id + "_" + send_id + ".jpg";
     String body = "--";
     body += boundary + "\r\n";
     body += "Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\nContent-Type: image/jpeg\r\n\r\n";
 
-    for (size_t i = 0; i < fb->len; i++) {
+    for (size_t i = 0; i < fb->len; i++)
+    {
       body += char(fb->buf[i]);
     }
 
@@ -526,15 +578,16 @@ void capture_and_send_image(String send_id) {
     Serial.println("[SYSTEM] CAMERA: " + response);
     http.end();
   }
-  else {
+  else
+  {
     Serial.println("[ERROR] CAMERA: TAKE ERROR");
     WEBSOCKET_setup();
     return;
   }
   Serial.println("[SYSTEM] CAMERA: TAKE SUCCESS");
 
-//  WEBSOCKET_setup();
-  client.send(send_id+":카메라완료");
+  //  WEBSOCKET_setup();
+  client.send(send_id + ":카메라완료");
 }
 
 /*
@@ -544,24 +597,26 @@ void capture_and_send_image(String send_id) {
 */
 
 const int OLED_addr = 0x3C;
-void OLED_setup(){
+void OLED_setup()
+{
   Serial.println("[SETUP] OLED: SETUP START");
-  //Wire.begin(0,9);
-  display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
+  // Wire.begin(0,9);
+  display.begin(SSD1306_SWITCHCAPVCC, OLED_addr);
   display.clearDisplay();
   HELMETNUM_display();
   display.setTextSize(2);
   display.setTextColor(WHITE);
-  display.setCursor(0,26);
+  display.setCursor(0, 26);
   display.println("HEAD BUDDY");
   display.display();
   Serial.println("[SETUP] OLED: SETUP SUCCESS");
 }
 
-void HELMETNUM_display(){
+void HELMETNUM_display()
+{
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(0,0);
+  display.setCursor(0, 0);
   display.println("NO. " + String(HELMET_NUM));
   display.display();
 }
@@ -619,7 +674,8 @@ void GYRO_check(){
 ############################################################################
 */
 
-void setup(){
+void setup()
+{
   Serial.begin(115200);
   Wire.begin();
 
@@ -650,30 +706,36 @@ void setup(){
   CAMERA_setup(); // 카메라
 }
 
-void loop(){
-  //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
-// BLE 연결 여부
-  if(!deviceConnected){
-    digitalWrite(RESET,LOW);
+void loop()
+{
+  // mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
+  // BLE 연결 여부
+  if (!deviceConnected)
+  {
+    digitalWrite(RESET, LOW);
   }
 
-// 긴급 버튼
+  // 긴급 버튼
   int reading = digitalRead(BUTTON);
 
   // 버튼 상태가 바뀌었는지 확인
-  if (reading != lastButtonState) {
+  if (reading != lastButtonState)
+  {
     // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
     lastDebounceTime = millis();
   }
 
   // 디바운싱 지연 시간을 넘었으면 상태를 업데이트
-  if ((millis() - lastDebounceTime) > buttonDebounceDelay) {
+  if ((millis() - lastDebounceTime) > buttonDebounceDelay)
+  {
     // 상태가 변하고 일정 시간 유지된 경우에만 버튼 상태 업데이트
-    if (reading != buttonState) {
+    if (reading != buttonState)
+    {
       buttonState = reading;
 
       // 버튼이 눌렸는지 확인 (버튼이 눌린 상태는 HIGH)
-      if (buttonState == HIGH) {
+      if (buttonState == HIGH)
+      {
         Emergency();
         PLAY_SIREN();
         Serial.println("[EMERGENCY] 긴급 호출");
@@ -683,17 +745,20 @@ void loop(){
 
   lastButtonState = reading; // 이전 버튼 상태 업데이트
 
-// CDS 조명 설정
-  if(analogRead(CDS)>=3800){
-    digitalWrite(LED,1);
+  // CDS 조명 설정
+  if (analogRead(CDS) >= 3800)
+  {
+    digitalWrite(LED, 1);
   }
-  else{
-    digitalWrite(LED,0);
+  else
+  {
+    digitalWrite(LED, 0);
   }
 
-// WIFI 상태 확인 및 낙하 데이터 전송
+  // WIFI 상태 확인 및 낙하 데이터 전송
   unsigned long currentTime = millis();
-  if (currentTime - lastReadTime >= readInterval) {
+  if (currentTime - lastReadTime >= readInterval)
+  {
     lastReadTime = currentTime;
 
     // 현재 읽기에서 이전 총합에서 해당 읽기 값을 뺌
@@ -709,24 +774,27 @@ void loop(){
     readIndex = readIndex + 1;
 
     // 배열의 끝에 도달하면 다시 시작
-    if (readIndex >= numReadings) {
+    if (readIndex >= numReadings)
+    {
       readIndex = 0;
     }
 
     // 평균값 계산
     average = total / numReadings;
 
-    if(WiFi.status() == WL_CONNECTED){
+    if (WiFi.status() == WL_CONNECTED)
+    {
       client.poll();
-      if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
+      if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay)
+      { // 충격 감지 값과 디바운스 시간 조정
         SendingData("낙하");
         lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트
         average = 0;
       }
     }
-    else{
+    else
+    {
       WIFI_setup();
     }
   }
-  delay(50);
 }

@@ -7,6 +7,8 @@ from pydantic_core.core_schema import FieldValidationInfo
 class Login_Output(BaseModel):
     id: str
     name: str
+    phoneNo: str
+    email: EmailStr
     access_token: str
     token_type: str
 

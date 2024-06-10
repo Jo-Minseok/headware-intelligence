@@ -61,6 +61,8 @@ def get_employee_login(alert_token: str, type: str, account_data: OAuth2Password
     return {
         "id": user_row.id,
         "name": user_row.name,
+        "phoneNo": user_row.phone_no,
+        "email": user_row.email,
         "access_token": access_token,
         "token_type": "bearer"
     }

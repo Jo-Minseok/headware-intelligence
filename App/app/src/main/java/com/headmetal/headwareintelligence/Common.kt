@@ -26,29 +26,28 @@ enum class SituationCode {
     COMPLETE, PROCESSING, MALFUNCTION, REPORT119 // 처리 완료 : 0, 처리 중 : 1, 오작동 : 2, 119 신고 : 3
 }
 
-// 재시도 클래스(삭제 전 '전진호'에게 문의)
-//class RetryInterceptor(private val maxRetries: Int) : Interceptor {
-//    override fun intercept(chain: Interceptor.Chain): Response {
-//        val request = chain.request()
-//        var response: Response?
-//        var attempt = 0
-//        val exception: IOException? = null
-//
-//        while (attempt < maxRetries) {
-//            try {
-//                response = chain.proceed(request)
-//                if (response.isSuccessful) {
-//                    return response
-//                }
-//            } catch (e: SocketTimeoutException) {
-//                Log.e("HEAD METAL", "서버 통신 재시도 ${attempt + 1}회")
-//                attempt++
-//            }
-//        }
-//
-//        throw exception ?: IOException("Unknown error")
-//    }
-//}
+class RetryInterceptor(private val maxRetries: Int) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request = chain.request()
+        var response: Response?
+        var attempt = 0
+        val exception: IOException? = null
+
+        while (attempt < maxRetries) {
+            try {
+                response = chain.proceed(request)
+                if (response.isSuccessful) {
+                    return response
+                }
+            } catch (e: SocketTimeoutException) {
+                Log.e("HEAD METAL", "서버 통신 재시도 ${attempt + 1}회")
+                attempt++
+            }
+        }
+
+        throw exception ?: IOException("Unknown error")
+    }
+}
 
 object LoadingState {
     private val _isLoading = MutableStateFlow(false)

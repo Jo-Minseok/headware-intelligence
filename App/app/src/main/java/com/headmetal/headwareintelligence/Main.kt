@@ -74,7 +74,7 @@ data class WeatherResponse(
 )
 
 class WeatherViewModel : ViewModel() {
-    private val apiService = RetrofitInstance.apiService
+    private val apiService = RetrofitInstance.retryApiService
 
     private val _temperature = mutableStateOf<Float?>(null)
     val temperature: State<Float?> = _temperature

@@ -33,7 +33,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.TextField
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -490,9 +491,11 @@ fun NullBottomSheetScreen(
                                 modifier = Modifier.weight(1f)
                             )
                         }
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Outlined.Person,
                                 contentDescription = null,
@@ -788,7 +791,15 @@ fun NullDetailInputDialog(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "사고 처리 세부 내역 입력")
                 Spacer(modifier = Modifier.height(10.dp))
-                TextField(value = detail.value, onValueChange = { detail.value = it })
+                TextField(
+                    value = detail.value,
+                    onValueChange = { detail.value = it },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        backgroundColor = Color(0xD0D9F7BE)
+                    )
+                )
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(44.dp)) {
                     Button( // 사고 처리 세부 내역 입력창의 '처리' 버튼
@@ -809,7 +820,7 @@ fun NullDetailInputDialog(
                                 onClose() // 사고 처리 세부 내역 입력창 off
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
+                        colors = ButtonDefaults.buttonColors(Color(0xD0D9F7BE)),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) { Text(text = "처리") }
                     Button(

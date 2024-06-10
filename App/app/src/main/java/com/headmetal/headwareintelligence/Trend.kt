@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import android.graphics.Typeface
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +26,8 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -153,18 +155,24 @@ fun Trend(
                                 modifier = Modifier
                                     .menuAnchor()
                                     .width(200.dp)
-                                    .height(50.dp)
+                                    .height(50.dp),
+                                colors = TextFieldDefaults.textFieldColors(
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    backgroundColor = Color.White
+                                )
                             )
                             ExposedDropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
+                                modifier = Modifier.background(Color.White)
                             ) {
                                 options.forEach { item ->
                                     DropdownMenuItem(
                                         text = { Text(text = item) },
                                         onClick = {
+                                            expanded = false
                                             if (selectedOption != item) {
-                                                expanded = false
                                                 selectedOption = item
                                             }
                                         }
@@ -187,9 +195,9 @@ fun Trend(
                 val veryHighDangerLine = 3
                 val highDangerLine = 0
                 val dangerColor = when {
-                    inclination!! > veryHighDangerLine -> Color.Red
-                    inclination!! > highDangerLine -> Color(0xFFFF6600)
-                    else -> Color.Green
+                    inclination!! > veryHighDangerLine -> Color(0xD0FFCCC7)
+                    inclination!! > highDangerLine -> Color(0xD0FFC832)
+                    else -> Color(0xD0D9F7BE)
                 }
                 val dangerText = when {
                     inclination!! > veryHighDangerLine -> "매우 높음"
@@ -282,7 +290,7 @@ fun ChartPrint(
         chart = columnChart( // 월별 사고 데이터 차트 부분
             columns = listOf(
                 lineComponent( // 막대 그래프 속성 지정
-                    color = Color(0xFF000080),
+                    color = Color(0x8000ADFF),
                     thickness = 10.dp,
                     shape = Shapes.cutCornerShape(topRightPercent = 20, topLeftPercent = 20)
                 )
@@ -296,9 +304,9 @@ fun ChartPrint(
                 lines = listOf(
                     LineSpec( // 추세선 속성 지정
                         lineColor = when (dangerColor) { // 선 색상 지정
-                            Color.Red -> android.graphics.Color.RED
-                            Color(0xFFFF6600) -> android.graphics.Color.rgb(255, 102, 0)
-                            else -> android.graphics.Color.GREEN
+                            Color(0xD0FFCCC7) -> android.graphics.Color.argb(208, 255, 204, 199)
+                            Color(0xD0FFC832) -> android.graphics.Color.argb(208, 255, 200, 50)
+                            else -> android.graphics.Color.argb(208, 217, 247, 190)
                         },
                         pointConnector = DefaultPointConnector(cubicStrength = 0f) // 직선 형태 지정
                     )
@@ -323,7 +331,7 @@ fun ChartPrint(
             }
         ),
         runInitialAnimation = false, // 그래프 출력 시 애니메이션 동작
-        legend = rememberLegend(listOf(Color(0xFF000080), dangerColor)) // 그래프 범례
+        legend = rememberLegend(listOf(Color(0x8000ADFF), dangerColor)) // 그래프 범례
     )
 }
 

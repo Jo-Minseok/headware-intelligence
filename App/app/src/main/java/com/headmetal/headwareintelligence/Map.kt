@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Close
@@ -35,7 +36,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.TextField
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -320,6 +321,7 @@ fun MapScreen(
             ) == PackageManager.PERMISSION_GRANTED -> {
                 hasLocationPermission = true
             }
+
             else -> {
                 locationPermissionRequest.launch(
                     arrayOf(
@@ -373,7 +375,14 @@ fun MapScreen(
 
                         // 지도의 초기 위치 설정
                         // map.moveCamera(CameraUpdate.scrollTo(LatLng(35.1336437235, 129.09320833287)))
-                        map.moveCamera(CameraUpdate.scrollTo(LatLng(initialLatitude!!, initialLongitude!!)))
+                        map.moveCamera(
+                            CameraUpdate.scrollTo(
+                                LatLng(
+                                    initialLatitude!!,
+                                    initialLongitude!!
+                                )
+                            )
+                        )
 
                         // 클러스터 마커 및 단말 마커 설정 후 클러스터 구성
                         cluster.value = Clusterer.Builder<ItemKey>().clusterMarkerUpdater(object :
@@ -836,7 +845,15 @@ fun DetailInputDialog(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(text = "사고 처리 세부 내역 입력")
                 Spacer(modifier = Modifier.height(10.dp))
-                TextField(value = detail.value, onValueChange = { detail.value = it })
+                TextField(
+                    value = detail.value,
+                    onValueChange = { detail.value = it },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        backgroundColor = Color(0xD0D9F7BE)
+                    )
+                )
                 Spacer(modifier = Modifier.height(10.dp))
                 Row {
                     Button( // 사고 처리 세부 내역 입력창의 '처리' 버튼
@@ -858,7 +875,7 @@ fun DetailInputDialog(
                                 onClose() // 사고 처리 세부 내역 입력창 off
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(Color(0xFF2FA94E)),
+                        colors = ButtonDefaults.buttonColors(Color(0xD0D9F7BE)),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) { Text(text = "처리") }
                     Button(

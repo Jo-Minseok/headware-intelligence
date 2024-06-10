@@ -11,20 +11,30 @@ object RetrofitInstance {
     private val retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
-            // 재시도 빌더(삭제 전 '전진호'에게 문의)
-//            .client(
-//                OkHttpClient.Builder()
-//                    .connectTimeout(5, TimeUnit.SECONDS)
-//                    .readTimeout(5, TimeUnit.SECONDS)
-//                    .writeTimeout(5, TimeUnit.SECONDS)
-//                    .addInterceptor(RetryInterceptor(3))
-//                    .build()
-//            )
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    private val retryRetrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(5, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.SECONDS)
+                    .writeTimeout(5, TimeUnit.SECONDS)
+                    .addInterceptor(RetryInterceptor(3))
+                    .build()
+            )
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     val apiService: ApiService by lazy {
         retrofit.create(ApiService::class.java)
+    }
+
+    val retryApiService: ApiService by lazy {
+        retryRetrofit.create(ApiService::class.java)
     }
 }

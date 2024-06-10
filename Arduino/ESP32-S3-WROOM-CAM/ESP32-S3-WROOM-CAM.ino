@@ -13,7 +13,6 @@
 
 #include "esp_camera.h"
 #include "camera_pins.h"
-#include "DFRobot_AXP313A.h"
 #include "module_pins.h"
 
 #include <Adafruit_SSD1306.h>
@@ -443,14 +442,6 @@ void PIN_setup(){
 const int CAM_addr = 0x36;
 void CAMERA_setup(){
   Serial.println("[SETUP] CAMERA: SETUP START");
-  /*
-  DFRobot_AXP313A axp;
-  while(axp.begin()!=0){
-    Serial.println("[SETUP] CAMERA: DFRobot init error");
-    delay(100);
-  }
-  axp.enableCameraPower(axp.eOV2640);//Enable the power for camera
-  */
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;

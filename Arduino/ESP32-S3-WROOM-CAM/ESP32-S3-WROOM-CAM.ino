@@ -719,5 +719,4 @@ void loop(){
       WIFI_setup();
     }
   }
-  delay(50);
 }

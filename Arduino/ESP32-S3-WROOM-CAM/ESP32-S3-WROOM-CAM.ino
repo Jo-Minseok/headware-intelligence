@@ -225,7 +225,6 @@ void WIFI_setup(){
     delay(5000);
     Serial.println("WIFI ID = " + wifi_id + " PASSWORD = " + wifi_pw);
     WiFi.begin(wifi_id, wifi_pw);
-    WiFi.setSleep(false);
     delay(10000);
     if(WiFi.status() == WL_CONNECTED){
       break;
@@ -293,6 +292,7 @@ void SendingData(String type)
 {
   pTxCharacteristic->setValue("GPS");
   pTxCharacteristic->notify();
+  delay(300);
   if (WiFi.status() == WL_CONNECTED)
   { // WIFI가 연결되어 있으면
     HTTPClient http;

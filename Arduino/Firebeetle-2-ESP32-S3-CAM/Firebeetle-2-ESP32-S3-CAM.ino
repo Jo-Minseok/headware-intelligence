@@ -321,6 +321,7 @@ void SendingData(String type)
 {
   pTxCharacteristic->setValue("GPS");
   pTxCharacteristic->notify();
+  delay(300);
   if (WiFi.status() == WL_CONNECTED)
   { // WIFI가 연결되어 있으면
     HTTPClient http;
@@ -342,6 +343,7 @@ void SendingData(String type)
     jsonPayload += "\"victim_id\":\"" + user_id + "\"";
     jsonPayload += "}";
 
+    Serial.println(jsonPayload);
     int httpResponseCode = http.POST(jsonPayload);
     if (httpResponseCode == 200)
     {

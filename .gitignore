@@ -15,3 +15,5 @@ Backend/marker/__pycache__
 Backend/accident/uploaded_images
 Backend/fcm_notification/firebase-privatekey.json
 Backend/fcm_notification/__pycache__
+Arduino/Firebeetle-2-ESP32-S3-CAM/DFRobot_AXP313A.cpp
+Arduino/Firebeetle-2-ESP32-S3-CAM/DFRobot_AXP313A.h

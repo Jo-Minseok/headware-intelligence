@@ -55,15 +55,25 @@
             </ul>
         BE
             <ul>
-                <li></li>
+                <li>로그인, 계정 생성</li>
+                <li>작업장 관련 처리</li>
+                <li>사고 발생 처리</li>
+                <li>FCM Notification</li>
+                <li>DB 구축</li>
+                <li>행위 웹 소켓 통신</li>
             </ul>
         APP
             <ul>
             <li>자동 로그인 기능</li>
             <li>기기 권한 및 접근</li>
+            <li>헬멧 등록</li>
+            <li>BLE 통신, GPS, FCM 알림</li>
+            <li>API 통신</li>
             </ul>
         HW
             <ul>
+            <li>전체 기능 제작</li>
+            <li>시제품 제작</li>
             </ul>
         </td>
     </tr>
@@ -71,17 +81,27 @@
         <td>팀원</td>
         <td>전진호</td>
         <td><a href="https://github.com/right5625">@right5625</a></td>
-        <td>BE, APP</td>
+        <td>APP, BE</td>
         <td>
         BE
         <ul>
             <li>기상청 API 요청 및 전처리</li>
-            <li>사고 처리내역 API</li>
-            <li>사고 발생내역 API</li>
+            <li>사고 처리내역</li>
+            <li>사고 발생내역(지도)</li>
+            <li>사고 트랜드 머신러닝</li>
+            <li>촬영 이미지 호출</li>
+            <li>계정 찾기</li>
         </ul>
         APP
         <ul>
             <li>NAVER 지도 사고내역 표기</li>
+            <li>API 통신</li>
+            <li>웹 소켓 통신</li>
+            <li>사고 처리내역</li>
+            <li>사고 추세 그래프</li>
+            <li>계정 찾기</li>
+            <li>메인 화면 기능</li>
+            <li>계정 정보 보기</li>
         </ul>
         </td>
     </tr>
@@ -89,11 +109,24 @@
         <td>팀원</td>
         <td>채승룡</td>
         <td><a href="https://github.com/chaeseungryong">@chaeseungryong</a></td>
-        <td>APP</td>
+        <td>APP, DOCS</td>
         <td>
         APP
         <ul>
             <li>UI/UX 디자인</li>
+            <li>네비게이션 화면 전환</li>
+            <li>회원가입 기능</li>
+            <li>로그인 기능</li>
+            <li>기타 메뉴</li>
+        </ul>
+        HW
+        <ul>
+        <li>시제품 제작</li>
+        </ul>
+        ETC
+        <ul>
+        <li>문서 작업</li>
+        <li>재정 관리</li>
         </ul>
         </td>
     </tr>
@@ -157,12 +190,12 @@ BackEnd Server : Uvicorn
 <details>
     <summary><strong>💡 HARDWARE</strong></summary>
     <ul>
-        <li>충격 센서를 활용하여 사고 감지 및 사고 알림 전송</li>
-        <li>BLE 통신을 이용하여 애플리케이션 데이터 통신 (GPS, WIFI, USER ID, WORK ID)</li>
-        <li>웹소켓 통신을 이용하여 스피커와 카메라 모듈을 이용하여 안전 관리자가 사고자의 카메라와 스피커를 작동할 수 있도록 설정 </li>
-        <li>조도 센서를 이용하여 주변 빛 양을 감지하여 LED를 자동으로 제어</li>
-        <li>긴급 버튼을 누를 경우 백엔드 서버로 HTTP 통신을 수행</li>
-        <li>OLED 디스플레이를 이용하여 헬멧에서 헬멧 상태</li>
+        <li>충격 센서를 활용하여 사고 감지 및 사고 알림 HTTP 통신을 이용</li>
+        <li>BLE 통신을 이용하여 애플리케이션 데이터 통신 및 애플리케이션 제어 (GPS, WIFI, USER ID, WORK ID)</li>
+        <li>웹소켓 통신을 이용하여 스피커와 카메라 모듈을 이용하여 안전 관리자가 사고자의 카메라와 스피커를 작동할 수 있도록 웹소켓 통신을 이용 </li>
+        <li>조도 센서를 이용하여 주변 빛 양을 감지를 통해 LED 자동으로 제어</li>
+        <li>긴급 버튼을 누를 경우 백엔드 서버로 HTTP 통신</li>
+        <li>OLED 디스플레이를 이용하여 헬멧 상태 출력</li>
     </ul>
 </details>
 <details>
@@ -171,12 +204,105 @@ BackEnd Server : Uvicorn
         <li>하드웨어에서 전송된 위치정보를 이용하여 사고자의 위치를 지도로 확인</li>
         <li>머신러닝을 활용하여 안전 관심도 추세 확인</li>
         <li>사고 다발 구역 표시</li>
-        <li>사고자 안전모의 카메라, 스피커, 블루투스, NFC 모듈을 이용하여 상세 위치 확인</li>
+        <li>담당 근로자들의 헬멧의 카메라, 스피커를 제어</li>
+        <li>BLE를 이용하여 하드웨어와 데이터 통신</li>
+        <li>사고 처리내역 확인 가능</li>
+        <li>사고 내역 처리 기능</li>
+        <li>사고 발생 시 FCM 알림</li>
+    </ul>
+</details>
+<details>
+    <summary><strong>💡 BACKEND</strong></summary>
+    <ul>
+        <li>사고 감지 데이터 저장, 긴급 호출 및 FCM 신호 알림 전송</li>
+        <li>사고 내역 전송</li>
+        <li>웹소켓을 이용하여 하드웨어와 애플리케이션 통신 </li>
+        <li>계정 관련(로그인, 회원가입, 계정 정보 변경) 통신</li>
+        <li>머신러닝 활용하여 추세 데이터 전송</li>
+        <li>사고 처리 내역 전송</li>
+        <li>카메라 촬영 이미지 저장</li>
     </ul>
 </details>
 
 ## SOURCE
 
-<ul>
-  <li></li>
-</ul>
+```
+├─ App
+│   └─ app
+│       └─ src
+│           └─ main
+│               └─ java
+│                   └─ com.headmetal.headwareintellogence
+│                       ├─ ApiService.kt
+│                       ├─ BluetoothLeService.kt
+│                       ├─ Common.kt
+│                       ├─ CommonMap.kt
+│                       ├─ CompanyInfo.kt
+│                       ├─ Countermeasures.kt
+│                       ├─ Etc.kt
+│                       ├─ FindId.kt
+│                       ├─ FindPw.kt
+│                       ├─ Helmet.kt
+│                       ├─ License.kt
+│                       ├─ Loading.kt
+│                       ├─ Login.kt
+│                       ├─ Main.kt
+│                       ├─ MainActivity.kt
+│                       ├─ Map.kt
+│                       ├─ Menu.kt
+│                       ├─ MyFirebaseMessagingService.kt
+│                       ├─ NavigationBar.kt
+│                       ├─ NullMap.kt
+│                       ├─ Privacy.kt
+│                       ├─ Processing.kt
+│                       ├─ RetrofitInstance.kt
+│                       ├─ Signup.kt
+│                       └─ Trend.kt
+├─ Arduino
+│   ├─ ESP32-S3-WROOM-CAM
+│   │   ├─ ESP32-S3-WROOM-CAM.ino
+│   │   ├─ camera_pins.h
+│   │   └─ module_pins.h
+│   └─ Firebeetle-2-ESP32-S3-CAM
+│       ├─ Firebeetle-2-ESP32-S3-CAM.ino
+│       ├─ camera_pins.h
+│       └─ module_pins.h
+├─ Backend
+│   ├─ accident
+│   │   └─ accident_api.py
+│   ├─ account
+│   │   ├─ account_schema.py
+│   │   ├─ company_list.py
+│   │   ├─ forgot_crud.py
+│   │   ├─ forgot_router.py
+│   │   ├─ login_crud.py
+│   │   ├─ login_router.py
+│   │   ├─ register_crud.py
+│   │   └─ register_router.py
+│   ├─ db
+│   │   ├─ db_connection.py
+│   │   └─ models.py
+│   ├─ fcm_notification
+│   │   └─ fcm_function.py
+│   ├─ marker
+│   │   ├─ accident_marker_crud.py
+│   │   ├─ accident_marker_router.py
+│   │   └─ accident_marker_schema.py
+│   ├─ processing
+│   │   ├─ processing_contents_crud.py
+│   │   └─ processing_contents_router.py
+│   ├─ trend
+│   │   ├─ accident_trend_crud.py
+│   │   └─ accident_trend_router.py
+│   └─ weather
+│       ├─ common.py
+│       ├─ main.py
+│       ├─ setup.py
+│       └─ test_data_insert.py
+├─ Database
+│   ├─ TABLECREATE.SQL
+│   └─ TABLEDROP.sql
+├─ .gitignore
+├─ README.md
+└─ requirements.txt
+```

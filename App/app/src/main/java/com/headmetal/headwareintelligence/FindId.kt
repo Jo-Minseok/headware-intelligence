@@ -48,7 +48,7 @@ data class ForgotIdResult(
     val id: String
 )
 
-fun performFindId(name: String, email: String, isManager: Boolean, navController: NavController) {
+fun performFindid(name: String, email: String, isManager: Boolean, navController: NavController) {
     val builder = AlertDialog.Builder(navController.context)
 
     LoadingState.show()
@@ -206,7 +206,7 @@ fun FindId(navController: NavController) {
             }
             Row {
                 Button(
-                    onClick = { performFindId(name, email, isManager, navController) },
+                    onClick = { performFindid(name, email, isManager, navController) },
                     colors = ButtonDefaults.buttonColors(Color(0x59000000)),
                     modifier = Modifier.padding(horizontal = 8.dp),
                     shape = RoundedCornerShape(8.dp)

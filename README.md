@@ -39,44 +39,116 @@
     <th>역할</th>
     <th>이름</th>
     <th>Github</th>
+    <th>담당 파트</th>
     <th>수행 내용</th>
     <tr>
         <td>팀장</td>
         <td>조민석</td>
         <td><a href="https://github.com/Jo-Minseok">@Jo-Minseok</a></td>
-        <td></td>
+        <td>PM, BE, APP, HW</td>
+        <td>
+        PM
+            <ul>
+                <li>Git 관리</li>
+                <li>Notion Project 관리</li>
+                <li>서버 환경 구축</li>
+            </ul>
+        BE
+            <ul>
+                <li>로그인, 계정 생성</li>
+                <li>작업장 관련 처리</li>
+                <li>사고 발생 처리</li>
+                <li>FCM Notification</li>
+                <li>DB 구축</li>
+                <li>행위 웹 소켓 통신</li>
+            </ul>
+        APP
+            <ul>
+            <li>자동 로그인 기능</li>
+            <li>기기 권한 및 접근</li>
+            <li>헬멧 등록</li>
+            <li>BLE 통신, GPS, FCM 알림</li>
+            <li>API 통신</li>
+            </ul>
+        HW
+            <ul>
+            <li>전체 기능 제작</li>
+            <li>시제품 제작</li>
+            </ul>
+        </td>
     </tr>
     <tr>
         <td>팀원</td>
         <td>전진호</td>
         <td><a href="https://github.com/right5625">@right5625</a></td>
-        <td></td>
+        <td>APP, BE</td>
+        <td>
+        BE
+        <ul>
+            <li>기상청 API 요청 및 전처리</li>
+            <li>사고 처리내역</li>
+            <li>사고 발생내역(지도)</li>
+            <li>사고 트랜드 머신러닝</li>
+            <li>촬영 이미지 호출</li>
+            <li>계정 찾기</li>
+        </ul>
+        APP
+        <ul>
+            <li>NAVER 지도 사고내역 표기</li>
+            <li>API 통신</li>
+            <li>웹 소켓 통신</li>
+            <li>사고 처리내역</li>
+            <li>사고 추세 그래프</li>
+            <li>계정 찾기</li>
+            <li>메인 화면 기능</li>
+            <li>계정 정보 보기</li>
+        </ul>
+        </td>
     </tr>
     <tr>
         <td>팀원</td>
         <td>채승룡</td>
         <td><a href="https://github.com/chaeseungryong">@chaeseungryong</a></td>
-        <td></td>
+        <td>APP, DOCS</td>
+        <td>
+        APP
+        <ul>
+            <li>UI/UX 디자인</li>
+            <li>네비게이션 화면 전환</li>
+            <li>회원가입 기능</li>
+            <li>로그인 기능</li>
+            <li>기타 메뉴</li>
+        </ul>
+        HW
+        <ul>
+        <li>시제품 제작</li>
+        </ul>
+        ETC
+        <ul>
+        <li>문서 작업</li>
+        <li>재정 관리</li>
+        </ul>
+        </td>
     </tr>
 </table>
 
 ## PROJECT INFORMATION
 
 > 동의대학교 2024학년도 캡스톤디자인(시스템설계) </br>
-> PERIOD: 2024.03.01 - 2024.06.07 (3 Month)</br>
+> PERIOD: [정규 기간] 2024.03.01 - 2024.06.14 (3 Month) + ∞</br>
 
 ### Mean
 
-📃 머리의 'Head' + 하드웨어 'Hardware' + 인공지능 (Artificial Intelligence) = 'HEADWARE INTELLIGENCE'<br>
+📃 머리 'Head' + 하드웨어 'Hardware' + 인공지능 (Artificial Intelligence) = 'HEADWARE INTELLIGENCE'<br>
 약어로 HI(Headware Intelligence). 사고가 발생해도 빠른 대응과 치료로 근로자의 목숨을 지켜 가족의 품으로 안전하게 돌아가 인사하라는 의미
 
 ### Goal
 
-🥇 연간 발생하는 중대재해로 인한 사망자 수를 감소시키기 위해 안전모에 다양한 기능을 추가하여 애플리케이션과 연동함으로써 부상자에 대한 골든 타임을 확보하는 것
+🥇 연간 발생하는 중대재해로 인한 사망자 수를 감소시키기 위해 안전모에 다양한 기능을 추가하여 애플리케이션과 연동함으로써 부상자에 대한 골든 타임을 확보하는 것. 주 고객층은 도심지의 건설 현장에서 근무하는 근로자
 
 ### Explain
 
-📃 안전모와 아두이노를 결합하여 IoT를 만들고, 사고 발생 시 다양한 기능으로 빠른 안전 조치를 취할 수 있도록 안전 관리자가 알 수 있다. 안전 관리자는 안전에 대해 효율적으로 관리할 수 있는 어플리케이션 개발
+📃 안전모와 ESP32-S3-CAM을 결합하여 시제품을 제작, 사고 발생 시 다양한 기능으로 빠른 안전 조치를 취할 수 있도록 안전 관리자가 알 수 있다. 안전 관리자는 안전에 대해 효율적으로 관리할 수 있는 어플리케이션 개발
 
 ## STACKS
 
@@ -109,9 +181,8 @@
 <img src="https://img.shields.io/badge/uvicorn-A100FF?style=for-the-badge&logo=gunicorn&logoColor=white"> <img src="https://img.shields.io/badge/raspberry%20pi-A22846?style=for-the-badge&logo=raspberrypi&logoColor=white"><br>
 
 ```md
-Develop Version :
-FrontEnd Server :
-BackEnd Server :
+Develop Version : 1.0.0
+BackEnd Server : Uvicorn
 ```
 
 ## FUNCTION
@@ -119,25 +190,119 @@ BackEnd Server :
 <details>
     <summary><strong>💡 HARDWARE</strong></summary>
     <ul>
-        <li>압력, 충격, 자이로스코프 센서를 활용하여 사고 알림 전송</li>
-        <li>GPS 모듈을 통해 사고 위치 정보 전송</li>
-        <li>블루투스 & NFC 모듈을 부착하여 자세한 위치추적 가능</li>
-        <li>스피커와 카메라 모듈을 부착하여 </li>
-        <li>조도 센서를 이용하여 주변 빛 양을 감지하여 LED를 자동으로 제어</li>
+        <li>충격 센서를 활용하여 사고 감지 및 사고 알림 HTTP 통신을 이용</li>
+        <li>BLE 통신을 이용하여 애플리케이션 데이터 통신 및 애플리케이션 제어 (GPS, WIFI, USER ID, WORK ID)</li>
+        <li>웹소켓 통신을 이용하여 스피커와 카메라 모듈을 이용하여 안전 관리자가 사고자의 카메라와 스피커를 작동할 수 있도록 웹소켓 통신을 이용 </li>
+        <li>조도 센서를 이용하여 주변 빛 양을 감지를 통해 LED 자동으로 제어</li>
+        <li>긴급 버튼을 누를 경우 백엔드 서버로 HTTP 통신</li>
+        <li>OLED 디스플레이를 이용하여 헬멧 상태 출력</li>
     </ul>
 </details>
 <details>
-    <summary><strong>💡 SOFTWARE</strong></summary>
+    <summary><strong>💡 APP</strong></summary>
     <ul>
         <li>하드웨어에서 전송된 위치정보를 이용하여 사고자의 위치를 지도로 확인</li>
         <li>머신러닝을 활용하여 안전 관심도 추세 확인</li>
-        <li>머신러닝을 활용하여 사고 다발 구역 표시</li>
-        <li>사고자 안전모의 카메라, 스피커, 블루투스, NFC 모듈을 이용하여 상세 위치 확인</li>
+        <li>사고 다발 구역 표시</li>
+        <li>담당 근로자들의 헬멧의 카메라, 스피커를 제어</li>
+        <li>BLE를 이용하여 하드웨어와 데이터 통신</li>
+        <li>사고 처리내역 확인 가능</li>
+        <li>사고 내역 처리 기능</li>
+        <li>사고 발생 시 FCM 알림</li>
+    </ul>
+</details>
+<details>
+    <summary><strong>💡 BACKEND</strong></summary>
+    <ul>
+        <li>사고 감지 데이터 저장, 긴급 호출 및 FCM 신호 알림 전송</li>
+        <li>사고 내역 전송</li>
+        <li>웹소켓을 이용하여 하드웨어와 애플리케이션 통신 </li>
+        <li>계정 관련(로그인, 회원가입, 계정 정보 변경) 통신</li>
+        <li>머신러닝 활용하여 추세 데이터 전송</li>
+        <li>사고 처리 내역 전송</li>
+        <li>카메라 촬영 이미지 저장</li>
     </ul>
 </details>
 
 ## SOURCE
 
-<ul>
-  <li></li>
-</ul>
+```
+├─ App
+│   └─ app
+│       └─ src
+│           └─ main
+│               └─ java
+│                   └─ com.headmetal.headwareintellogence
+│                       ├─ ApiService.kt
+│                       ├─ BluetoothLeService.kt
+│                       ├─ Common.kt
+│                       ├─ CommonMap.kt
+│                       ├─ CompanyInfo.kt
+│                       ├─ Countermeasures.kt
+│                       ├─ Etc.kt
+│                       ├─ FindId.kt
+│                       ├─ FindPw.kt
+│                       ├─ Helmet.kt
+│                       ├─ License.kt
+│                       ├─ Loading.kt
+│                       ├─ Login.kt
+│                       ├─ Main.kt
+│                       ├─ MainActivity.kt
+│                       ├─ Map.kt
+│                       ├─ Menu.kt
+│                       ├─ MyFirebaseMessagingService.kt
+│                       ├─ NavigationBar.kt
+│                       ├─ NullMap.kt
+│                       ├─ Privacy.kt
+│                       ├─ Processing.kt
+│                       ├─ RetrofitInstance.kt
+│                       ├─ Signup.kt
+│                       └─ Trend.kt
+├─ Arduino
+│   ├─ ESP32-S3-WROOM-CAM
+│   │   ├─ ESP32-S3-WROOM-CAM.ino
+│   │   ├─ camera_pins.h
+│   │   └─ module_pins.h
+│   └─ Firebeetle-2-ESP32-S3-CAM
+│       ├─ Firebeetle-2-ESP32-S3-CAM.ino
+│       ├─ camera_pins.h
+│       └─ module_pins.h
+├─ Backend
+│   ├─ accident
+│   │   └─ accident_api.py
+│   ├─ account
+│   │   ├─ account_schema.py
+│   │   ├─ company_list.py
+│   │   ├─ forgot_crud.py
+│   │   ├─ forgot_router.py
+│   │   ├─ login_crud.py
+│   │   ├─ login_router.py
+│   │   ├─ register_crud.py
+│   │   └─ register_router.py
+│   ├─ db
+│   │   ├─ db_connection.py
+│   │   └─ models.py
+│   ├─ fcm_notification
+│   │   └─ fcm_function.py
+│   ├─ marker
+│   │   ├─ accident_marker_crud.py
+│   │   ├─ accident_marker_router.py
+│   │   └─ accident_marker_schema.py
+│   ├─ processing
+│   │   ├─ processing_contents_crud.py
+│   │   └─ processing_contents_router.py
+│   ├─ trend
+│   │   ├─ accident_trend_crud.py
+│   │   └─ accident_trend_router.py
+│   └─ weather
+│       ├─ common.py
+│       ├─ main.py
+│       ├─ setup.py
+│       └─ test_data_insert.py
+├─ Database
+│   ├─ TABLECREATE.SQL
+│   └─ TABLEDROP.sql
+├─ .gitignore
+├─ README.md
+└─ requirements.txt
+```

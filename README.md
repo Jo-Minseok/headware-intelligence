@@ -64,16 +64,16 @@
             </ul>
         APP
             <ul>
-            <li>자동 로그인 기능</li>
-            <li>기기 권한 및 접근</li>
-            <li>헬멧 등록</li>
-            <li>BLE 통신, GPS, FCM 알림</li>
-            <li>API 통신</li>
+                <li>자동 로그인 기능</li>
+                <li>기기 권한 및 접근</li>
+                <li>헬멧 등록</li>
+                <li>BLE 통신, GPS, FCM 알림</li>
+                <li>API 통신</li>
             </ul>
         HW
             <ul>
-            <li>전체 기능 제작</li>
-            <li>시제품 제작</li>
+                <li>전체 기능 제작</li>
+                <li>시제품 제작</li>
             </ul>
         </td>
     </tr>
@@ -294,11 +294,16 @@ BackEnd Server : Uvicorn
 │   ├─ trend
 │   │   ├─ accident_trend_crud.py
 │   │   └─ accident_trend_router.py
-│   └─ weather
-│       ├─ common.py
-│       ├─ main.py
-│       ├─ setup.py
-│       └─ test_data_insert.py
+│   ├─ weather
+│   │   ├─ data_preprocessing.py
+│   │   ├─ original data.xlsx
+|   |   ├─ processing data.xlsx
+|   |   ├─ weather_api_config.py
+|   |   └─ weather_api.py
+│   ├─ common.py
+│   ├─ main.py
+│   ├─ setup.py
+│   └─ test_data_insert.py
 ├─ Database
 │   ├─ TABLECREATE.SQL
 │   └─ TABLEDROP.sql

@@ -33,17 +33,17 @@ int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
 String latitude;
 String longitude;
 
-const int buttonDebounceDelay = 50; // 디바운싱을 위한 지연 시간 (밀리초)
+const int buttonDebounceDelay = 30; // 디바운싱을 위한 지연 시간 (밀리초)
 int lastButtonState = LOW;          // 이전 버튼 상태
 int buttonState;                    // 현재 버튼 상태
 unsigned long lastDebounceTime = 0; // 마지막 디바운스 시간
 
-const int shockDebounceDelay = 1000; // 디바운싱을 위한 지연 시간 (밀리초)
+const int shockDebounceDelay = 10000; // 디바운싱을 위한 지연 시간 (밀리초)
 unsigned long lastShockTime = 0;     // 마지막 충격 감지 시간
 unsigned long lastReadTime = 0;      // 마지막 센서 읽기 시간
 const int readInterval = 50;         // 센서 읽기 간격 (밀리초)
 
-const int numReadings = 10; // 평균값을 계산할 때 사용할 읽기 횟수
+const int numReadings = 20; // 평균값을 계산할 때 사용할 읽기 횟수
 int readings[numReadings];  // 읽은 값을 저장할 배열
 int readIndex = 0;          // 현재 읽기 인덱스
 int total = 0;              // 읽은 값의 총합
@@ -243,7 +243,6 @@ void WIFI_setup()
     delay(5000);
     Serial.println("WIFI ID = " + wifi_id + " PASSWORD = " + wifi_pw);
     WiFi.begin(wifi_id, wifi_pw);
-    WiFi.setSleep(false);
     delay(10000);
     if (WiFi.status() == WL_CONNECTED)
     {
@@ -705,7 +704,7 @@ void setup()
   */
   SUCCESS_setup(); // 셋업 완료
   delay(1000);
-  CAMERA_setup(); // 카메라
+  //CAMERA_setup(); // 카메라
 }
 
 void loop()
@@ -768,6 +767,8 @@ void loop()
 
     // 새로운 센서 값을 읽고 배열에 저장
     readings[readIndex] = analogRead(SHOCK);
+    Serial.println(analogRead(SHOCK));
+    Serial.println(analogRead(CDS));
 
     // 새로운 읽기 값을 총합에 추가
     total = total + readings[readIndex];

@@ -61,6 +61,7 @@
                 <li>FCM Notification</li>
                 <li>DB 구축</li>
                 <li>행위 웹 소켓 통신</li>
+                <li>accident, account SOLID Refactor</li>
             </ul>
         APP
             <ul>

@@ -35,7 +35,3 @@ engine = create_engine('mariadb+pymysql://{username}:{password}@{host}:{port}/{d
 
 # 데이터베이스에 접속하기 위한 객체
 db_session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-# 해당 클래스를 상속받은 자식 클래스들은 모두 테이블과 매핑되는 클래스로 인식하기 위한 객체 생성
-Base = declarative_base()

@@ -1,5 +1,6 @@
 .vscode
 # Pycache
+Backend/__pycache__
 Backend/accident/__pycache__
 Backend/account/__pycache__
 Backend/db/__pycache__

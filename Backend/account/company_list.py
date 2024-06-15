@@ -10,7 +10,7 @@ router = APIRouter(prefix="/company")
 
 # Pydantic 모델 정의
 class WorkList(BaseModel):
-    work_list: List[str] = []
+    workList: List[str] = []
 
 
 # 리포지토리 클래스 정의
@@ -19,12 +19,12 @@ class CompanyRepository:
         self.db = db
 
     def get_all_companies(self) -> List[str]:
-        company_list = self.db.query(CompanyList.company).all()
-        return [company[0] for company in company_list]
+        companyList = self.db.query(CompanyList.company).all()
+        return [company[0] for company in companyList]
 
-    def get_work_list_by_user_id(self, user_id: str) -> List[str]:
-        work_rows = self.db.query(Work).filter(Work.worker_id == user_id).all()
-        return [work_row.work_id for work_row in work_rows]
+    def get_work_list_by_user_id(self, userId: str) -> List[str]:
+        workRows = self.db.query(Work).filter(Work.workerId == userId).all()
+        return [workRow.workId for workRow in workRows]
 
 
 # 서비스 클래스 정의
@@ -35,9 +35,9 @@ class CompanyService:
     def get_company_list(self) -> List[str]:
         return self.repository.get_all_companies()
 
-    def get_work_list(self, user_id: str) -> WorkList:
-        work_ids = self.repository.get_work_list_by_user_id(user_id)
-        return WorkList(work_list=work_ids)
+    def get_work_list(self, userId: str) -> WorkList:
+        workIds = self.repository.get_work_list_by_user_id(userId)
+        return WorkList(work_list=workIds)
 
 
 # 의존성 주입을 위한 함수
@@ -54,6 +54,6 @@ def get_company_list(service: CompanyService = Depends(get_company_service)):
 
 
 @router.get("/work_list", response_model=WorkList, status_code=status.HTTP_200_OK)
-def get_work_list(user_id: str, service: CompanyService = Depends(get_company_service)):
-    work_list = service.get_work_list(user_id)
-    return work_list
+def get_work_list(userId: str, service: CompanyService = Depends(get_company_service)):
+    workList = service.get_work_list(userId)
+    return workList

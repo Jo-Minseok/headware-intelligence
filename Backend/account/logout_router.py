@@ -30,5 +30,5 @@ def get_logout_service(db: Session = Depends(get_db)) -> LogoutService:
 
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
-def logout_user(id: str, alert_token: str, service: LogoutService = Depends(get_logout_service)):
-    service.logout_user(id, alert_token)
+def logout_user(id: str, alertToken: str, service: LogoutService = Depends(get_logout_service)):
+    service.logout_user(id, alertToken)

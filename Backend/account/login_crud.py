@@ -7,9 +7,9 @@ class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_user_by_id(self, user_id: str, user_type: str) -> Union[UserEmployee, UserManager, None]:
-        if user_type == "employee":
-            return self.db.query(UserEmployee).filter(UserEmployee.id == user_id).first()
-        elif user_type == "manager":
-            return self.db.query(UserManager).filter(UserManager.id == user_id).first()
+    def get_user_by_id(self, userId: str, userType: str) -> Union[UserEmployee, UserManager, None]:
+        if userType == "employee":
+            return self.db.query(UserEmployee).filter(UserEmployee.id == userId).first()
+        elif userType == "manager":
+            return self.db.query(UserManager).filter(UserManager.id == userId).first()
         return None

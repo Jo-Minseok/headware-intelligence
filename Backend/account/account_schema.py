@@ -1,6 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, field_validator, EmailStr
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic import BaseModel, EmailStr, validator
 
 # 공통 검증 클래스
 
@@ -13,9 +12,9 @@ class Validators:
         return v
 
     @staticmethod
-    def passwords_match(v, info: FieldValidationInfo):
-        if 'password' in info.data and v != info.data['password']:
-            raise ValueError('비밀번호가 일치하지 않습니다')
+    def passwords_match(v, info):
+        if 'password' in info and v != info['password']:
+            raise ValueError('비밀번호가 일치하지 않습니다.')
         return v
 
 # 로그인 반환, 입력 스키마
@@ -42,13 +41,13 @@ class AccountInputCreate(BaseModel):
     company: Optional[str] = None
     type: str
 
-    @field_validator('id', 'password', 'name', 'email', 'phoneNo', 'type', allow_reuse=True)
+    @validator('id', 'password', 'name', 'email', 'phoneNo', 'type', pre=True, always=True)
     def not_empty(cls, v):
         return Validators.not_empty(v)
 
-    @field_validator('rePassword', allow_reuse=True)
-    def passwords_match(cls, v, info: FieldValidationInfo):
-        return Validators.passwords_match(v, info)
+    @validator('rePassword')
+    def passwords_match(cls, v, values, **kwargs):
+        return Validators.passwords_match(v, values)
 
 # 아이디 찾기 스키마
 
@@ -58,15 +57,9 @@ class ForgotId(BaseModel):
     email: EmailStr
     type: str
 
-    @field_validator('name', 'email', 'type', allow_reuse=True)
+    @validator('name', 'email', 'type', pre=True, always=True)
     def not_empty(cls, v):
         return Validators.not_empty(v)
-
-# 아이디 찾기 결과 스키마
-
-
-class ForgotIdResult(BaseModel):
-    id: str
 
 # 비밀번호 변경 스키마
 
@@ -78,10 +71,14 @@ class ForgotPw(BaseModel):
     rePassword: str
     type: str
 
-    @field_validator('password', 'rePassword', 'id', 'phoneNo', 'type', allow_reuse=True)
+    @validator('id', 'phoneNo', 'password', 'type', pre=True, always=True)
     def not_empty(cls, v):
         return Validators.not_empty(v)
 
-    @field_validator('rePassword', allow_reuse=True)
-    def passwords_match(cls, v, info: FieldValidationInfo):
-        return Validators.passwords_match(v, info)
+    @validator('rePassword')
+    def passwords_match(cls, v, values, **kwargs):
+        return Validators.passwords_match(v, values)
+
+
+class ForgotIdResult(BaseModel):
+    id: str

@@ -159,11 +159,17 @@
 
 ### Tool
 
-<img src="https://img.shields.io/badge/android%20studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white"> <img src="https://img.shields.io/badge/visual%20studio%20code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"> <img src="https://img.shields.io/badge/dbeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"> <img src="https://img.shields.io/badge/POSTMAN-FF6C37?style=for-the-badge&logo=postman&logoColor=white"> <img src="https://img.shields.io/badge/arduino%20ide-00878F?style=for-the-badge&logo=arduino&logoColor=white">
+<img src="https://img.shields.io/badge/android%20studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white"> 
+<img src="https://img.shields.io/badge/visual%20studio%20code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"> 
+<img src="https://img.shields.io/badge/dbeaver-382923?style=for-the-badge&logo=dbeaver&logoColor=white"> 
+<img src="https://img.shields.io/badge/POSTMAN-FF6C37?style=for-the-badge&logo=postman&logoColor=white"> 
+<img src="https://img.shields.io/badge/arduino%20ide-00878F?style=for-the-badge&logo=arduino&logoColor=white"> 
+<img src="https://img.shields.io/badge/FIGMA-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
 
 ### Database
 
 <img src="https://img.shields.io/badge/maria%20DB-003545?style=for-the-badge&logo=mariadb&logoColor=white">
+<img src="https://img.shields.io/badge/sql%20alchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white">
 
 ### API
 
@@ -233,7 +239,7 @@ BackEnd Server : Uvicorn
 │       └─ src
 │           └─ main
 │               └─ java
-│                   └─ com.headmetal.headwareintellogence
+│                   └─ com.headmetal.headwareintelligence
 │                       ├─ ApiService.kt
 │                       ├─ BluetoothLeService.kt
 │                       ├─ Common.kt
@@ -279,7 +285,8 @@ BackEnd Server : Uvicorn
 │   │   ├─ login_crud.py
 │   │   ├─ login_router.py
 │   │   ├─ register_crud.py
-│   │   └─ register_router.py
+│   │   ├─ register_router.py
+│   │   └─ register_service.py
 │   ├─ db
 │   │   ├─ db_connection.py
 │   │   └─ models.py

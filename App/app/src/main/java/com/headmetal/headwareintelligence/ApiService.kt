@@ -17,7 +17,7 @@ interface ApiService {
     @FormUrlEncoded
     @POST("/login")
     fun apiLogin(
-        @Query("alert_token") alertToken: String,
+        @Query("alertToken") alertToken: String,
         @Query("type") type: String,
         @Field("username") id: String?,
         @Field("password") pw: String?
@@ -26,12 +26,12 @@ interface ApiService {
     @POST("/logout")
     fun apiLogout(
         @Query("id") id: String,
-        @Query("alert_token") alertToken: String
+        @Query("alertToken") alertToken: String
     ): Call<Void>
 
     @GET("/company/work_list")
     fun apiWorklist(
-        @Query("user_id") id: String
+        @Query("userId") id: String
     ): Call<WorklistResponse>
 
     @GET("/company/list")
@@ -54,8 +54,8 @@ interface ApiService {
 
     @GET("/weather/{latitude}/{longitude}")
     suspend fun getWeather(
-        @Path("latitude") city: Double,
-        @Path("longitude") district: Double
+        @Path("latitude") latitude: Double,
+        @Path("longitude") longitude: Double
     ): WeatherResponse
 
     @GET("/trend/{start}/{end}")

@@ -47,8 +47,8 @@ data class LoginResponse(
     val name: String,
     val phoneNo: String,
     val email: String,
-    val access_token: String,
-    val token_type: String
+    val accessToken: String,
+    val tokenType: String
 )
 
 fun performLogin(
@@ -79,8 +79,8 @@ fun performLogin(
                 sharedAccountEdit.putString("name", response.body()?.name)
                 sharedAccountEdit.putString("phone", response.body()?.phoneNo)
                 sharedAccountEdit.putString("email", response.body()?.email)
-                sharedAccountEdit.putString("token", response.body()?.access_token)
-                sharedAccountEdit.putString("token_type", response.body()?.token_type)
+                sharedAccountEdit.putString("token", response.body()?.accessToken)
+                sharedAccountEdit.putString("token_type", response.body()?.tokenType)
                 sharedAccountEdit.putString("type", if (isManager) "manager" else "employee")
                 sharedAccountEdit.apply()
                 navController.navigate("mainScreen")

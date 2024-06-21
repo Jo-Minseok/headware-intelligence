@@ -1,7 +1,7 @@
-DROP TABLE user_employee ;
-DROP TABLE user_manager;
+DROP TABLE accidentProcessing;
 DROP TABLE accident;
-DROP TABLE accident_proccessing;
-DROP TABLE company_list;
-DROP TABLE work_list;
 DROP TABLE work;
+DROP TABLE workList;
+DROP TABLE userEmployee;
+DROP TABLE userManager;
+DROP TABLE companyList;

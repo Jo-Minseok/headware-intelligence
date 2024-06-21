@@ -1,19 +1,25 @@
 .vscode
+# Pycache
 Backend/__pycache__
-Backend/clustering/__pycache__
-Backend/trend/__pycache__
-Backend/db/.env
-Backend/db/__pycache__
-Backend/account/.env
-Backend/account/__pycache__
-Backend/weather/__pycache__
-Backend/weather/.env
-Backend/user/__pycache__
 Backend/accident/__pycache__
-Backend/accident/.env
+Backend/account/__pycache__
+Backend/db/__pycache__
 Backend/marker/__pycache__
-Backend/accident/uploaded_images
-Backend/fcm_notification/firebase-privatekey.json
+Backend/processing/__pycache__
+Backend/trend/__pycache__
+Backend/weater/__pycache__
 Backend/fcm_notification/__pycache__
+
+# Image Folder
+Backend/accident/uploaded_images
+
+# Env
+Backend/account/.env
+Backend/db/.env
+Backend/weather/.env
+Backend/accident/.env
+Backend/fcm_notification/firebase-privatekey.json
+
+# Aruduino
 Arduino/Firebeetle-2-ESP32-S3-CAM/DFRobot_AXP313A.cpp
 Arduino/Firebeetle-2-ESP32-S3-CAM/DFRobot_AXP313A.h

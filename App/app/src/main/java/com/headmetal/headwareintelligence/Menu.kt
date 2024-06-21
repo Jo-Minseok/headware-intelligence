@@ -166,7 +166,9 @@ fun Menu(navController: NavController) {
                             imageVector = Icons.Outlined.Person,
                             contentDescription = "개인정보",
                             tint = Color.Black,
-                            modifier = Modifier.size(40.dp).padding(end = 10.dp)
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(end = 10.dp)
                         )
                         Column(
                             horizontalAlignment = Alignment.Start,

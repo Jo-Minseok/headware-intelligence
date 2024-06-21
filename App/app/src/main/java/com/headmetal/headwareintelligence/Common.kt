@@ -79,7 +79,6 @@ fun LoadingScreen() {
     }
 }
 
-// 두 번 뒤로 갈 경우 애플리케이션 종료
 @Composable
 fun BackOnPressed() {
     val context = LocalContext.current
@@ -88,7 +87,6 @@ fun BackOnPressed() {
 
     BackHandler(enabled = backPressedState) {
         if (System.currentTimeMillis() - backPressedTime <= 800L) {
-            // 앱 종료
             (context as Activity).finish()
         } else {
             backPressedState = true

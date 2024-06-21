@@ -48,7 +48,12 @@ data class ForgotIdResult(
     val id: String
 )
 
-fun performFindID(name: String, email: String, isManager: Boolean, navController: NavController) {
+fun performFindID(
+    name: String,
+    email: String,
+    isManager: Boolean,
+    navController: NavController
+) {
     val builder = AlertDialog.Builder(navController.context)
 
     LoadingState.show()

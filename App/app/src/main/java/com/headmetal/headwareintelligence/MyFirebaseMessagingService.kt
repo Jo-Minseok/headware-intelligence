@@ -3,7 +3,6 @@ package com.headmetal.headwareintelligence
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -20,7 +19,7 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
         // 작업 표시줄 알림으로 왔을 경우 Foreground
         val notificationManager = NotificationManagerCompat.from(applicationContext)
         var builder:NotificationCompat.Builder?=null
-        var CHANNEL_ID:String = remoteMessage.messageId.toString()
+        val CHANNEL_ID:String = remoteMessage.messageId.toString()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             if(notificationManager.getNotificationChannel(CHANNEL_ID)==null){
                 val channel = NotificationChannel(CHANNEL_ID,"channel", NotificationManager.IMPORTANCE_DEFAULT)

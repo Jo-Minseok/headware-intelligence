@@ -72,14 +72,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.google.android.gms.location.LocationServices
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.UUID
 
 data class WorklistResponse(
-    val work_list: List<String>
+    val workList: List<String>
 )
 
 data class DeviceData(
@@ -103,7 +102,9 @@ fun Helmet(navController: NavController) {
     var itemOptions by remember { mutableStateOf(listOf<String>()) }
     var selectedOption by remember { mutableStateOf("") }
     val apiServiceWorklist =
-        RetrofitInstance.apiService.apiWorklist(id = sharedAccount.getString("userid", null).toString())
+        RetrofitInstance.apiService.apiWorklist(
+            id = sharedAccount.getString("userid", null).toString()
+        )
     apiServiceWorklist.enqueue(object : Callback<WorklistResponse> {
         override fun onResponse(
             call: Call<WorklistResponse>,
@@ -111,7 +112,7 @@ fun Helmet(navController: NavController) {
         ) {
             if (response.isSuccessful) {
                 response.body()?.let { workListResponse ->
-                    itemOptions = workListResponse.work_list
+                    itemOptions = workListResponse.workList
                 }
             }
         }
@@ -147,9 +148,9 @@ fun Helmet(navController: NavController) {
     var showScanDialog by remember { mutableStateOf(false) }
     var showWIFIDialog by remember { mutableStateOf(false) }
     var showReturnDialog by remember { mutableStateOf(false) }
-    var enableRegister by remember {mutableStateOf(false)}
-    var enableInternet by remember{ mutableStateOf(false)}
-    var enableReturn by remember {mutableStateOf(false)}
+    var enableRegister by remember { mutableStateOf(false) }
+    var enableInternet by remember { mutableStateOf(false) }
+    var enableReturn by remember { mutableStateOf(false) }
     // wifi ID/PW 변수
     val wifiID = remember { mutableStateOf("") }
     val wifiPW = remember { mutableStateOf("") }
@@ -170,7 +171,7 @@ fun Helmet(navController: NavController) {
     }
 
     // UI 변수
-    var helmetid by remember { mutableStateOf(sharedAccount.getString("helmetid","")) }
+    var helmetid by remember { mutableStateOf(sharedAccount.getString("helmetid", "")) }
 
     // BLE 스캔 콜백
     val scanCallback: ScanCallback = object : ScanCallback() {
@@ -238,7 +239,7 @@ fun Helmet(navController: NavController) {
                 enableRegister = true
                 enableInternet = false
                 enableReturn = false
-                sharedAccountEdit.putString("helmetid",null)
+                sharedAccountEdit.putString("helmetid", null)
                 sharedAccountEdit.apply()
                 helmetid = ""
                 wifiID.value = ""
@@ -383,15 +384,25 @@ fun Helmet(navController: NavController) {
                         Toast.makeText(context, "헬멧 인터넷 연결 완료", Toast.LENGTH_SHORT).show()
                     }
 
-                    "work_id_change" ->{
-                        Toast.makeText(context,"헬멧 작업장 변경 완료!",Toast.LENGTH_SHORT).show()
+                    "work_id_change" -> {
+                        Toast.makeText(context, "헬멧 작업장 변경 완료!", Toast.LENGTH_SHORT).show()
                     }
-                    "GPS" ->{
-                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                            && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
-                            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                            val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    "GPS" -> {
+                        if (ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+
+                            val locationManager =
+                                context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                            val location =
+                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                             if (location != null) {
                                 val latitude = location.latitude
                                 val longitude = location.longitude
@@ -411,9 +422,11 @@ fun Helmet(navController: NavController) {
                             Log.e("HEAD METAL", "위치 권한이 없음")
                         }
                     }
+
                     else -> {
                         if (receiveValue?.startsWith("helmet_num") == true) {
-                            sharedAccountEdit.putString("helmetid",receiveValue.split(" ")[1]).apply()
+                            sharedAccountEdit.putString("helmetid", receiveValue.split(" ")[1])
+                                .apply()
                             sharedAccountEdit.apply()
                             helmetid = receiveValue.split(" ")[1]
                         }
@@ -529,7 +542,7 @@ fun Helmet(navController: NavController) {
                             enableRegister = true
                             enableInternet = false
                             enableReturn = false
-                            sharedAccountEdit.putString("helmetid","")
+                            sharedAccountEdit.putString("helmetid", "")
                             sharedAccountEdit.apply()
                         }
                     ) {
@@ -592,22 +605,20 @@ fun Helmet(navController: NavController) {
                 }
             }
         }
-        if(sharedAccount.getString("workid","").toString() == ""){
+        if (sharedAccount.getString("workid", "").toString() == "") {
             enableRegister = false
             enableInternet = false
             enableReturn = false
-        }
-        else{
-            if(sharedAccount.getString("helmetid","") == ""){
+        } else {
+            if (sharedAccount.getString("helmetid", "") == "") {
                 enableRegister = true
                 enableInternet = false
                 enableReturn = false
-            }
-            else{
+            } else {
                 enableRegister = false
                 enableInternet = true
                 enableReturn = true
-                helmetid = sharedAccount.getString("helmetid","")
+                helmetid = sharedAccount.getString("helmetid", "")
             }
         }
     }
@@ -727,7 +738,7 @@ fun Helmet(navController: NavController) {
                                 expanded = false
                                 sharedAccountEdit.putString("workid", eachoption)
                                 sharedAccountEdit.apply()
-                                if(connectedGatt != null) {
+                                if (connectedGatt != null) {
                                     val characteristicWrite = service?.getCharacteristic(writeUUID)
                                     val workSendId =
                                         "wc " + sharedAccount.getString("workid", null).toString()
@@ -737,8 +748,7 @@ fun Helmet(navController: NavController) {
                                     } else {
                                         Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
                                     }
-                                }
-                                else{
+                                } else {
                                     enableRegister = true
                                 }
                             }) {
@@ -938,7 +948,7 @@ fun Helmet(navController: NavController) {
                 }
                 Button(
                     onClick = {
-                        if (sharedAccount.getString("helmetid","") != "") {
+                        if (sharedAccount.getString("helmetid", "") != "") {
                             showReturnDialog = true
                         } else {
                             Toast.makeText(context, "등록된 헬멧이 없습니다.", Toast.LENGTH_SHORT).show()

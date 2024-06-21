@@ -47,7 +47,7 @@ data class ForgotPw(
     val type: String
 )
 
-fun performChangePw(
+fun performChangePW(
     id: String,
     phone: String,
     password: String,
@@ -276,7 +276,7 @@ fun FindPw(navController: NavController) {
             Row {
                 Button(
                     onClick = {
-                        performChangePw(
+                        performChangePW(
                             id,
                             phone,
                             password,

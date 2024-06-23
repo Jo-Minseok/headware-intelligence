@@ -10,6 +10,7 @@ from account import company_list
 from marker import accident_marker_router
 from trend import accident_trend_router
 from processing import processing_contents_router
+from work import work_router
 from db import models
 from db.db_connection import engine
 
@@ -34,6 +35,7 @@ app.include_router(accident_trend_router.router)
 app.include_router(processing_contents_router.router)
 app.include_router(accident_api.router)
 app.include_router(company_list.router)
+app.include_router(work_router.router)
 
 # Main
 if __name__ == '__main__':

@@ -26,8 +26,8 @@ sealed class Destinations(val route: String) {
     data object Etc : Destinations("etcScreen")
     data object License : Destinations("licenseScreen")
     data object Privacy : Destinations("privacyScreen")
-
     data object Worklist : Destinations("worklistScreen")
+    data object Work : Destinations("workScreen")
 }
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
@@ -76,6 +76,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     }
     composable(Destinations.Worklist.route) {
         Worklist(navController)
+    }
+    composable(Destinations.Work.route) {
+        Work(navController)
     }
 }
 

@@ -190,7 +190,7 @@ fun Worklist(navController: NavController) {
                     .padding(vertical = 16.dp)
             ) {
                 Button(
-                    onClick = {},
+                    onClick = {navController.navigate("workScreen")},
                     shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         Color(255, 150, 0, 80)

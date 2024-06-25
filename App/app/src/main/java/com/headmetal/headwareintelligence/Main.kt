@@ -307,7 +307,7 @@ fun Main(
                         }
                     }
                     Button(
-                        onClick = { },
+                        onClick = { navController.navigate("worklistScreen")},
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                         colors = ButtonDefaults.buttonColors(Color(0xFFFF8000)),
                         shape = RoundedCornerShape(8.dp)

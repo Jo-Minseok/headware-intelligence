@@ -216,12 +216,6 @@ fun Main(
             )
             Box(modifier = Modifier
                 .padding(top = 8.dp)
-                .background(color = Color.White)
-                .border(
-                    width = 1.dp,
-                    color = Color(0xFFE0E0E0),
-                    shape = RoundedCornerShape(8.dp)
-                )
                 .fillMaxWidth()
                 .clickable { navController.navigate("privacyScreen") }
             ) {
@@ -233,33 +227,18 @@ fun Main(
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .padding(start = 10.dp)
-                            .size(40.dp)
+                            .size(50.dp)
                     )
                     Column {
-                        userRank?.let { rank ->
-                            Text(
-                                text = if (rank == "manager") "관리자" else "근무자",
-                                modifier = Modifier.padding(start = 10.dp, top = 6.dp),
-                                color = Color.Gray,
-                                fontSize = 16.sp
-                            )
-                        }
                         userName?.let { name ->
                             Text(
-                                text = name,
+                                text = name+"님",
                                 modifier = Modifier.padding(start = 10.dp),
-                                fontSize = 20.sp
+                                fontSize = 24.sp
                             )
                         }
                         Text(
-                            text = "Today : " + SimpleDateFormat(
-                                "yyyy년 MM월 dd일, EEEE", Locale.getDefault()
-                            ).format(Calendar.getInstance().time),
-                            modifier = Modifier.padding(start = 10.dp, top = 10.dp),
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "오늘도 안전한 근무 되시길 바랍니다!",
+                            text = "오늘도 안전한 근무 되세요!",
                             modifier = Modifier.padding(start = 10.dp, bottom = 6.dp),
                             fontSize = 16.sp
                         )
@@ -270,7 +249,7 @@ fun Main(
                 if (userRank == "manager") {
                     Text(
                         text = "관리자 기능",
-                        fontSize = 24.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                     )
                     Button(
@@ -286,7 +265,7 @@ fun Main(
                             Text(
                                 text = "사고 추세 확인",
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black,
+                                color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
@@ -304,7 +283,7 @@ fun Main(
                             Text(
                                 text = "사고 발생지 확인",
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black,
+                                color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
@@ -312,7 +291,7 @@ fun Main(
                     Button(
                         onClick = { navController.navigate("nullmapScreen") },
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFF8000)),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Box(
@@ -322,7 +301,25 @@ fun Main(
                             Text(
                                 text = "미처리 사고 발생지 확인",
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black,
+                                color = Color.White,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = { },
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFF8000)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "작업장 관리",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
                                 fontSize = 16.sp
                             )
                         }
@@ -356,7 +353,7 @@ fun Main(
                 Row(modifier = Modifier.padding(top = 30.dp)) {
                     Text(
                         text = "정보",
-                        fontSize = 24.sp,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                     )
                     Spacer(modifier = Modifier.weight(1f))
@@ -365,7 +362,7 @@ fun Main(
                         contentDescription = "새로고침",
                         tint = Color.Black,
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(26.dp)
                             .clickable(enabled = isRefreshClickable) {
                                 refreshState = true
                                 isRefreshClickable = false

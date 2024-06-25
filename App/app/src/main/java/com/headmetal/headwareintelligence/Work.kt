@@ -33,8 +33,10 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Construction
 import androidx.compose.material.icons.outlined.Engineering
@@ -53,6 +55,11 @@ fun Work(navController: NavController) {
     var workshopStartDate by remember { mutableStateOf("") }
     var workshopEndDate by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false)}
+    var workerId by remember{ mutableStateOf("")}
+    var showWorkerDialog by remember { mutableStateOf(false)}
+    var workerName by remember { mutableStateOf("")}
+    var workerPhone by remember { mutableStateOf("")}
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)
@@ -97,6 +104,111 @@ fun Work(navController: NavController) {
                     tint = Color.Red,
                     modifier = Modifier.clickable {showDeleteDialog = true }
                 )
+                if (showDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        title = {
+                            Text(text = "작업장 수정")
+                        },
+                        text = {
+                            Column {
+                                Text("작업장 이름", modifier = Modifier.padding(bottom = 4.dp))
+                                TextField(
+                                    value = workshopId,
+                                    onValueChange = { workshopId = it },
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        backgroundColor =  Color(255, 150, 0, 80),
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("담당 회사", modifier = Modifier.padding(bottom = 4.dp))
+                                TextField(
+                                    value = workshopName,
+                                    onValueChange = { workshopName = it },
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = TextFieldDefaults.textFieldColors(
+                                        backgroundColor =  Color(255, 150, 0, 80),
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent,
+                                        disabledIndicatorColor = Color.Transparent
+                                    )
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("시작일", modifier = Modifier.padding(bottom = 4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarToday,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(start = 8.dp, end = 5.dp)
+                                            .clickable {
+                                                // 달력 아이콘 클릭 시 처리할 로직 추가
+                                            }
+                                    )
+                                    TextField(
+                                        value = workshopStartDate,
+                                        onValueChange = { workshopStartDate = it },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            backgroundColor =  Color(255, 150, 0, 80),
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            disabledIndicatorColor = Color.Transparent
+                                        ),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("종료일", modifier = Modifier.padding(bottom = 4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.CalendarToday,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(start = 8.dp, end = 5.dp)
+                                            .clickable {
+                                                // 달력 아이콘 클릭 시 처리할 로직 추가
+                                            }
+                                    )
+                                    TextField(
+                                        value = workshopEndDate,
+                                        onValueChange = { workshopEndDate = it },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            backgroundColor =  Color(255, 150, 0, 80),
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            disabledIndicatorColor = Color.Transparent
+                                        ),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    showDialog = false
+                                },
+                                colors = ButtonDefaults.buttonColors(Color.Transparent)
+                            ) {
+                                Text("등록",color = Color.Black, fontWeight=FontWeight.Bold)
+                            }
+                        },
+                        dismissButton = {
+                            Button(
+                                onClick = { showDialog = false },
+                                colors = ButtonDefaults.buttonColors(Color.Transparent)
+                            ) {
+                                Text("취소",color = Color.Black, fontWeight=FontWeight.Bold)
+                            }
+                        }
+                    )
+                }
                 Text(
                     text = "작업장 삭제",
                     fontWeight = FontWeight.Bold,
@@ -104,7 +216,7 @@ fun Work(navController: NavController) {
                     color = Color.Red,
                     modifier = Modifier
                         .padding(start = 5.dp, top = 5.dp, end = 20.dp)
-                        .clickable {showDeleteDialog = true }
+                        .clickable { showDeleteDialog = true }
                 )
             }
             if (showDeleteDialog) {
@@ -133,7 +245,6 @@ fun Work(navController: NavController) {
                     }
                 )
             }
-
             Text(
                 text = "+ 작업자 등록",
                 fontWeight = FontWeight.Bold,
@@ -142,20 +253,20 @@ fun Work(navController: NavController) {
                 modifier = Modifier
                     .padding(horizontal = 30.dp)
                     .padding(top = 30.dp)
-                    .clickable {  }
+                    .clickable { showAddDialog = true }
             )
-            if (showDialog) {
+            if (showAddDialog) {
                 AlertDialog(
-                    onDismissRequest = { showDialog = false },
+                    onDismissRequest = { showAddDialog = false },
                     title = {
-                        Text(text = "작업장 수정")
+                        Text(text = "작업자 등록")
                     },
                     text = {
                         Column {
-                            Text("작업장 이름", modifier = Modifier.padding(bottom = 4.dp))
+                            Text("아이디", modifier = Modifier.padding(bottom = 4.dp))
                             TextField(
-                                value = workshopId,
-                                onValueChange = { workshopId = it },
+                                value = workerId,
+                                onValueChange = { workerId = it },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = TextFieldDefaults.textFieldColors(
                                     backgroundColor =  Color(255, 150, 0, 80),
@@ -164,75 +275,12 @@ fun Work(navController: NavController) {
                                     disabledIndicatorColor = Color.Transparent
                                 )
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("담당 회사", modifier = Modifier.padding(bottom = 4.dp))
-                            TextField(
-                                value = workshopName,
-                                onValueChange = { workshopName = it },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor =  Color(255, 150, 0, 80),
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("시작일", modifier = Modifier.padding(bottom = 4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(start = 8.dp, end = 5.dp)
-                                        .clickable {
-                                            // 달력 아이콘 클릭 시 처리할 로직 추가
-                                        }
-                                )
-                                TextField(
-                                    value = workshopStartDate,
-                                    onValueChange = { workshopStartDate = it },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        backgroundColor =  Color(255, 150, 0, 80),
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                        disabledIndicatorColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("종료일", modifier = Modifier.padding(bottom = 4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(start = 8.dp, end = 5.dp)
-                                        .clickable {
-                                            // 달력 아이콘 클릭 시 처리할 로직 추가
-                                        }
-                                )
-                                TextField(
-                                    value = workshopEndDate,
-                                    onValueChange = { workshopEndDate = it },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        backgroundColor =  Color(255, 150, 0, 80),
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                        disabledIndicatorColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
                         }
                     },
                     confirmButton = {
                         Button(
                             onClick = {
-                                showDialog = false
+                                showAddDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
@@ -241,7 +289,7 @@ fun Work(navController: NavController) {
                     },
                     dismissButton = {
                         Button(
-                            onClick = { showDialog = false },
+                            onClick = { showAddDialog = false },
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
                             Text("취소",color = Color.Black, fontWeight=FontWeight.Bold)
@@ -249,13 +297,14 @@ fun Work(navController: NavController) {
                     }
                 )
             }
+
             Column(
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
                     .padding(vertical = 5.dp)
             ) {
                 Button(
-                    onClick = {},
+                    onClick = {showWorkerDialog=true},
                     shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         Color(255, 150, 0, 80)
@@ -308,6 +357,111 @@ fun Work(navController: NavController) {
                         }
                     }
                 }
+            }
+            if (showWorkerDialog) {
+                AlertDialog(
+                    onDismissRequest = { showWorkerDialog = false },
+                    title = {
+                        Text(text = "작업자 관리")
+                    },
+                    text = {
+                        Column {
+                            // 아이콘과 텍스트 필드를 수직 중앙 정렬
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Engineering,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(80.dp)
+                                    )
+                                }
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    // 이름 텍스트와 필드
+                                    Text("이름", modifier = Modifier.padding(bottom = 4.dp))
+                                    TextField(
+                                        value = workerName,
+                                        onValueChange = { workerName = it },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            backgroundColor = Color(255, 150, 0, 80),
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            disabledIndicatorColor = Color.Transparent
+                                        ),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    // 전화번호 텍스트와 필드
+                                    Text("전화번호", modifier = Modifier.padding(bottom = 4.dp))
+                                    TextField(
+                                        value = workerPhone,
+                                        onValueChange = { workerPhone = it },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = TextFieldDefaults.textFieldColors(
+                                            backgroundColor = Color(255, 150, 0, 80),
+                                            focusedIndicatorColor = Color.Transparent,
+                                            unfocusedIndicatorColor = Color.Transparent,
+                                            disabledIndicatorColor = Color.Transparent
+                                        ),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            // 헬멧 등록 상태와 시작일 필드
+                            Text("헬멧 등록 상태 : ON", modifier = Modifier.padding(bottom = 4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.VideoCameraFront,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFF6600),
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .padding(start = 8.dp, end = 5.dp)
+                                        .clickable {
+
+                                        }
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.Campaign,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFF6600),
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .padding(start = 8.dp, end = 5.dp)
+                                        .clickable {
+
+                                        }
+                                )
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showWorkerDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(Color.Transparent)
+                        ) {
+                            Text("확인", color = Color.Black, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        Button(
+                            onClick = { showWorkerDialog = false },
+                            colors = ButtonDefaults.buttonColors(Color.Transparent)
+                        ) {
+                            Text("해제", color = Color.Red, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
             }
         }
     }

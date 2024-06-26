@@ -1,5 +1,8 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
+import android.content.SharedPreferences
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,26 +31,73 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Construction
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+data class WorkShopList(
+    val workId: List<Int>,
+    val name: List<String>,
+    val company: List<String>,
+    val startDate: List<String>,
+    val endDate: List<String?>
+)
 
 @Composable
 fun Worklist(navController: NavController) {
-    var showDialog by remember { mutableStateOf(false) }
-    var workshopName by remember { mutableStateOf("") }
-    var workshopId by remember { mutableStateOf("") }
-    var workshopStartDate by remember { mutableStateOf("") }
-    var workshopEndDate by remember { mutableStateOf("") }
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val userId = sharedAccount.getString("userid", null)
+
+    var showWorkDataInputDialog by remember { mutableStateOf(false) }
+    var workshopId by remember { mutableStateOf(listOf<Int>()) }
+    var workshopCompany by remember { mutableStateOf(listOf<String>()) }
+    var workshopName by remember { mutableStateOf(listOf<String>()) }
+    var workshopStartDate by remember { mutableStateOf(listOf<String>()) }
+    var workshopEndDate by remember { mutableStateOf(listOf<String?>()) }
+
+    LaunchedEffect(Unit) {
+        if (userId != null) {
+            RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
+                override fun onResponse(call: Call<WorkShopList>, response: Response<WorkShopList>) {
+                    if (response.isSuccessful) {
+                        val workShopList: WorkShopList? = response.body()
+                        workShopList?.let {
+                            workshopId = it.workId
+                            workshopCompany = it.company
+                            workshopName = it.name
+                            workshopStartDate = it.startDate
+                            workshopEndDate = it.endDate
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
+                    println("서버 통신 실패: ${t.message}")
+                }
+            })
+        }
+    }
+
+    if (showWorkDataInputDialog) {
+        InputWorkDataDialog(onDismissRequest = { showWorkDataInputDialog = false })
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)
@@ -77,197 +126,82 @@ fun Worklist(navController: NavController) {
                 modifier = Modifier
                     .padding(horizontal = 30.dp)
                     .padding(bottom = 10.dp)
-                    .clickable { showDialog = true }
+                    .clickable { showWorkDataInputDialog = true }
             )
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = {
-                        Text(text = "작업장 생성")
-                    },
-                    text = {
-                        Column {
-                            Text("작업장 이름", modifier = Modifier.padding(bottom = 4.dp))
-                            TextField(
-                                value = workshopId,
-                                onValueChange = { workshopId = it },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor =  Color(255, 150, 0, 80),
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("담당 회사", modifier = Modifier.padding(bottom = 4.dp))
-                            TextField(
-                                value = workshopName,
-                                onValueChange = { workshopName = it },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor =  Color(255, 150, 0, 80),
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("시작일", modifier = Modifier.padding(bottom = 4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(start = 8.dp, end = 5.dp)
-                                        .clickable {
-                                            // 달력 아이콘 클릭 시 처리할 로직 추가
-                                        }
-                                )
-                                TextField(
-                                    value = workshopStartDate,
-                                    onValueChange = { workshopStartDate = it },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        backgroundColor =  Color(255, 150, 0, 80),
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                        disabledIndicatorColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("종료일", modifier = Modifier.padding(bottom = 4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(start = 8.dp, end = 5.dp)
-                                        .clickable {
-                                            // 달력 아이콘 클릭 시 처리할 로직 추가
-                                        }
-                                )
-                                TextField(
-                                    value = workshopEndDate,
-                                    onValueChange = { workshopEndDate = it },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = TextFieldDefaults.textFieldColors(
-                                        backgroundColor =  Color(255, 150, 0, 80),
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                        disabledIndicatorColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                showDialog = false
-                            },
-                            colors = ButtonDefaults.buttonColors(Color.Transparent)
-                        ) {
-                            Text("등록",color = Color.Black, fontWeight=FontWeight.Bold)
-                        }
-                    },
-                    dismissButton = {
-                        Button(
-                            onClick = { showDialog = false },
-                            colors = ButtonDefaults.buttonColors(Color.Transparent)
-                        ) {
-                            Text("취소",color = Color.Black, fontWeight=FontWeight.Bold)
-                        }
-                    }
-                )
-            }
             Column(
                 modifier = Modifier
                     .padding(horizontal = 10.dp)
                     .padding(vertical = 16.dp)
             ) {
-                Button(
-                    onClick = {navController.navigate("workScreen")},
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(
-                        Color(255, 150, 0, 80)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                        .padding(vertical = 16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
+                for (i in workshopId.indices) {
+                    Button(
+                        onClick = { navController.navigate("workScreen") },
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(
+                            Color(255, 150, 0, 80)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp)
+                            .padding(vertical = 16.dp)
                     ) {
-                        // 아이콘
-                        Icon(
-                            imageVector = Icons.Outlined.Construction,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(35.dp)
-                                .align(Alignment.CenterVertically)
-                        )
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Column(
+                        Row(
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                // 작업장 아이디
-                                Text(
-                                    text = "작업장 아이디 : xxx",
-                                    color = Color.Black,
-                                    fontSize = 12.sp
-                                )
-
-                                // 건설 회사명 (오른쪽 상단)
-                                Text(
-                                    text = "건설 회사명",
-                                    color = Color.Black,
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.End
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // 작업장 이름 (중앙 정렬)
-                            Text(
-                                text = "작업장 이름",
-                                color = Color.Black,
-                                fontSize = 18.sp,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
+                            Icon(
+                                imageVector = Icons.Outlined.Construction,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(35.dp)
+                                    .align(Alignment.CenterVertically)
                             )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // 시작일과 종료일
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
                             ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "작업장 아이디 : ${workshopId[i]}",
+                                        color = Color.Black,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = workshopName[i],
+                                        color = Color.Black,
+                                        fontSize = 12.sp,
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "시작일 :",
+                                    text = workshopName[i],
                                     color = Color.Black,
-                                    fontSize = 12.sp
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
-
-                                Spacer(modifier = Modifier.width(16.dp))
-
-                                Text(
-                                    text = "종료일 :",
-                                    color = Color.Black,
-                                    fontSize = 12.sp
-                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "시작일 : ${workshopStartDate[i]}",
+                                        color = Color.Black,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = "종료일 : ${workshopEndDate[i]}",
+                                        color = Color.Black,
+                                        fontSize = 12.sp
+                                    )
+                                }
                             }
                         }
                     }
@@ -275,4 +209,135 @@ fun Worklist(navController: NavController) {
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun InputWorkDataDialog(
+    onDismissRequest: () -> Unit
+) {
+    var selectableCompany by remember { mutableStateOf(listOf<String>()) }
+    var inputWorkName by remember { mutableStateOf("") }
+    var inputWorkCompany by remember { mutableStateOf("") }
+    var inputWorkStartDate by remember { mutableStateOf("") }
+    var inputWorkEndDate by remember { mutableStateOf<String>("") }
+    var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
+            override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
+                if (response.isSuccessful) {
+                    val companyList: CompanyList? = response.body()
+                    companyList?.let {
+                        selectableCompany = it.companies
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<CompanyList>, t: Throwable) {
+                println("서버 통신 실패: ${t.message}")
+            }
+        })
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(text = "작업장 생성")
+        },
+        text = {
+            Column {
+                Text("작업장 이름", modifier = Modifier.padding(bottom = 4.dp))
+                TextField(
+                    value = inputWorkName,
+                    onValueChange = { inputWorkName = it },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color(255, 150, 0, 80),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("담당 회사", modifier = Modifier.padding(bottom = 4.dp))
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    TextField(
+                        value = inputWorkCompany,
+                        onValueChange = { inputWorkCompany = it },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color(255, 150, 0, 80),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        )
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(Color.White)
+                    ) {
+                        selectableCompany.forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text(item) },
+                                onClick = { expanded = false }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("시작일", modifier = Modifier.padding(bottom = 4.dp))
+                TextField(
+                    value = inputWorkStartDate,
+                    onValueChange = { inputWorkStartDate = it },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color(255, 150, 0, 80),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("종료일", modifier = Modifier.padding(bottom = 4.dp))
+                TextField(
+                    value = inputWorkEndDate,
+                    onValueChange = { inputWorkEndDate = it },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = TextFieldDefaults.textFieldColors(
+                        backgroundColor = Color(255, 150, 0, 80),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    )
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismissRequest,
+                colors = ButtonDefaults.buttonColors(Color.Transparent)
+            ) {
+                Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = onDismissRequest,
+                colors = ButtonDefaults.buttonColors(Color.Transparent)
+            ) {
+                Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
+            }
+        }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputWorkDataDialogPreview() {
+    InputWorkDataDialog(onDismissRequest = {})
 }

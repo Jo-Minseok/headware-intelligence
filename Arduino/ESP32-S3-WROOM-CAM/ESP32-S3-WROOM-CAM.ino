@@ -280,7 +280,7 @@ void HTTP_setup(){
 void Emergency(){
   if(WiFi.status() == WL_CONNECTED){
     HTTPClient http;
-    http.begin("http://" + server_address + "/accident/emergency?work_id=" + work_id + "&user_id="+user_id);
+    http.begin("http://" + server_address + "/accident/emergency?workId=" + work_id + "&userId="+user_id);
     int httpResponseCode = http.GET();
   }
   else{
@@ -310,8 +310,8 @@ void SendingData(String type)
     jsonPayload += "\"time\":[" + String(timeInfo->tm_hour) + "," + String(timeInfo->tm_min) + "," + String(timeInfo->tm_sec) + "],";
     jsonPayload += "\"latitude\":" + latitude + ",";
     jsonPayload += "\"longitude\":"+ longitude + ",";
-    jsonPayload += "\"work_id\":\"" + work_id + "\",";
-    jsonPayload += "\"victim_id\":\"" + user_id + "\"";
+    jsonPayload += "\"workId\":\"" + work_id + "\",";
+    jsonPayload += "\"victimId\":\"" + user_id + "\"";
     jsonPayload += "}";
 
     int httpResponseCode = http.POST(jsonPayload);
@@ -340,7 +340,6 @@ void SendingData(String type)
 */
 WebsocketsClient client;
 void WEBSOCKET_setup() {
-  client.close();
   Serial.println("[SETUP] WEBSOCKET: SETUP START");
   client.onMessage(onMessageCallback);
   client.onEvent(onEventsCallback);
@@ -350,6 +349,7 @@ void WEBSOCKET_setup() {
 
 void onMessageCallback(WebsocketsMessage message) {
   String receiveData = message.data();
+  Serial.println(receiveData);
   int firstColonIndex = receiveData.indexOf(":");
   int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
   if (firstColonIndex == -1 || secondColonIndex == -1) {
@@ -377,7 +377,6 @@ void onEventsCallback(WebsocketsEvent event, String data) {
     Serial.println("[SYSTEM] WEBSOCKET: CONNECT");
   } else if (event == WebsocketsEvent::ConnectionClosed) {
     Serial.println("[SYSTEM] WEBSOCKET: CLOSE");
-    client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
   }
 }
 

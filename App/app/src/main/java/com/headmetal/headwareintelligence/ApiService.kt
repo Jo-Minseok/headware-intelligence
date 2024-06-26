@@ -91,4 +91,9 @@ interface ApiService {
         @Path("situationCode") situationCode: String,
         @Body requestBody: AccidentProcessingUpdateRequest
     ): Call<AccidentProcessingUpdateRequest>
+
+    @GET("/work/search/{managerId}")
+    fun searchWork(
+        @Path("managerId") managerId: String
+    ): Call<WorkShopList>
 }

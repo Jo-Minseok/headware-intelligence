@@ -95,8 +95,11 @@ def get_image_service() -> ImageService:
     return ImageService()
 
 
+websocket_manager = WebSocketManager()
+
+
 def get_websocket_manager() -> WebSocketManager:
-    return WebSocketManager()
+    return websocket_manager
 
 
 # 사고 발생시 데이터를 받아오고, 이를 DB에 저장하는 방식

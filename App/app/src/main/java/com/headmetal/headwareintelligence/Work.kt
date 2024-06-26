@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,24 +39,30 @@ import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Engineering
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 
 @Composable
-fun Work(navController: NavController) {
+fun Work(workId: Int, navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     var workshopName by remember { mutableStateOf("") }
     var workshopId by remember { mutableStateOf("") }
     var workshopStartDate by remember { mutableStateOf("") }
     var workshopEndDate by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showAddDialog by remember { mutableStateOf(false)}
-    var workerId by remember{ mutableStateOf("")}
-    var showWorkerDialog by remember { mutableStateOf(false)}
-    var workerName by remember { mutableStateOf("")}
-    var workerPhone by remember { mutableStateOf("")}
+    var showAddDialog by remember { mutableStateOf(false) }
+    var workerId by remember { mutableStateOf("") }
+    var showWorkerDialog by remember { mutableStateOf(false) }
+    var workerName by remember { mutableStateOf("") }
+    var workerPhone by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        Log.d("HEAD METAL", workId.toString())
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)
@@ -98,7 +105,7 @@ fun Work(navController: NavController) {
                     imageVector = Icons.Default.RestoreFromTrash,
                     contentDescription = "Trash",
                     tint = Color.Red,
-                    modifier = Modifier.clickable {showDeleteDialog = true }
+                    modifier = Modifier.clickable { showDeleteDialog = true }
                 )
                 if (showDialog) {
                     AlertDialog(
@@ -114,7 +121,7 @@ fun Work(navController: NavController) {
                                     onValueChange = { workshopId = it },
                                     shape = RoundedCornerShape(8.dp),
                                     colors = TextFieldDefaults.textFieldColors(
-                                        backgroundColor =  Color(255, 150, 0, 80),
+                                        backgroundColor = Color(255, 150, 0, 80),
                                         focusedIndicatorColor = Color.Transparent,
                                         unfocusedIndicatorColor = Color.Transparent,
                                         disabledIndicatorColor = Color.Transparent
@@ -127,7 +134,7 @@ fun Work(navController: NavController) {
                                     onValueChange = { workshopName = it },
                                     shape = RoundedCornerShape(8.dp),
                                     colors = TextFieldDefaults.textFieldColors(
-                                        backgroundColor =  Color(255, 150, 0, 80),
+                                        backgroundColor = Color(255, 150, 0, 80),
                                         focusedIndicatorColor = Color.Transparent,
                                         unfocusedIndicatorColor = Color.Transparent,
                                         disabledIndicatorColor = Color.Transparent
@@ -150,7 +157,7 @@ fun Work(navController: NavController) {
                                         onValueChange = { workshopStartDate = it },
                                         shape = RoundedCornerShape(8.dp),
                                         colors = TextFieldDefaults.textFieldColors(
-                                            backgroundColor =  Color(255, 150, 0, 80),
+                                            backgroundColor = Color(255, 150, 0, 80),
                                             focusedIndicatorColor = Color.Transparent,
                                             unfocusedIndicatorColor = Color.Transparent,
                                             disabledIndicatorColor = Color.Transparent
@@ -175,7 +182,7 @@ fun Work(navController: NavController) {
                                         onValueChange = { workshopEndDate = it },
                                         shape = RoundedCornerShape(8.dp),
                                         colors = TextFieldDefaults.textFieldColors(
-                                            backgroundColor =  Color(255, 150, 0, 80),
+                                            backgroundColor = Color(255, 150, 0, 80),
                                             focusedIndicatorColor = Color.Transparent,
                                             unfocusedIndicatorColor = Color.Transparent,
                                             disabledIndicatorColor = Color.Transparent
@@ -192,7 +199,7 @@ fun Work(navController: NavController) {
                                 },
                                 colors = ButtonDefaults.buttonColors(Color.Transparent)
                             ) {
-                                Text("등록",color = Color.Black, fontWeight=FontWeight.Bold)
+                                Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
                             }
                         },
                         dismissButton = {
@@ -200,7 +207,7 @@ fun Work(navController: NavController) {
                                 onClick = { showDialog = false },
                                 colors = ButtonDefaults.buttonColors(Color.Transparent)
                             ) {
-                                Text("취소",color = Color.Black, fontWeight=FontWeight.Bold)
+                                Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
                             }
                         }
                     )
@@ -219,8 +226,12 @@ fun Work(navController: NavController) {
                 AlertDialog(
                     onDismissRequest = { showDeleteDialog = false },
                     title = { Text(text = "작업장 삭제") },
-                    text = { Text("작업장을 삭제하시겠습니까?\n" +
-                            "※ 한 번 삭제하면 되돌릴 수 없습니다.") },
+                    text = {
+                        Text(
+                            "작업장을 삭제하시겠습니까?\n" +
+                                    "※ 한 번 삭제하면 되돌릴 수 없습니다."
+                        )
+                    },
                     confirmButton = {
                         Button(
                             onClick = {
@@ -228,7 +239,7 @@ fun Work(navController: NavController) {
                             },
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
-                            Text("예",color = Color.Black, fontWeight=FontWeight.Bold)
+                            Text("예", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
@@ -236,7 +247,7 @@ fun Work(navController: NavController) {
                             onClick = { showDeleteDialog = false },
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
-                            Text("아니오",color = Color.Black, fontWeight=FontWeight.Bold)
+                            Text("아니오", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
                 )
@@ -265,7 +276,7 @@ fun Work(navController: NavController) {
                                 onValueChange = { workerId = it },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = TextFieldDefaults.textFieldColors(
-                                    backgroundColor =  Color(255, 150, 0, 80),
+                                    backgroundColor = Color(255, 150, 0, 80),
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
                                     disabledIndicatorColor = Color.Transparent
@@ -280,7 +291,7 @@ fun Work(navController: NavController) {
                             },
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
-                            Text("등록",color = Color.Black, fontWeight=FontWeight.Bold)
+                            Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
@@ -288,7 +299,7 @@ fun Work(navController: NavController) {
                             onClick = { showAddDialog = false },
                             colors = ButtonDefaults.buttonColors(Color.Transparent)
                         ) {
-                            Text("취소",color = Color.Black, fontWeight=FontWeight.Bold)
+                            Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
                 )
@@ -300,7 +311,7 @@ fun Work(navController: NavController) {
                     .padding(vertical = 5.dp)
             ) {
                 Button(
-                    onClick = {showWorkerDialog=true},
+                    onClick = { showWorkerDialog = true },
                     shape = MaterialTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
                         Color(255, 150, 0, 80)

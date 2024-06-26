@@ -149,7 +149,7 @@ fun Worklist(navController: NavController) {
             ) {
                 for (i in workshopId.indices) {
                     Button(
-                        onClick = { navController.navigate("workScreen") },
+                        onClick = { navController.navigate("workScreen/${workshopId[i]}") },
                         shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
                             Color(255, 150, 0, 80)

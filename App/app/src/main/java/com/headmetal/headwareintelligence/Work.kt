@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.TextButton
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.filled.CalendarToday
@@ -37,8 +35,6 @@ import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoCameraFront
-import androidx.compose.material.icons.outlined.Business
-import androidx.compose.material.icons.outlined.Construction
 import androidx.compose.material.icons.outlined.Engineering
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults

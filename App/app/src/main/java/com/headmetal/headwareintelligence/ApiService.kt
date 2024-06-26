@@ -96,4 +96,10 @@ interface ApiService {
     fun searchWork(
         @Path("managerId") managerId: String
     ): Call<WorkShopList>
+
+    @POST("/work/create/{managerId}")
+    fun createWork(
+        @Path("managerId") managerId: String,
+        @Body requestBody: WorkShopInputData
+    ): Call<WorkShopInputData>
 }

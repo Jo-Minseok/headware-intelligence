@@ -51,7 +51,10 @@ class WorkRepository:
         self.db.delete(deleteWorkList)
         self.db.commit()
     
-    def update_employee_work(self, workId : int, employeeId: str):
+    def get_employee(self, employeeId: str) -> UserEmployee:
+        return self.db.query(UserEmployee).filter(UserEmployee.id == employeeId).first()
+    
+    def create_employee_work(self, workId : int, employeeId: str):
         userExists = self.db.query(exists().where(UserEmployee.id == employeeId)).scalar()
         if userExists:
             workExists = self.db.query(exists().where(Work.workId == workId).where(Work.workerId == employeeId)).scalar()
@@ -81,8 +84,11 @@ class WorkService:
     def remove_work(self, workId: int):
         self.repository.delete_work(workId)
     
+    def search_employee(self, employeeId: str) -> UserEmployee:
+        return self.repository.get_employee(employeeId)
+    
     def assign_employee_work(self, workId: int, employeeId: str):
-        return self.repository.update_employee_work(workId, employeeId)
+        return self.repository.create_employee_work(workId, employeeId)
 
 def get_work_service(db: Session = Depends(get_db)) -> WorkService:
     repository = WorkRepository(db)

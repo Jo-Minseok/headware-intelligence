@@ -62,8 +62,16 @@ def update_work(workId: int, inputData: WorkInputCreate, service: WorkService = 
 def delete_work(workId: int, service: WorkService = Depends(get_work_service)):
     service.remove_work(workId)
 
+@router.get('/user/{employeeId}', status_code=status.HTTP_200_OK)
+def get_employee(employeeId: str, service: WorkService = Depends(get_work_service)):
+    searchResult = service.search_employee(employeeId)
+    return {
+        'name': searchResult.name, 
+        'phoneNo': searchResult.phoneNo
+    }
+
 @router.post('/assign/{workId}/{employeeId}', status_code=status.HTTP_200_OK)
-def update_employee_work(workId: int, employeeId: str, service: WorkService = Depends(get_work_service)):
+def create_employee_work(workId: int, employeeId: str, service: WorkService = Depends(get_work_service)):
     updateFailed = service.assign_employee_work(workId, employeeId)
     if updateFailed:
         raise HTTPException(

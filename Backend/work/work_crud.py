@@ -1,7 +1,7 @@
 from sqlalchemy import exists
 from sqlalchemy.orm import Session
 from db.models import UserEmployee, WorkList, Work
-from typing import List, Optional
+from typing import List, Tuple, Optional
 from db.db_connection import get_db
 from fastapi import Depends
 from pydantic import BaseModel, validator
@@ -36,6 +36,9 @@ class WorkRepository:
         self.db.add(newWorkList)
         self.db.commit()
     
+    def get_work(self, workId: int) -> List[Tuple[int, str]]:
+        return self.db.query(Work.workerId, UserEmployee.name).join(UserEmployee, Work.workerId == UserEmployee.id).filter(Work.workId == workId).all()
+    
     def update_work(self, workId: int, data: WorkInputCreate):
         updateWorkList = self.db.query(WorkList).filter(WorkList.workId == workId).first()
         updateWorkList.name = data.name
@@ -48,7 +51,10 @@ class WorkRepository:
         self.db.delete(deleteWorkList)
         self.db.commit()
     
-    def update_employee_work(self, workId : int, employeeId: str):
+    def get_employee(self, employeeId: str) -> UserEmployee:
+        return self.db.query(UserEmployee).filter(UserEmployee.id == employeeId).first()
+    
+    def create_employee_work(self, workId : int, employeeId: str):
         userExists = self.db.query(exists().where(UserEmployee.id == employeeId)).scalar()
         if userExists:
             workExists = self.db.query(exists().where(Work.workId == workId).where(Work.workerId == employeeId)).scalar()
@@ -69,14 +75,20 @@ class WorkService:
     def insert_work(self, managerId: str, data: WorkInputCreate):
         self.repository.create_work(managerId, data)
     
+    def search_work(self, workId: int) -> List[Tuple[int, str]]:
+        return self.repository.get_work(workId)
+    
     def modify_work(self, workId: int, data: WorkInputCreate):
         self.repository.update_work(workId, data)
     
     def remove_work(self, workId: int):
         self.repository.delete_work(workId)
     
+    def search_employee(self, employeeId: str) -> UserEmployee:
+        return self.repository.get_employee(employeeId)
+    
     def assign_employee_work(self, workId: int, employeeId: str):
-        return self.repository.update_employee_work(workId, employeeId)
+        return self.repository.create_employee_work(workId, employeeId)
 
 def get_work_service(db: Session = Depends(get_db)) -> WorkService:
     repository = WorkRepository(db)

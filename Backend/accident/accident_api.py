@@ -110,7 +110,7 @@ async def upload_image(file: UploadFile = File(...), service: ImageService = Dep
     return await service.upload_image(file)
 
 
-@router.websocket("/ws/{work_id}/{user_id}")
+@router.websocket("/ws/{workId}/{userId}")
 async def websocket_endpoint(websocket: WebSocket, workId: str, userId: str, manager: WebSocketManager = Depends(get_websocket_manager)):
     await manager.connect(workId, websocket)
     try:

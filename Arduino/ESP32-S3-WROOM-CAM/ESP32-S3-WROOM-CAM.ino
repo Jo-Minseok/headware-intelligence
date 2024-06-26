@@ -349,7 +349,6 @@ void WEBSOCKET_setup() {
 
 void onMessageCallback(WebsocketsMessage message) {
   String receiveData = message.data();
-  Serial.println(receiveData);
   int firstColonIndex = receiveData.indexOf(":");
   int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
   if (firstColonIndex == -1 || secondColonIndex == -1) {
@@ -707,7 +706,7 @@ void loop(){
     average = total / numReadings;
 
     if(WiFi.status() == WL_CONNECTED){
-      client.poll();
+      client.poll(); // 웹소켓 받아오기
       if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
         SendingData("낙하");
         lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트

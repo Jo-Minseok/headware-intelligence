@@ -174,12 +174,11 @@ fun Loading(navController: NavController = rememberNavController()) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LoadingImage()
-            LoadingText()
+            HelmetImage()
+            AppNameText()
         }
     }
 }
-
 
 fun showAlertDialog(
     context: Context,
@@ -200,7 +199,7 @@ fun showAlertDialog(
 }
 
 @Composable
-fun LoadingImage() {
+fun HelmetImage() {
     Image(
         painter = painterResource(id = R.drawable.helmet),
         contentDescription = null
@@ -208,8 +207,9 @@ fun LoadingImage() {
 }
 
 @Composable
-fun LoadingText() {
+fun AppNameText(modifier: Modifier = Modifier) {
     Text(
+        modifier = modifier,
         text = stringResource(id = R.string.app_name),
         fontWeight = FontWeight.Bold
     )
@@ -223,12 +223,12 @@ fun LoadingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoadingImagePreview() {
-    LoadingImage()
+fun HelmetImagePreview() {
+    HelmetImage()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoadingTextPreview() {
-    LoadingText()
+fun AppNameTextPreview() {
+    AppNameText()
 }

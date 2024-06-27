@@ -139,7 +139,7 @@ fun Signup(navController: NavController = rememberNavController()) {
             ) {
                 FieldLabel(text = "이메일")
                 CustomTextField(
-                    inputText = phone,
+                    inputText = email,
                     placeholder = { Text("'@' 를 포함한 이메일 형식") }
                 )
             }
@@ -181,7 +181,7 @@ fun Signup(navController: NavController = rememberNavController()) {
                 modifier = Modifier.padding(vertical = 16.dp),
                 buttonText = "회원가입"
             ) {
-                if (pw != rePw) {
+                if (pw.value != rePw.value) {
                     showAlertDialog(
                         context = navController.context,
                         title = "비밀번호 불일치",

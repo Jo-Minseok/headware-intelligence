@@ -42,9 +42,6 @@ unsigned long lastShockTime = 0; // 마지막 충격 감지 시간
 unsigned long lastReadTime = 0;  // 마지막 센서 읽기 시간
 const int readInterval = 50;     // 센서 읽기 간격 (밀리초)
 
-unsigned long lastPingTime = 0; // 마지막 핑 전송 시간
-const unsigned long pingInterval = 10000; // 핑 간격 (10초)
-
 const int numReadings = 10;      // 평균값을 계산할 때 사용할 읽기 횟수
 int readings[numReadings];       // 읽은 값을 저장할 배열
 int readIndex = 0;               // 현재 읽기 인덱스
@@ -685,12 +682,6 @@ void loop(){
 
 // WIFI 상태 확인 및 낙하 데이터 전송
   unsigned long currentTime = millis();
-  if (currentTime - lastPingTime >= pingInterval) {
-    lastPingTime = currentTime;
-    client.ping(); // 웹소켓 핑 메시지 전송
-    Serial.println("[SYSTEM] WEBSOCKET: PING SENT");
-  }
-
   if (currentTime - lastReadTime >= readInterval) {
     lastReadTime = currentTime;
 

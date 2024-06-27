@@ -136,6 +136,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                                 ) {
                                     (navController.context as Activity).finish()
                                 }
+                                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                             }
                         })
                     } else {
@@ -154,6 +155,7 @@ fun Loading(navController: NavController = rememberNavController()) {
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                 showAlertDialog(
                     context = navController.context,
                     title = "서버 접속 실패",
@@ -185,7 +187,7 @@ fun showAlertDialog(
     title: String,
     message: String,
     buttonText: String,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit = {}
 ) {
     val builder = AlertDialog.Builder(context)
 

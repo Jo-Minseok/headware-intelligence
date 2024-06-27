@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -192,6 +193,7 @@ fun Login(navController: NavController = rememberNavController()) {
                                     (navController.context as Activity).finish()
                                 }
                                 LoadingState.hide()
+                                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                             }
                         })
                     }
@@ -226,21 +228,23 @@ fun FieldLabel(
 @Composable
 fun CustomTextField(
     inputText: MutableState<String> = remember { mutableStateOf("") },
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    placeholder: @Composable (() -> Unit)? = null
 ) {
     TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(0.6f),
         value = inputText.value,
         onValueChange = { inputText.value = it },
         shape = RoundedCornerShape(8.dp),
         singleLine = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(0.6f),
         colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
-        visualTransformation = visualTransformation
+        visualTransformation = visualTransformation,
+        placeholder = placeholder
     )
 }
 

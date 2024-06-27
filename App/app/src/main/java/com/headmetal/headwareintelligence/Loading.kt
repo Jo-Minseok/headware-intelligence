@@ -22,32 +22,36 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun Loading(navController: NavController) {
-    var autoLogin by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val sharedAccount: SharedPreferences = context.getSharedPreferences("Account", MODE_PRIVATE)
-    val sharedAlert: SharedPreferences = context.getSharedPreferences("Alert", MODE_PRIVATE)
+fun Loading(navController: NavController = rememberNavController()) {
+    val sharedAlert: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Alert", MODE_PRIVATE)
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
+
     val userId = sharedAccount.getString("userid", null)
     val userPassword = sharedAccount.getString("password", null)
     val accessToken = sharedAccount.getString("token", null)
     val type = sharedAccount.getString("type", null).toString()
-    val builder = AlertDialog.Builder(navController.context)
+
+    var autoLogin by remember { mutableStateOf(false) }
 
     if (userId != null && accessToken != null) {
         autoLogin = true
     }
 
-    // 권한 요청
     val permissions = mutableListOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -65,7 +69,7 @@ fun Loading(navController: NavController) {
     val permissionsToRequest = mutableListOf<String>()
     permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(
-                context,
+                LocalContext.current,
                 permission
             ) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -75,7 +79,7 @@ fun Loading(navController: NavController) {
 
     if (permissionsToRequest.isNotEmpty()) {
         ActivityCompat.requestPermissions(
-            context as Activity, permissionsToRequest.toTypedArray(),
+            LocalContext.current as Activity, permissionsToRequest.toTypedArray(),
             MainActivity.REQUEST_PERMISSIONS_CODE
         )
         Log.d("HEAD METAL", "권한을 요청하였습니다.")
@@ -83,7 +87,6 @@ fun Loading(navController: NavController) {
         Log.d("HEAD METAL", "권한이 이미 존재합니다.")
     }
 
-    // 서버 상태 확인
     LaunchedEffect(Unit) {
         RetrofitInstance.apiService.apiGetStatus().enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
@@ -111,51 +114,54 @@ fun Loading(navController: NavController) {
                                         }
                                     }
                                 } else {
-                                    builder.setTitle("자동 로그인 실패")
-                                    builder.setMessage("변경된 비밀번호를 확인하세요.")
-                                    builder.setPositiveButton("확인") { dialog, _ ->
-                                        dialog.dismiss()
+                                    showAlertDialog(
+                                        context = navController.context,
+                                        title = "자동 로그인 실패",
+                                        message = "변경된 비밀번호를 확인하세요.",
+                                        buttonText = "확인"
+                                    ) {
                                         navController.navigate("loginScreen")
                                         sharedAccountEdit.clear()
                                         sharedAccountEdit.apply()
                                     }
-                                    val dialog = builder.create()
-                                    dialog.show()
                                 }
                             }
 
                             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                                builder.setTitle("로그인 실패")
-                                builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                                builder.setPositiveButton("확인") { _, _ ->
+                                showAlertDialog(
+                                    context = navController.context,
+                                    title = "로그인 실패",
+                                    message = "서버 상태 및 네트워크 접속 불안정",
+                                    buttonText = "확인"
+                                ) {
                                     (navController.context as Activity).finish()
                                 }
-                                val dialog = builder.create()
-                                dialog.show()
                             }
                         })
                     } else {
                         navController.navigate("loginScreen")
                     }
                 } else {
-                    builder.setTitle("서버 접속 실패")
-                    builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                    builder.setPositiveButton("확인") { _, _ ->
+                    showAlertDialog(
+                        context = navController.context,
+                        title = "서버 접속 실패",
+                        message = "서버 상태 및 네트워크 접속 불안정",
+                        buttonText = "확인"
+                    ) {
                         (navController.context as Activity).finish()
                     }
-                    val dialog = builder.create()
-                    dialog.show()
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                builder.setTitle("서버 접속 실패")
-                builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-                builder.setPositiveButton("확인") { _, _ ->
+                showAlertDialog(
+                    context = navController.context,
+                    title = "서버 접속 실패",
+                    message = "서버 상태 및 네트워크 접속 불안정",
+                    buttonText = "확인"
+                ) {
                     (navController.context as Activity).finish()
                 }
-                val dialog = builder.create()
-                dialog.show()
             }
         })
     }
@@ -168,15 +174,61 @@ fun Loading(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.helmet),
-                contentDescription = null
-            )
-            Text(
-                text = stringResource(id = R.string.app_name),
-                fontWeight = FontWeight.Bold
-            )
-            LoadingScreen()
+            LoadingImage()
+            LoadingText()
         }
     }
+}
+
+
+fun showAlertDialog(
+    context: Context,
+    title: String,
+    message: String,
+    buttonText: String,
+    onButtonClick: () -> Unit
+) {
+    val builder = AlertDialog.Builder(context)
+
+    builder.setTitle(title)
+    builder.setMessage(message)
+    builder.setPositiveButton(buttonText) { dialog, _ ->
+        onButtonClick()
+        dialog.dismiss()
+    }
+    builder.create().show()
+}
+
+@Composable
+fun LoadingImage() {
+    Image(
+        painter = painterResource(id = R.drawable.helmet),
+        contentDescription = null
+    )
+}
+
+@Composable
+fun LoadingText() {
+    Text(
+        text = stringResource(id = R.string.app_name),
+        fontWeight = FontWeight.Bold
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoadingPreview() {
+    Loading()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoadingImagePreview() {
+    LoadingImage()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoadingTextPreview() {
+    LoadingText()
 }

@@ -69,10 +69,10 @@ class Accident(Base):
         'latitude >= -90.000000 AND latitude <= 90.000000'), nullable=False, default=1.0)
     longitude = Column(Double, CheckConstraint(
         'longitude >= -180.000000 AND longitude <= 180.000000'), nullable=False, default=1.0)
-    workId = Column(Integer, ForeignKey('workList.workId',
+    workId = Column(Integer, ForeignKey('work.workId',
                     ondelete='SET NULL'), nullable=True)
     victimId = Column(String(100), ForeignKey(
-        'workList.workerId', ondelete='SET NULL'), nullable=True)
+        'work.workerId', ondelete='SET NULL'), nullable=True)
     category = Column(String(8), nullable=False)
 
 

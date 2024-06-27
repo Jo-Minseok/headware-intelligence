@@ -45,6 +45,7 @@ class WorkRepository:
         updateWorkList.company = data.company
         updateWorkList.startDate = data.startDate
         updateWorkList.endDate = data.endDate
+        self.db.commit()
     
     def delete_work(self, workId: int):
         deleteWorkList = self.db.query(WorkList).filter(WorkList.workId == workId).first()

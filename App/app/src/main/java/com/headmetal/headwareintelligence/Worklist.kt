@@ -109,7 +109,7 @@ fun Worklist(navController: NavController) {
     }
 
     if (showWorkDataInputDialog) {
-        InputWorkDataDialog(onDismissRequest = { showWorkDataInputDialog = false })
+        InputWorkCreateDialog(onDismissRequest = { showWorkDataInputDialog = false })
     }
 
     Surface(
@@ -226,7 +226,7 @@ fun Worklist(navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputWorkDataDialog(
+fun InputWorkCreateDialog(
     onDismissRequest: () -> Unit
 ) {
     val sharedAccount: SharedPreferences =
@@ -418,6 +418,6 @@ fun InputWorkDataDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun InputWorkDataDialogPreview() {
-    InputWorkDataDialog(onDismissRequest = {})
+fun InputWorkCreateDialogPreview() {
+    InputWorkCreateDialog(onDismissRequest = {})
 }

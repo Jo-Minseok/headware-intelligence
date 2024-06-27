@@ -70,7 +70,7 @@ def get_employee(employeeId: str, service: WorkService = Depends(get_work_servic
         'phoneNo': searchResult.phoneNo
     }
 
-@router.post('/assign/{workId}/{employeeId}', status_code=status.HTTP_200_OK)
+@router.put('/assign/{workId}/{employeeId}', status_code=status.HTTP_200_OK)
 def create_employee_work(workId: int, employeeId: str, service: WorkService = Depends(get_work_service)):
     updateFailed = service.assign_employee_work(workId, employeeId)
     if updateFailed:

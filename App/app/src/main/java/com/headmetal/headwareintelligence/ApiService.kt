@@ -91,4 +91,42 @@ interface ApiService {
         @Path("situationCode") situationCode: String,
         @Body requestBody: AccidentProcessingUpdateRequest
     ): Call<AccidentProcessingUpdateRequest>
+
+    @GET("/work/search/{managerId}")
+    fun searchWork(
+        @Path("managerId") managerId: String
+    ): Call<WorkShopList>
+
+    @POST("/work/create/{managerId}")
+    fun createWork(
+        @Path("managerId") managerId: String,
+        @Body requestBody: WorkShopInputData
+    ): Call<WorkShopInputData>
+
+    @GET("/work/search/detail/{workId}")
+    fun searchWorker(
+        @Path("workId") workId: Int
+    ): Call<Worker>
+
+    @POST("/work/update/{workId}")
+    fun updateWork(
+        @Path("workId") workId: Int,
+        @Body requestBody: WorkShopInputData
+    ): Call<WorkShopInputData>
+
+    @PUT("/work/delete/{workId}")
+    fun deleteWork(
+        @Path("workId") workId: Int
+    ): Call<Void>
+
+    @GET("/work/user/{employeeId}")
+    fun searchWorkerStatus(
+        @Path("employeeId") employeeId: String
+    ): Call<WorkerStatus>
+
+    @PUT("/work/assign/{workId}/{employeeId}")
+    fun assignWork(
+        @Path("workId") workId: Int,
+        @Path("employeeId") employeeId: String
+    ): Call<Void>
 }

@@ -3,8 +3,10 @@ package com.headmetal.headwareintelligence
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
@@ -26,6 +28,8 @@ sealed class Destinations(val route: String) {
     data object Etc : Destinations("etcScreen")
     data object License : Destinations("licenseScreen")
     data object Privacy : Destinations("privacyScreen")
+    data object Worklist : Destinations("worklistScreen")
+    data class Work(val workId: Int) : Destinations("workScreen/$workId")
 }
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
@@ -71,6 +75,16 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     }
     composable(Destinations.Menu.route) {
         Menu(navController)
+    }
+    composable(Destinations.Worklist.route) {
+        Worklist(navController)
+    }
+    composable(
+        route = "workScreen/{workId}",
+        arguments = listOf(navArgument("workId") { type = NavType.IntType })
+    ) { backStackEntry ->
+        val workId = backStackEntry.arguments?.getInt("workId")
+        Work(workId = workId ?: 0, navController = navController)
     }
 }
 

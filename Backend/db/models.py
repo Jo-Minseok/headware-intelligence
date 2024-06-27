@@ -71,7 +71,8 @@ class Accident(Base):
         'longitude >= -180.000000 AND longitude <= 180.000000'), nullable=False, default=1.0)
     workId = Column(Integer, ForeignKey('workList.workId',
                     ondelete='SET NULL'), nullable=True)
-    victimId = Column(String(100), ForeignKey('work.workerId'), nullable=False)
+    victimId = Column(String(100), ForeignKey(
+        'workList.workerId', ondelete='SET NULL'), nullable=True)
     category = Column(String(8), nullable=False)
 
 

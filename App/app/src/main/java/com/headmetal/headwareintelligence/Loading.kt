@@ -1,28 +1,21 @@
 package com.headmetal.headwareintelligence
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.SharedPreferences
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
-import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.pm.PackageManager
 import android.os.Build
@@ -110,7 +103,9 @@ fun Loading(navController: NavController = rememberNavController()) {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                         navController.navigate("mainScreen") {
-                                            popUpTo("loadingScreen") { inclusive = true }
+                                            popUpTo("loadingScreen") {
+                                                inclusive = true
+                                            }
                                         }
                                     }
                                 } else {
@@ -133,9 +128,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                                     title = "로그인 실패",
                                     message = "서버 상태 및 네트워크 접속 불안정",
                                     buttonText = "확인"
-                                ) {
-                                    (navController.context as Activity).finish()
-                                }
+                                ) { (navController.context as Activity).finish() }
                                 Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                             }
                         })
@@ -148,22 +141,18 @@ fun Loading(navController: NavController = rememberNavController()) {
                         title = "서버 접속 실패",
                         message = "서버 상태 및 네트워크 접속 불안정",
                         buttonText = "확인"
-                    ) {
-                        (navController.context as Activity).finish()
-                    }
+                    ) { (navController.context as Activity).finish() }
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                 showAlertDialog(
                     context = navController.context,
                     title = "서버 접속 실패",
                     message = "서버 상태 및 네트워크 접속 불안정",
                     buttonText = "확인"
-                ) {
-                    (navController.context as Activity).finish()
-                }
+                ) { (navController.context as Activity).finish() }
+                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
             }
         })
     }
@@ -182,41 +171,6 @@ fun Loading(navController: NavController = rememberNavController()) {
     }
 }
 
-fun showAlertDialog(
-    context: Context,
-    title: String,
-    message: String,
-    buttonText: String,
-    onButtonClick: () -> Unit = {}
-) {
-    val builder = AlertDialog.Builder(context)
-
-    builder.setTitle(title)
-    builder.setMessage(message)
-    builder.setPositiveButton(buttonText) { dialog, _ ->
-        onButtonClick()
-        dialog.dismiss()
-    }
-    builder.create().show()
-}
-
-@Composable
-fun HelmetImage() {
-    Image(
-        painter = painterResource(id = R.drawable.helmet),
-        contentDescription = null
-    )
-}
-
-@Composable
-fun AppNameText(modifier: Modifier = Modifier) {
-    Text(
-        modifier = modifier,
-        text = stringResource(id = R.string.app_name),
-        fontWeight = FontWeight.Bold
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun LoadingPreview() {
@@ -225,12 +179,12 @@ fun LoadingPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun HelmetImagePreview() {
+fun LoadingHelmetImagePreview() {
     HelmetImage()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun AppNameTextPreview() {
+fun LoadingAppNameTextPreview() {
     AppNameText()
 }

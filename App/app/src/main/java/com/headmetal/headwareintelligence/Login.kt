@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -274,16 +275,17 @@ fun DistinguishButton(
 fun FunctionButton(
     modifier: Modifier = Modifier,
     buttonText: String = "",
-    colors: ButtonColors,
-    onClick: () -> Unit
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    elevation: ButtonElevation? = null,
+    onClick: () -> Unit = {}
 ) {
     Button(
-        modifier = modifier.fillMaxWidth(),
-        onClick = onClick,
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-        shape = RoundedCornerShape(8.dp),
+        modifier = modifier,
         content = { Text(text = buttonText, fontWeight = FontWeight.Bold) },
-        colors = colors
+        colors = colors,
+        elevation = elevation,
+        shape = RoundedCornerShape(8.dp),
+        onClick = onClick,
     )
 }
 
@@ -291,7 +293,7 @@ fun FunctionButton(
 fun LoginFunctionButton(
     modifier: Modifier = Modifier,
     buttonText: String = "",
-    onClick: () -> Unit
+    onClick: () -> Unit = {}
 ) {
     FunctionButton(
         modifier = modifier,

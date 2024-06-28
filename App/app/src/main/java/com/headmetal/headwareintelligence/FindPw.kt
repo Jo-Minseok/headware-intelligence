@@ -122,7 +122,7 @@ fun FindPw(navController: NavController = rememberNavController()) {
                     .padding(bottom = 16.dp)
             ) {
                 LoginFunctionButton(buttonText = "비밀번호 변경") {
-                    if (pw == rePw && pw.value.isNotEmpty()) {
+                    if (pw.value == rePw.value && pw.value.isNotEmpty()) {
                         LoadingState.show()
                         RetrofitInstance.apiService.apiChangePw(
                             ForgotPw(
@@ -133,7 +133,10 @@ fun FindPw(navController: NavController = rememberNavController()) {
                                 if (isManager.value) "manager" else "employee"
                             )
                         ).enqueue(object : Callback<ForgotPw> {
-                            override fun onResponse(call: Call<ForgotPw>, response: Response<ForgotPw>) {
+                            override fun onResponse(
+                                call: Call<ForgotPw>,
+                                response: Response<ForgotPw>
+                            ) {
                                 if (response.isSuccessful) {
                                     showAlertDialog(
                                         context = navController.context,

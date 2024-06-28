@@ -100,7 +100,9 @@ fun FindId(navController: NavController = rememberNavController()) {
             ) {
                 Row {
                     LoginFunctionButton(
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .weight(1f),
                         buttonText = "아이디 찾기"
                     ) {
                         LoadingState.show()
@@ -150,7 +152,9 @@ fun FindId(navController: NavController = rememberNavController()) {
                         })
                     }
                     LoginFunctionButton(
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .weight(1f),
                         buttonText = "비밀번호 변경"
                     ) { navController.navigate("findpwScreen") }
                 }

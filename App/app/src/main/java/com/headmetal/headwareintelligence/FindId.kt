@@ -120,7 +120,7 @@ fun FindId(navController: NavController = rememberNavController()) {
                                     if (!id.isNullOrEmpty()) {
                                         showAlertDialog(
                                             context = navController.context,
-                                            title = "아이디 찾기",
+                                            title = "아이디 찾기 성공",
                                             message = "ID: $id",
                                             buttonText = "확인"
                                         )

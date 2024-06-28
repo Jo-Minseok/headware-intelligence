@@ -121,7 +121,7 @@ fun FindPw(navController: NavController = rememberNavController()) {
                     .padding(horizontal = 10.dp)
                     .padding(bottom = 16.dp)
             ) {
-                PerformButton(buttonText = "비밀번호 변경") {
+                LoginFunctionButton(buttonText = "비밀번호 변경") {
                     if (pw == rePw && pw.value.isNotEmpty()) {
                         LoadingState.show()
                         RetrofitInstance.apiService.apiChangePw(

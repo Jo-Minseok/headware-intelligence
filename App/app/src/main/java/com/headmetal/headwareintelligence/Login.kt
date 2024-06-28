@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -118,7 +119,7 @@ fun Login(navController: NavController = rememberNavController()) {
                     .padding(bottom = 16.dp)
             ) {
                 Row {
-                    PerformButton(
+                    LoginFunctionButton(
                         modifier = Modifier.weight(1f),
                         buttonText = "로그인"
                     ) {
@@ -197,13 +198,13 @@ fun Login(navController: NavController = rememberNavController()) {
                             }
                         })
                     }
-                    PerformButton(
+                    LoginFunctionButton(
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = 4.dp),
                         buttonText = "회원가입"
                     ) { navController.navigate("signupScreen") }
-                    PerformButton(
+                    LoginFunctionButton(
                         modifier = Modifier.weight(1f),
                         buttonText = "계정 찾기"
                     ) { navController.navigate("findidScreen") }
@@ -270,17 +271,33 @@ fun DistinguishButton(
 }
 
 @Composable
-fun PerformButton(
+fun FunctionButton(
+    modifier: Modifier = Modifier,
+    buttonText: String = "",
+    colors: ButtonColors,
+    onClick: () -> Unit
+) {
+    Button(
+        modifier = modifier.fillMaxWidth(),
+        onClick = onClick,
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+        shape = RoundedCornerShape(8.dp),
+        content = { Text(text = buttonText, fontWeight = FontWeight.Bold) },
+        colors = colors
+    )
+}
+
+@Composable
+fun LoginFunctionButton(
     modifier: Modifier = Modifier,
     buttonText: String = "",
     onClick: () -> Unit
 ) {
-    Button(
+    FunctionButton(
         modifier = modifier,
-        onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
-        content = { Text(text = buttonText, fontWeight = FontWeight.Bold) },
-        colors = ButtonDefaults.buttonColors(Color(0x59000000))
+        buttonText = buttonText,
+        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+        onClick = onClick
     )
 }
 
@@ -310,6 +327,12 @@ fun DistinguishButtonPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun PerformButtonPreview() {
-    PerformButton(buttonText = "테스트") {}
+fun FunctionButtonPreview() {
+    FunctionButton(buttonText = "테스트", colors = ButtonDefaults.buttonColors(Color(0x59000000))) {}
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoginFunctionButtonPreview() {
+    LoginFunctionButton(buttonText = "테스트") {}
 }

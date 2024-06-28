@@ -177,7 +177,7 @@ fun Signup(navController: NavController = rememberNavController()) {
                     )
                 }
             }
-            PerformButton(
+            LoginFunctionButton(
                 modifier = Modifier.padding(vertical = 16.dp),
                 buttonText = "회원가입"
             ) {

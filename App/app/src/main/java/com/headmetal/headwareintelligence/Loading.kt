@@ -44,7 +44,7 @@ fun Loading(navController: NavController = rememberNavController()) {
     val userId = sharedAccount.getString("userid", null)
     val userPassword = sharedAccount.getString("password", null)
     val accessToken = sharedAccount.getString("token", null)
-    val type = sharedAccount.getString("type", null).toString()
+    val type = sharedAccount.getString("type", null)
 
     var autoLogin by remember { mutableStateOf(false) }
 
@@ -94,7 +94,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                     if (autoLogin) {
                         RetrofitInstance.apiService.apiLogin(
                             alertToken = sharedAlert.getString("alert_token", null).toString(),
-                            type = type,
+                            type = type.toString(),
                             id = userId,
                             pw = userPassword
                         ).enqueue(object : Callback<LoginResponse> {

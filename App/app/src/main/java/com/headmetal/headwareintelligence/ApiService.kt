@@ -53,10 +53,10 @@ interface ApiService {
     ): Call<ForgotPw>
 
     @GET("/weather/{latitude}/{longitude}")
-    suspend fun getWeather(
+    fun getWeather(
         @Path("latitude") latitude: Double,
         @Path("longitude") longitude: Double
-    ): WeatherResponse
+    ): Call<WeatherResponse>
 
     @GET("/trend/{start}/{end}")
     suspend fun getTrendData(

@@ -3,6 +3,9 @@ from db.models import UserEmployee, UserManager
 from typing import Union
 from db.db_connection import get_db
 from fastapi import Depends
+from passlib.context import CryptContext
+
+pwdContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserRepository:
@@ -23,6 +26,10 @@ class UserRepository:
             return self.db.query(UserManager).filter(UserManager.id == userId, UserManager.phoneNo == phoneNo).first()
         return None
 
+    def change_user_password(self, userDBObject, password: str):
+        userDBObject.password = pwdContext.hash(password)
+        self.db.commit()
+
 
 class UserService:
     def __init__(self, repository: UserRepository):
@@ -34,6 +41,8 @@ class UserService:
     def search_account(self, userId: str, phoneNo: str, userType: str) -> Union[UserEmployee, UserManager, None]:
         return self.repository.find_user_by_id_and_phone(userId, phoneNo, userType)
 
+    def change_password(self, userDBObject, password: str):
+        self.repository.change_user_password(userDBObject, password)
 # 의존성 주입을 위한 함수
 
 

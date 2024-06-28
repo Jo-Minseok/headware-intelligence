@@ -74,7 +74,7 @@ fun FindId(navController: NavController = rememberNavController()) {
             ) {
                 FieldLabel(text = "직무")
                 Row {
-                    DistinguishButton(
+                    CustomRadioButton(
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),
@@ -83,7 +83,7 @@ fun FindId(navController: NavController = rememberNavController()) {
                         secondButtonSwitch = isManager,
                     )
                     Spacer(modifier = Modifier.width(20.dp))
-                    DistinguishButton(
+                    CustomRadioButton(
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),

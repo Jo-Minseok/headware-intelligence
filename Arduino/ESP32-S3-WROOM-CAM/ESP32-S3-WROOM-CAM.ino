@@ -29,8 +29,12 @@ Adafruit_SSD1306 display(128,64,&Wire,-1);
 
 String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
 int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
+
 String latitude;
 String longitude;
+
+unsigned long lastPingTime = 0;
+const unsigned long pingInterval = 30000; // 30 seconds
 
 const int buttonDebounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
 int lastButtonState = LOW;     // 이전 버튼 상태
@@ -47,6 +51,7 @@ int readings[numReadings];       // 읽은 값을 저장할 배열
 int readIndex = 0;               // 현재 읽기 인덱스
 int total = 0;                   // 읽은 값의 총합
 int average = 0;                 // 평균값
+unsigned long currentTime = 0;
 
 /*
 ############################################################################
@@ -339,44 +344,49 @@ void SendingData(String type)
 ############################################################################
 */
 WebsocketsClient client;
+
 void WEBSOCKET_setup() {
   Serial.println("[SETUP] WEBSOCKET: SETUP START");
-  client.onMessage(onMessageCallback);
-  client.onEvent(onEventsCallback);
-  client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
+  client.onMessage([&](WebsocketsMessage message){
+    String receiveData = message.data();
+    Serial.println("WEBSOCKET MESSAGE: " + receiveData);
+    int firstColonIndex = receiveData.indexOf(":");
+    int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
+    if (firstColonIndex == -1 || secondColonIndex == -1) {
+      Serial.println("[ERROR] WEBSOCKET: NOT FORMAT");
+      return;
+    }
+    String send_id = receiveData.substring(0, firstColonIndex);
+    String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
+    String action = receiveData.substring(secondColonIndex + 1);
+    if (user_id==receive_id) {
+      if (action == "카메라") {
+        client.send(send_id + ":" + action + "전달");
+        capture_and_send_image(send_id);
+      }
+      else if(action == "소리"){
+        client.send(send_id + ":" + action + "전달");
+        PLAY_SIREN();
+        client.send(send_id+":소리완료");
+      }
+    }
+  });
+  client.onEvent([&](WebsocketsEvent event, String data) {
+      if (event == WebsocketsEvent::ConnectionClosed) {
+          Serial.println("WebSocket connection closed, reconnecting...");
+          connectToWebSocket();
+      }
+  });
+  connectToWebSocket();
   Serial.println("[SETUP] WEBSOCKET: SETUP SUCCESS");
 }
 
-void onMessageCallback(WebsocketsMessage message) {
-  String receiveData = message.data();
-  int firstColonIndex = receiveData.indexOf(":");
-  int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
-  if (firstColonIndex == -1 || secondColonIndex == -1) {
-    Serial.println("[ERROR] WEBSOCKET: NOT FORMAT");
-    return;
-  }
-  String send_id = receiveData.substring(0, firstColonIndex);
-  String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
-  String action = receiveData.substring(secondColonIndex + 1);
-  if (user_id==receive_id) {
-    if (action == "카메라") {
-      client.send(send_id + ":" + action + "전달");
-      capture_and_send_image(send_id);
+void connectToWebSocket() {
+    while (!client.connect("ws://" + server_address + "/accident/ws/"+work_id+"/" +user_id)) {
+        Serial.println("Trying to connect to WebSocket server...");
+        delay(1000);
     }
-    else if(action == "소리"){
-      client.send(send_id + ":" + action + "전달");
-      PLAY_SIREN();
-      client.send(send_id+":소리완료");
-    }
-  }
-}
-
-void onEventsCallback(WebsocketsEvent event, String data) {
-  if (event == WebsocketsEvent::ConnectionOpened) {
-    Serial.println("[SYSTEM] WEBSOCKET: CONNECT");
-  } else if (event == WebsocketsEvent::ConnectionClosed) {
-    Serial.println("[SYSTEM] WEBSOCKET: CLOSE");
-  }
+    Serial.println("Connected to WebSocket server");
 }
 
 /*
@@ -640,21 +650,29 @@ void setup(){
 }
 
 void loop(){
+  currentTime = millis(); // 최근 시간 대입
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
-// BLE 연결 여부
-  if(!deviceConnected){
-    digitalWrite(RESET,LOW);
+  if(!deviceConnected){  // BLE 연결 여부
+    digitalWrite(RESET,LOW); // BLE 연결 해제 시, 초기화 재실행
   }
 
-// 긴급 버튼
-  int reading = digitalRead(BUTTON);
-
-  // 버튼 상태가 바뀌었는지 확인
-  if (reading != lastButtonState) {
-    // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
-    lastDebounceTime = millis();
+  if(WiFi.status()!=WL_CONNECTED){ // 인터넷 접속 확인
+    WIFI_setup();
+  }
+  if(!client.available()){ // 웹소켓이 연결이 안 될 경우
+    connectToWebSocket(); // 웹소켓 재 연결
+  }
+  client.poll(); // 웹소켓 값 불러오기
+  if(currentTime - lastPingTime >= pingInterval){ // 웹 소켓 핑 시간 30초
+    client.ping(); // 웹 소켓 핑 전송
+    lastPingTime = currentTime; // 웹 소켓 마지막 핑 시간 저장
+    Serial.println("Sent Ping to server"); // 핑 서버 전송 메세지 출력
   }
 
+  int reading = digitalRead(BUTTON); // 긴급 버튼
+  if (reading != lastButtonState) { // 버튼 상태가 바뀌었는지 확인
+    lastDebounceTime = millis(); // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
+  }
   // 디바운싱 지연 시간을 넘었으면 상태를 업데이트
   if ((millis() - lastDebounceTime) > buttonDebounceDelay) {
     // 상태가 변하고 일정 시간 유지된 경우에만 버튼 상태 업데이트
@@ -669,52 +687,31 @@ void loop(){
       }
     }
   }
-
   lastButtonState = reading; // 이전 버튼 상태 업데이트
 
-// CDS 조명 설정
-  if(analogRead(CDS)>=3800){
+  if(analogRead(CDS)>=3800){// CDS 조명 설정 3800값 이상일 경우 LED ON
     digitalWrite(LED,1);
   }
-  else{
+  else{ // 아닐경우 LED 끔
     digitalWrite(LED,0);
   }
 
-// WIFI 상태 확인 및 낙하 데이터 전송
-  unsigned long currentTime = millis();
-  if (currentTime - lastReadTime >= readInterval) {
-    lastReadTime = currentTime;
-
-    // 현재 읽기에서 이전 총합에서 해당 읽기 값을 뺌
-    total = total - readings[readIndex];
-
-    // 새로운 센서 값을 읽고 배열에 저장
-    readings[readIndex] = analogRead(SHOCK);
-
-    // 새로운 읽기 값을 총합에 추가
-    total = total + readings[readIndex];
-
-    // 다음 읽기 인덱스로 이동
-    readIndex = readIndex + 1;
-
-    // 배열의 끝에 도달하면 다시 시작
-    if (readIndex >= numReadings) {
-      readIndex = 0;
+  if (currentTime - lastReadTime >= readInterval) { // 0.05초 주기
+    lastReadTime = currentTime; // 마지막으로 센서 읽은 시간을 현재 시간으로
+    total = total - readings[readIndex];// 현재 읽기에서 이전 총합에서 해당 읽기 값을 뺌
+    readings[readIndex] = analogRead(SHOCK); // 새로운 센서 값을 읽고 배열에 저장
+    total = total + readings[readIndex]; // 새로운 읽기 값을 총합에 추가
+    readIndex = readIndex + 1; // 다음 읽기 인덱스로 이동
+    if (readIndex >= numReadings) { // 배열의 끝에 도달하면 다시 시작
+      readIndex = 0; // 인덱스를 0으로 설정
     }
 
-    // 평균값 계산
-    average = total / numReadings;
+    average = total / numReadings; // 평균값 계산
 
-    if(WiFi.status() == WL_CONNECTED){
-      client.poll(); // 웹소켓 받아오기
-      if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
-        SendingData("낙하");
-        lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트
-        average = 0;
-      }
-    }
-    else{
-      WIFI_setup();
+    if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
+      SendingData("낙하");
+      lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트
+      average = 0;
     }
   }
 }

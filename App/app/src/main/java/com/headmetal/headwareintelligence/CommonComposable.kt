@@ -30,7 +30,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,8 +52,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.Interceptor
 import okhttp3.Response
-import retrofit2.Call
-import retrofit2.Callback
 import java.io.IOException
 import java.net.SocketTimeoutException
 
@@ -159,9 +156,8 @@ fun HelmetImage() {
 }
 
 @Composable
-fun AppNameText(modifier: Modifier = Modifier) {
+fun AppNameText() {
     Text(
-        modifier = modifier,
         text = stringResource(id = R.string.app_name),
         fontWeight = FontWeight.Bold
     )

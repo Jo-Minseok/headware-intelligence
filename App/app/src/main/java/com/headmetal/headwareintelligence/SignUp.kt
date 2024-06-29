@@ -44,18 +44,18 @@ data class CompanyList(
 )
 
 @Composable
-fun Signup(navController: NavController = rememberNavController()) {
+fun SignUp(navController: NavController = rememberNavController()) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
     ) {
         LoadingScreen()
-        SignupComposable(navController = navController)
+        SignUpComposable(navController = navController)
     }
 }
 
 @Composable
-fun SignupComposable(navController: NavController = rememberNavController()) {
+fun SignUpComposable(navController: NavController = rememberNavController()) {
     val id: MutableState<String> = remember { mutableStateOf("") }
     val pw: MutableState<String> = remember { mutableStateOf("") }
     val rePw: MutableState<String> = remember { mutableStateOf("") }
@@ -146,7 +146,7 @@ fun SignupComposable(navController: NavController = rememberNavController()) {
             }
         )
         RadioButtonComposable(
-            fieldLabel = { LoginFieldLabel(text = "Part") },
+            fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
         LoginFunctionButton(
@@ -209,25 +209,25 @@ fun SignupComposable(navController: NavController = rememberNavController()) {
 // 프리뷰
 @Preview(showBackground = true)
 @Composable
-fun SignupPreview() {
-    Signup()
+fun SignUpPreview() {
+    SignUp()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupComposablePreview() {
-    SignupComposable()
+fun SignUpComposablePreview() {
+    SignUpComposable()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupHelmetImagePreview() {
+fun SignUpHelmetImagePreview() {
     HelmetImage()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupTextFieldComposablePreview() {
+fun SignUpTextFieldComposablePreview() {
     TextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "아이디") },
         customTextField = { CustomTextField() }
@@ -236,19 +236,19 @@ fun SignupTextFieldComposablePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignupFieldLabelPreview() {
+fun SignUpFieldLabelPreview() {
     LoginFieldLabel(text = "아이디")
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupCustomTextFieldPreview() {
+fun SignUpCustomTextFieldPreview() {
     CustomTextField()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupTextFieldPlaceHolderComposablePreview() {
+fun SignUpTextFieldPlaceHolderComposablePreview() {
     TextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "이름") },
         customTextField = { CustomTextField(placeholder = { Text("4글자 이내") }) }
@@ -257,13 +257,13 @@ fun SignupTextFieldPlaceHolderComposablePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignupCustomTextFieldPlaceHolderPreview() {
+fun SignUpCustomTextFieldPlaceHolderPreview() {
     CustomTextField(placeholder = { Text("4글자 이내") })
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupCompanyDropdownMenuComposablePreview() {
+fun SignUpCompanyDropdownMenuComposablePreview() {
     CompanyDropdownMenuComposable(
         fieldLabel = { LoginFieldLabel(text = "건설업체") },
         companyDropdownMenu = { CompanyDropdownMenu() }
@@ -272,24 +272,33 @@ fun SignupCompanyDropdownMenuComposablePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignupCompanyDropdownMenuPreview() {
+fun SignUpCompanyDropdownMenuPreview() {
     CompanyDropdownMenu()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupCustomRadioButtonGroupPreview() {
+fun SignupRadioButtonComposablePreview() {
+    RadioButtonComposable(
+        fieldLabel = { LoginFieldLabel(text = "직무") },
+        customRadioButtonGroup = { CustomRadioButtonGroup() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SignUpCustomRadioButtonGroupPreview() {
     CustomRadioButtonGroup()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupCustomRadioButtonSinglePreview() {
+fun SignUpCustomRadioButtonSinglePreview() {
     CustomRadioButtonSingle(buttonText = "일반직")
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignupFunctionButtonPreview() {
+fun SignUpFunctionButtonPreview() {
     LoginFunctionButton(buttonText = "회원가입")
 }

@@ -81,7 +81,7 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
             isManager = isManager,
             navController = navController
         )
-        AppNameText(modifier = Modifier.padding(top = 20.dp))
+        AppNameText()
     }
 }
 

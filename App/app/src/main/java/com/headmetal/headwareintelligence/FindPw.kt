@@ -3,12 +3,8 @@ package com.headmetal.headwareintelligence
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -36,6 +32,14 @@ data class ForgotPw(
 
 @Composable
 fun FindPw(navController: NavController = rememberNavController()) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9C94C)
+    ) { FindPwComposable(navController = navController) }
+}
+
+@Composable
+fun FindPwComposable(navController: NavController = rememberNavController()) {
     val id: MutableState<String> = remember { mutableStateOf("") }
     val phone: MutableState<String> = remember { mutableStateOf("") }
     val pw: MutableState<String> = remember { mutableStateOf("") }
@@ -43,143 +47,168 @@ fun FindPw(navController: NavController = rememberNavController()) {
     val isEmployee: MutableState<Boolean> = remember { mutableStateOf(true) }
     val isManager: MutableState<Boolean> = remember { mutableStateOf(false) }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9C94C)
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            HelmetImage()
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                FieldLabel(text = "아이디")
-                CustomTextField(inputText = id)
-            }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                FieldLabel(text = "전화번호")
-                CustomTextField(inputText = phone)
-            }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                FieldLabel(text = "새 비밀번호")
+        HelmetImage()
+        TextFieldComposable(
+            fieldLabel = { LoginFieldLabel(text = "아이디") },
+            customTextField = { CustomTextField(inputText = id) }
+        )
+        TextFieldComposable(
+            fieldLabel = { LoginFieldLabel(text = "전화번호") },
+            customTextField = { CustomTextField(inputText = phone) }
+        )
+        TextFieldComposable(
+            fieldLabel = { LoginFieldLabel(text = "새 비밀번호") },
+            customTextField = {
                 CustomTextField(
                     inputText = pw,
                     visualTransformation = PasswordVisualTransformation()
                 )
             }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                FieldLabel(text = "비밀번호 확인")
+        )
+        TextFieldComposable(
+            fieldLabel = { LoginFieldLabel(text = "비밀번호 확인") },
+            customTextField = {
                 CustomTextField(
                     inputText = rePw,
                     visualTransformation = PasswordVisualTransformation()
                 )
             }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                FieldLabel(text = "직무")
-                Row {
-                    CustomRadioButtonSingle(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        buttonText = "일반직",
-                        firstButtonSwitch = isEmployee,
-                        secondButtonSwitch = isManager,
+        )
+        RadioButtonComposable(
+            fieldLabel = { LoginFieldLabel(text = "직무") },
+            customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
+        )
+        LoginFunctionButton(
+            modifier = Modifier.padding(bottom = 16.dp),
+            buttonText = "비밀번호 변경"
+        ) {
+            if (pw.value == rePw.value && pw.value.isNotEmpty()) {
+                LoadingState.show()
+                RetrofitInstance.apiService.apiChangePw(
+                    ForgotPw(
+                        id.value,
+                        phone.value,
+                        pw.value,
+                        rePw.value,
+                        if (isManager.value) "manager" else "employee"
                     )
-                    Spacer(modifier = Modifier.width(20.dp))
-                    CustomRadioButtonSingle(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        buttonText = "관리직",
-                        firstButtonSwitch = isManager,
-                        secondButtonSwitch = isEmployee,
-                    )
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                LoginFunctionButton(buttonText = "비밀번호 변경") {
-                    if (pw.value == rePw.value && pw.value.isNotEmpty()) {
-                        LoadingState.show()
-                        RetrofitInstance.apiService.apiChangePw(
-                            ForgotPw(
-                                id.value,
-                                phone.value,
-                                pw.value,
-                                rePw.value,
-                                if (isManager.value) "manager" else "employee"
-                            )
-                        ).enqueue(object : Callback<ForgotPw> {
-                            override fun onResponse(
-                                call: Call<ForgotPw>,
-                                response: Response<ForgotPw>
+                ).enqueue(object : Callback<ForgotPw> {
+                    override fun onResponse(
+                        call: Call<ForgotPw>,
+                        response: Response<ForgotPw>
+                    ) {
+                        if (response.isSuccessful) {
+                            showAlertDialog(
+                                context = navController.context,
+                                title = "비밀번호 변경 성공",
+                                message = "로그인 화면으로 이동합니다.",
+                                buttonText = "확인"
                             ) {
-                                if (response.isSuccessful) {
-                                    showAlertDialog(
-                                        context = navController.context,
-                                        title = "비밀번호 변경 성공",
-                                        message = "로그인 화면으로 이동합니다.",
-                                        buttonText = "확인"
-                                    ) {
-                                        navController.navigate("loginScreen")
-                                    }
-                                } else {
-                                    showAlertDialog(
-                                        context = navController.context,
-                                        title = "비밀번호 변경 실패",
-                                        message = "존재하지 않는 계정입니다.",
-                                        buttonText = "확인"
-                                    )
-                                    Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
-                                }
-                                LoadingState.hide()
+                                navController.navigate("loginScreen")
                             }
-
-                            override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
-                                LoadingState.hide()
-                                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-                            }
-                        })
-                    } else {
-                        showAlertDialog(
-                            context = navController.context,
-                            title = "비밀번호 변경 실패",
-                            message = "입력한 정보를 다시 확인하세요!",
-                            buttonText = "확인"
-                        )
+                        } else {
+                            showAlertDialog(
+                                context = navController.context,
+                                title = "비밀번호 변경 실패",
+                                message = "존재하지 않는 계정입니다.",
+                                buttonText = "확인"
+                            )
+                            Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
+                        }
+                        LoadingState.hide()
                     }
-                }
+
+                    override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
+                        LoadingState.hide()
+                        Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                    }
+                })
+            } else {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "비밀번호 변경 실패",
+                    message = "입력한 정보를 다시 확인하세요!",
+                    buttonText = "확인"
+                )
             }
-            AppNameText()
         }
+        AppNameText()
     }
 }
 
+// 프리뷰
 @Preview(showBackground = true)
 @Composable
 fun FindPwPreview() {
     FindPw()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwComposablePreview() {
+    FindPwComposable()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwHelmetImagePreview() {
+    HelmetImage()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwTextFieldComposable() {
+    TextFieldComposable(
+        fieldLabel = { LoginFieldLabel(text = "아이디") },
+        customTextField = { CustomTextField() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwFieldLabelPreview() {
+    LoginFieldLabel(text = "아이디")
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwCustomTextFieldPreview() {
+    CustomTextField()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwRadioButtonComposablePreview() {
+    RadioButtonComposable(
+        fieldLabel = { LoginFieldLabel(text = "직무") },
+        customRadioButtonGroup = { CustomRadioButtonGroup() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwCustomRadioButtonGroupPreview() {
+    CustomRadioButtonGroup()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwCustomRadioButtonSinglePreview() {
+    CustomRadioButtonSingle(buttonText = "일반직")
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwFunctionButtonPreview() {
+    LoginFunctionButton(buttonText = "비밀번호 변경")
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindPwAppNameTextPreview() {
+    AppNameText()
 }

@@ -263,3 +263,9 @@ fun LoginFunctionButtonComposablePreview() {
 fun LoginFunctionButtonPreview() {
     LoginFunctionButton(buttonText = "로그인")
 }
+
+@Preview(showBackground = true)
+@Composable
+fun LoginAppNameTextPreview() {
+    AppNameText()
+}

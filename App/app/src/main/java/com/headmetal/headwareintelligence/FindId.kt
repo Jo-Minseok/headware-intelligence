@@ -37,9 +37,7 @@ fun FindId(navController: NavController = rememberNavController()) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
-    ) {
-        FindIdComposable(navController = navController)
-    }
+    ) { FindIdComposable(navController = navController) }
 }
 
 @Composable
@@ -222,4 +220,10 @@ fun FindIdFunctionButtonComposablePreview() {
 @Composable
 fun FindIdFunctionButtonPreview() {
     LoginFunctionButton(buttonText = "아이디 찾기")
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindIdAppNameTextPreview() {
+    AppNameText()
 }

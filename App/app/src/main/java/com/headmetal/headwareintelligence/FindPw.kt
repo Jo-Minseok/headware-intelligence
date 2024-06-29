@@ -97,7 +97,7 @@ fun FindPw(navController: NavController = rememberNavController()) {
             ) {
                 FieldLabel(text = "직무")
                 Row {
-                    CustomRadioButton(
+                    CustomRadioButtonSingle(
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),
@@ -106,7 +106,7 @@ fun FindPw(navController: NavController = rememberNavController()) {
                         secondButtonSwitch = isManager,
                     )
                     Spacer(modifier = Modifier.width(20.dp))
-                    CustomRadioButton(
+                    CustomRadioButtonSingle(
                         modifier = Modifier
                             .weight(1f)
                             .height(50.dp),

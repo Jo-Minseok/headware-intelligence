@@ -171,6 +171,7 @@ fun Loading(navController: NavController = rememberNavController()) {
     }
 }
 
+// 프리뷰
 @Preview(showBackground = true)
 @Composable
 fun LoadingPreview() {

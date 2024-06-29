@@ -377,5 +377,4 @@ fun CompanyDropdownMenuComposable(
         companyDropdownMenu()
     }
 }
-
 //

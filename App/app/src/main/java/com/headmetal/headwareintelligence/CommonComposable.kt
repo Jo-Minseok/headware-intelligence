@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,9 +23,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +53,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.Interceptor
 import okhttp3.Response
+import retrofit2.Call
+import retrofit2.Callback
 import java.io.IOException
 import java.net.SocketTimeoutException
 
@@ -233,7 +241,7 @@ fun LoginFunctionButton(
 }
 
 @Composable
-fun TextFieldElement(
+fun TextFieldComposable(
     fieldLabel: @Composable (() -> Unit),
     customTextField: @Composable (() -> Unit)
 ) {
@@ -248,7 +256,7 @@ fun TextFieldElement(
 }
 
 @Composable
-fun CustomRadioButton(
+fun CustomRadioButtonSingle(
     modifier: Modifier = Modifier,
     buttonText: String = "",
     firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
@@ -276,7 +284,7 @@ fun CustomRadioButtonGroup(
     secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
 ) {
     Row {
-        CustomRadioButton(
+        CustomRadioButtonSingle(
             modifier = Modifier
                 .weight(1f)
                 .height(50.dp),
@@ -285,7 +293,7 @@ fun CustomRadioButtonGroup(
             secondButtonSwitch = secondButtonSwitch,
         )
         Spacer(modifier = Modifier.width(20.dp))
-        CustomRadioButton(
+        CustomRadioButtonSingle(
             modifier = Modifier
                 .weight(1f)
                 .height(50.dp),
@@ -297,7 +305,7 @@ fun CustomRadioButtonGroup(
 }
 
 @Composable
-fun RadioButtonElement(
+fun RadioButtonComposable(
     fieldLabel: @Composable (() -> Unit),
     customRadioButtonGroup: @Composable (() -> Unit)
 ) {
@@ -311,5 +319,63 @@ fun RadioButtonElement(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CompanyDropdownMenu(
+    expanded: MutableState<Boolean> = remember { mutableStateOf(false) },
+    selectedCompany: MutableState<String> = remember { mutableStateOf("없음") },
+    selectableCompany: List<String> = listOf("없음")
+) {
+    ExposedDropdownMenuBox(
+        expanded = expanded.value,
+        onExpandedChange = { expanded.value = !expanded.value }
+    ) {
+        TextField(
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+                .alpha(0.6f),
+            value = selectedCompany.value,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
+            shape = RoundedCornerShape(8.dp),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            )
+        )
+        ExposedDropdownMenu(
+            modifier = Modifier.background(Color.White),
+            expanded = expanded.value,
+            onDismissRequest = { expanded.value = false }
+        ) {
+            selectableCompany.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item) },
+                    onClick = {
+                        expanded.value = false
+                        selectedCompany.value = item
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CompanyDropdownMenuComposable(
+    fieldLabel: @Composable (() -> Unit),
+    companyDropdownMenu: @Composable (() -> Unit)
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 10.dp)
+            .padding(bottom = 16.dp)
+    ) {
+        fieldLabel()
+        companyDropdownMenu()
+    }
+}
 
 //

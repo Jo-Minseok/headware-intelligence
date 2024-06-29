@@ -42,12 +42,12 @@ fun Login(navController: NavController = rememberNavController()) {
         color = Color(0xFFF9C94C)
     ) {
         LoadingScreen()
-        LoginElements(navController = navController)
+        LoginComposable(navController = navController)
     }
 }
 
 @Composable
-fun LoginElements(navController: NavController = rememberNavController()) {
+fun LoginComposable(navController: NavController = rememberNavController()) {
     val id: MutableState<String> = remember { mutableStateOf("") }
     val pw: MutableState<String> = remember { mutableStateOf("") }
     val isEmployee: MutableState<Boolean> = remember { mutableStateOf(true) }
@@ -58,11 +58,11 @@ fun LoginElements(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        TextFieldElement(
+        TextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "ID") },
             customTextField = { CustomTextField(inputText = id) }
         )
-        TextFieldElement(
+        TextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "PW") },
             customTextField = {
                 CustomTextField(
@@ -71,11 +71,11 @@ fun LoginElements(navController: NavController = rememberNavController()) {
                 )
             }
         )
-        RadioButtonElement(
+        RadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "Part") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
-        LoginFunctionButtonElement(
+        LoginFunctionButtonComposable(
             id = id,
             pw = pw,
             isManager = isManager,
@@ -86,7 +86,7 @@ fun LoginElements(navController: NavController = rememberNavController()) {
 }
 
 @Composable
-fun LoginFunctionButtonElement(
+fun LoginFunctionButtonComposable(
     id: MutableState<String> = remember { mutableStateOf("") },
     pw: MutableState<String> = remember { mutableStateOf("") },
     isManager: MutableState<Boolean> = remember { mutableStateOf(false) },
@@ -200,8 +200,8 @@ fun LoginPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginElementsPreview() {
-    LoginElements()
+fun LoginComposablePreview() {
+    LoginComposable()
 }
 
 @Preview(showBackground = true)
@@ -212,8 +212,8 @@ fun LoginHelmetImagePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginTextFieldElement() {
-    TextFieldElement(
+fun LoginTextFieldComposable() {
+    TextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "ID") },
         customTextField = { CustomTextField() }
     )
@@ -233,8 +233,8 @@ fun LoginCustomTextFieldPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginRadioButtonElementPreview() {
-    RadioButtonElement(
+fun LoginRadioButtonComposablePreview() {
+    RadioButtonComposable(
         fieldLabel = { LoginFieldLabel(text = "Part") },
         customRadioButtonGroup = { CustomRadioButtonGroup() }
     )
@@ -248,14 +248,14 @@ fun LoginCustomRadioButtonGroupPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginCustomRadioButtonPreview() {
-    CustomRadioButton(buttonText = "일반직")
+fun LoginCustomRadioButtonSinglePreview() {
+    CustomRadioButtonSingle(buttonText = "일반직")
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoginFunctionButtonElementPreview() {
-    LoginFunctionButtonElement()
+fun LoginFunctionButtonComposablePreview() {
+    LoginFunctionButtonComposable()
 }
 
 @Preview(showBackground = true)

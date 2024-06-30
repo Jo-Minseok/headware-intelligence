@@ -52,15 +52,15 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "아이디") },
             customTextField = { CustomTextField(inputText = id) }
         )
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "전화번호") },
             customTextField = { CustomTextField(inputText = phone) }
         )
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "새 비밀번호") },
             customTextField = {
                 CustomTextField(
@@ -69,7 +69,7 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
                 )
             }
         )
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "비밀번호 확인") },
             customTextField = {
                 CustomTextField(
@@ -82,60 +82,63 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
-        LoginFunctionButton(
-            modifier = Modifier.padding(bottom = 16.dp),
-            buttonText = "비밀번호 변경"
-        ) {
-            if (pw.value == rePw.value && pw.value.isNotEmpty()) {
-                LoadingState.show()
-                RetrofitInstance.apiService.apiChangePw(
-                    ForgotPw(
-                        id.value,
-                        phone.value,
-                        pw.value,
-                        rePw.value,
-                        if (isManager.value) "manager" else "employee"
-                    )
-                ).enqueue(object : Callback<ForgotPw> {
-                    override fun onResponse(
-                        call: Call<ForgotPw>,
-                        response: Response<ForgotPw>
-                    ) {
-                        if (response.isSuccessful) {
-                            showAlertDialog(
-                                context = navController.context,
-                                title = "비밀번호 변경 성공",
-                                message = "로그인 화면으로 이동합니다.",
-                                buttonText = "확인"
-                            ) {
-                                navController.navigate("LoginScreen")
-                            }
+        LoginFunctionButtonComposable(
+            loginFunctionButtons = arrayOf(
+                {
+                    LoginFunctionButton(buttonText = "비밀번호 변경") {
+                        if (pw.value == rePw.value && pw.value.isNotEmpty()) {
+                            LoadingState.show()
+                            RetrofitInstance.apiService.apiChangePw(
+                                ForgotPw(
+                                    id.value,
+                                    phone.value,
+                                    pw.value,
+                                    rePw.value,
+                                    if (isManager.value) "manager" else "employee"
+                                )
+                            ).enqueue(object : Callback<ForgotPw> {
+                                override fun onResponse(
+                                    call: Call<ForgotPw>,
+                                    response: Response<ForgotPw>
+                                ) {
+                                    if (response.isSuccessful) {
+                                        showAlertDialog(
+                                            context = navController.context,
+                                            title = "비밀번호 변경 성공",
+                                            message = "로그인 화면으로 이동합니다.",
+                                            buttonText = "확인"
+                                        ) {
+                                            navController.navigate("LoginScreen")
+                                        }
+                                    } else {
+                                        showAlertDialog(
+                                            context = navController.context,
+                                            title = "비밀번호 변경 실패",
+                                            message = "존재하지 않는 계정입니다.",
+                                            buttonText = "확인"
+                                        )
+                                        Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
+                                    }
+                                    LoadingState.hide()
+                                }
+
+                                override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
+                                    LoadingState.hide()
+                                    Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                                }
+                            })
                         } else {
                             showAlertDialog(
                                 context = navController.context,
                                 title = "비밀번호 변경 실패",
-                                message = "존재하지 않는 계정입니다.",
+                                message = "입력한 정보를 다시 확인하세요!",
                                 buttonText = "확인"
                             )
-                            Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
                         }
-                        LoadingState.hide()
                     }
-
-                    override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
-                        LoadingState.hide()
-                        Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-                    }
-                })
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "비밀번호 변경 실패",
-                    message = "입력한 정보를 다시 확인하세요!",
-                    buttonText = "확인"
-                )
-            }
-        }
+                }
+            )
+        )
         AppNameText()
     }
 }
@@ -161,8 +164,8 @@ fun FindPwHelmetImagePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FindPwTextFieldComposable() {
-    TextFieldComposable(
+fun FindPwTextFieldComposablePreview() {
+    LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "아이디") },
         customTextField = { CustomTextField() }
     )

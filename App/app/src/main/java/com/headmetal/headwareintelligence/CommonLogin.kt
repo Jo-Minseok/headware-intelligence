@@ -45,6 +45,21 @@ fun LoginFieldLabel(text: String = "") {
 }
 
 @Composable
+fun LoginTextFieldComposable(
+    fieldLabel: @Composable () -> Unit,
+    customTextField: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 10.dp)
+            .padding(bottom = 16.dp)
+    ) {
+        fieldLabel()
+        customTextField()
+    }
+}
+
+@Composable
 fun LoginFunctionButton(
     modifier: Modifier = Modifier,
     buttonText: String = "",
@@ -56,6 +71,23 @@ fun LoginFunctionButton(
         colors = ButtonDefaults.buttonColors(Color(0x59000000)),
         onClick = onClick
     )
+}
+
+@Composable
+fun LoginFunctionButtonComposable(
+    vararg loginFunctionButtons: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 10.dp)
+            .padding(bottom = 16.dp)
+    ) {
+        Row {
+            loginFunctionButtons.forEach { loginFunctionButton ->
+                loginFunctionButton()
+            }
+        }
+    }
 }
 
 @Composable

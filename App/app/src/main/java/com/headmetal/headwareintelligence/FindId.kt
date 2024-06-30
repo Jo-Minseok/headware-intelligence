@@ -52,11 +52,11 @@ fun FindIdComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "이름") },
             customTextField = { CustomTextField(inputText = name) }
         )
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "이메일") },
             customTextField = { CustomTextField(inputText = email) }
         )
@@ -64,88 +64,73 @@ fun FindIdComposable(navController: NavController = rememberNavController()) {
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
-        FindIdFunctionButtonComposable(
-            name = name,
-            email = email,
-            isManager = isManager,
-            navController = navController
+        LoginFunctionButtonComposable(
+            loginFunctionButtons = arrayOf(
+                {
+                    LoginFunctionButton(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .weight(1f),
+                        buttonText = "아이디 찾기"
+                    ) {
+                        LoadingState.show()
+                        RetrofitInstance.apiService.apiFindId(
+                            ForgotIdRequest(
+                                name.value,
+                                email.value,
+                                if (isManager.value) "manager" else "employee"
+                            )
+                        ).enqueue(object : Callback<ForgotIdResult> {
+                            override fun onResponse(
+                                call: Call<ForgotIdResult>,
+                                response: Response<ForgotIdResult>
+                            ) {
+                                if (response.isSuccessful) {
+                                    val id = response.body()?.id
+                                    if (!id.isNullOrEmpty()) {
+                                        showAlertDialog(
+                                            context = navController.context,
+                                            title = "아이디 찾기 성공",
+                                            message = "ID: $id",
+                                            buttonText = "확인"
+                                        )
+                                    } else {
+                                        showAlertDialog(
+                                            context = navController.context,
+                                            title = "서버 응답 실패",
+                                            message = "서버 응답에 실패 하였습니다.",
+                                            buttonText = "확인"
+                                        )
+                                    }
+                                } else {
+                                    showAlertDialog(
+                                        context = navController.context,
+                                        title = "아이디 찾기 실패",
+                                        message = "일치하는 계정을 찾을 수 없습니다.",
+                                        buttonText = "확인"
+                                    )
+                                }
+                                LoadingState.hide()
+                            }
+
+                            override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
+                                LoadingState.hide()
+                                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                            }
+                        })
+                    }
+                },
+                {
+                    LoginFunctionButton(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .weight(1f),
+                        buttonText = "비밀번호 변경"
+                    ) { navController.navigate("FindPwScreen") }
+                }
+            )
         )
         AppNameText()
-    }
-}
-
-@Composable
-fun FindIdFunctionButtonComposable(
-    name: MutableState<String> = remember { mutableStateOf("") },
-    email: MutableState<String> = remember { mutableStateOf("") },
-    isManager: MutableState<Boolean> = remember { mutableStateOf(false) },
-    navController: NavController = rememberNavController()
-) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
-        Row {
-            LoginFunctionButton(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .weight(1f),
-                buttonText = "아이디 찾기"
-            ) {
-                LoadingState.show()
-                RetrofitInstance.apiService.apiFindId(
-                    ForgotIdRequest(
-                        name.value,
-                        email.value,
-                        if (isManager.value) "manager" else "employee"
-                    )
-                ).enqueue(object : Callback<ForgotIdResult> {
-                    override fun onResponse(
-                        call: Call<ForgotIdResult>,
-                        response: Response<ForgotIdResult>
-                    ) {
-                        if (response.isSuccessful) {
-                            val id = response.body()?.id
-                            if (!id.isNullOrEmpty()) {
-                                showAlertDialog(
-                                    context = navController.context,
-                                    title = "아이디 찾기 성공",
-                                    message = "ID: $id",
-                                    buttonText = "확인"
-                                )
-                            } else {
-                                showAlertDialog(
-                                    context = navController.context,
-                                    title = "서버 응답 실패",
-                                    message = "서버 응답에 실패 하였습니다.",
-                                    buttonText = "확인"
-                                )
-                            }
-                        } else {
-                            showAlertDialog(
-                                context = navController.context,
-                                title = "아이디 찾기 실패",
-                                message = "일치하는 계정을 찾을 수 없습니다.",
-                                buttonText = "확인"
-                            )
-                        }
-                        LoadingState.hide()
-                    }
-
-                    override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
-                        LoadingState.hide()
-                        Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-                    }
-                })
-            }
-            LoginFunctionButton(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .weight(1f),
-                buttonText = "비밀번호 변경"
-            ) { navController.navigate("FindPwScreen") }
-        }
     }
 }
 
@@ -170,8 +155,8 @@ fun FindIdHelmetImagePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FindIdTextFieldComposable() {
-    TextFieldComposable(
+fun FindIdTextFieldComposablePreview() {
+    LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "이름") },
         customTextField = { CustomTextField() }
     )
@@ -213,7 +198,10 @@ fun FindIdCustomRadioButtonSinglePreview() {
 @Preview(showBackground = true)
 @Composable
 fun FindIdFunctionButtonComposablePreview() {
-    FindIdFunctionButtonComposable()
+    LoginFunctionButtonComposable(
+        { LoginFunctionButton(buttonText = "아이디 찾기") },
+        { LoginFunctionButton(buttonText = "비밀번호 변경") }
+    )
 }
 
 @Preview(showBackground = true)

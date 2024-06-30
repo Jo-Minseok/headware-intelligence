@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
@@ -58,11 +57,11 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "ID") },
             customTextField = { CustomTextField(inputText = id) }
         )
-        TextFieldComposable(
+        LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "PW") },
             customTextField = {
                 CustomTextField(
@@ -76,118 +75,105 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
         LoginFunctionButtonComposable(
-            id = id,
-            pw = pw,
-            isManager = isManager,
-            navController = navController
+            loginFunctionButtons = arrayOf(
+                {
+                    LoginFunctionButton(
+                        modifier = Modifier.weight(1f),
+                        buttonText = "로그인"
+                    ) {
+                        val sharedAlert: SharedPreferences =
+                            navController.context.getSharedPreferences(
+                                "Alert",
+                                Activity.MODE_PRIVATE
+                            )
+                        val sharedAccount: SharedPreferences =
+                            navController.context.getSharedPreferences(
+                                "Account",
+                                Activity.MODE_PRIVATE
+                            )
+                        val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
+
+                        LoadingState.show()
+                        RetrofitInstance.apiService.apiLogin(
+                            alertToken = sharedAlert.getString("alert_token", null).toString(),
+                            type = if (isManager.value) "manager" else "employee",
+                            id = id.value,
+                            pw = pw.value
+                        ).enqueue(object : Callback<LoginResponse> {
+                            override fun onResponse(
+                                call: Call<LoginResponse>,
+                                response: retrofit2.Response<LoginResponse>
+                            ) {
+                                if (response.isSuccessful) {
+                                    sharedAccountEdit.putString("userid", response.body()?.id)
+                                    sharedAccountEdit.putString("password", pw.value)
+                                    sharedAccountEdit.putString("name", response.body()?.name)
+                                    sharedAccountEdit.putString("phone", response.body()?.phoneNo)
+                                    sharedAccountEdit.putString("email", response.body()?.email)
+                                    sharedAccountEdit.putString(
+                                        "token",
+                                        response.body()?.accessToken
+                                    )
+                                    sharedAccountEdit.putString(
+                                        "token_type",
+                                        response.body()?.tokenType
+                                    )
+                                    sharedAccountEdit.putString(
+                                        "type",
+                                        if (isManager.value) "manager" else "employee"
+                                    )
+                                    sharedAccountEdit.apply()
+                                    navController.navigate("MainScreen")
+                                    Toast.makeText(
+                                        navController.context,
+                                        response.body()?.name + "님 반갑습니다",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    showAlertDialog(
+                                        context = navController.context,
+                                        title = "로그인 실패",
+                                        message = "아이디 및 비밀번호를 확인하세요.",
+                                        buttonText = "확인"
+                                    ) {
+                                        pw.value = ""
+                                    }
+                                }
+                                LoadingState.hide()
+                            }
+
+                            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                                showAlertDialog(
+                                    context = navController.context,
+                                    title = "로그인 실패",
+                                    message = "서버 상태 및 네트워크 접속 불안정",
+                                    buttonText = "확인"
+                                ) {
+                                    (navController.context as Activity).finish()
+                                }
+                                LoadingState.hide()
+                                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                            }
+                        })
+                    }
+                },
+                {
+                    LoginFunctionButton(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 4.dp),
+                        buttonText = "회원가입"
+                    ) { navController.navigate("SignUpScreen") }
+                },
+                {
+                    LoginFunctionButton(
+                        modifier = Modifier.weight(1f),
+                        buttonText = "계정 찾기"
+                    ) { navController.navigate("FindIdScreen") }
+                }
+            )
         )
         AppNameText()
-    }
-}
-
-@Composable
-fun LoginFunctionButtonComposable(
-    id: MutableState<String> = remember { mutableStateOf("") },
-    pw: MutableState<String> = remember { mutableStateOf("") },
-    isManager: MutableState<Boolean> = remember { mutableStateOf(false) },
-    navController: NavController = rememberNavController()
-) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
-        Row {
-            LoginFunctionButton(
-                modifier = Modifier.weight(1f),
-                buttonText = "로그인"
-            ) {
-                val sharedAlert: SharedPreferences =
-                    navController.context.getSharedPreferences(
-                        "Alert",
-                        Activity.MODE_PRIVATE
-                    )
-                val sharedAccount: SharedPreferences =
-                    navController.context.getSharedPreferences(
-                        "Account",
-                        Activity.MODE_PRIVATE
-                    )
-                val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-
-                LoadingState.show()
-                RetrofitInstance.apiService.apiLogin(
-                    alertToken = sharedAlert.getString("alert_token", null).toString(),
-                    type = if (isManager.value) "manager" else "employee",
-                    id = id.value,
-                    pw = pw.value
-                ).enqueue(object : Callback<LoginResponse> {
-                    override fun onResponse(
-                        call: Call<LoginResponse>,
-                        response: retrofit2.Response<LoginResponse>
-                    ) {
-                        if (response.isSuccessful) {
-                            sharedAccountEdit.putString("userid", response.body()?.id)
-                            sharedAccountEdit.putString("password", pw.value)
-                            sharedAccountEdit.putString("name", response.body()?.name)
-                            sharedAccountEdit.putString("phone", response.body()?.phoneNo)
-                            sharedAccountEdit.putString("email", response.body()?.email)
-                            sharedAccountEdit.putString(
-                                "token",
-                                response.body()?.accessToken
-                            )
-                            sharedAccountEdit.putString(
-                                "token_type",
-                                response.body()?.tokenType
-                            )
-                            sharedAccountEdit.putString(
-                                "type",
-                                if (isManager.value) "manager" else "employee"
-                            )
-                            sharedAccountEdit.apply()
-                            navController.navigate("MainScreen")
-                            Toast.makeText(
-                                navController.context,
-                                response.body()?.name + "님 반갑습니다",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            showAlertDialog(
-                                context = navController.context,
-                                title = "로그인 실패",
-                                message = "아이디 및 비밀번호를 확인하세요.",
-                                buttonText = "확인"
-                            ) {
-                                pw.value = ""
-                            }
-                        }
-                        LoadingState.hide()
-                    }
-
-                    override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                        showAlertDialog(
-                            context = navController.context,
-                            title = "로그인 실패",
-                            message = "서버 상태 및 네트워크 접속 불안정",
-                            buttonText = "확인"
-                        ) {
-                            (navController.context as Activity).finish()
-                        }
-                        LoadingState.hide()
-                        Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-                    }
-                })
-            }
-            LoginFunctionButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 4.dp),
-                buttonText = "회원가입"
-            ) { navController.navigate("SignUpScreen") }
-            LoginFunctionButton(
-                modifier = Modifier.weight(1f),
-                buttonText = "계정 찾기"
-            ) { navController.navigate("FindIdScreen") }
-        }
     }
 }
 
@@ -212,8 +198,8 @@ fun LoginHelmetImagePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginTextFieldComposable() {
-    TextFieldComposable(
+fun LoginTextFieldComposablePreview() {
+    LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "ID") },
         customTextField = { CustomTextField() }
     )
@@ -255,7 +241,11 @@ fun LoginCustomRadioButtonSinglePreview() {
 @Preview(showBackground = true)
 @Composable
 fun LoginFunctionButtonComposablePreview() {
-    LoginFunctionButtonComposable()
+    LoginFunctionButtonComposable(
+        { LoginFunctionButton(buttonText = "로그인") },
+        { LoginFunctionButton(buttonText = "회원가입") },
+        { LoginFunctionButton(buttonText = "계정 찾기") }
+    )
 }
 
 @Preview(showBackground = true)

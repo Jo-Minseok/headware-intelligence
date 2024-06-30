@@ -50,7 +50,7 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 
 enum class SituationCode {
-    COMPLETE, PROCESSING, MALFUNCTION, REPORT119 // 처리 완료 : 0, 처리 중 : 1, 오작동 : 2, 119 신고 : 3
+    COMPLETE, PROCESSING, MALFUNCTION, REPORT119
 }
 
 class RetryInterceptor(private val maxRetries: Int) : Interceptor {
@@ -181,11 +181,7 @@ fun TextFieldComposable(
     fieldLabel: @Composable (() -> Unit),
     customTextField: @Composable (() -> Unit)
 ) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
+    Column {
         fieldLabel()
         customTextField()
     }

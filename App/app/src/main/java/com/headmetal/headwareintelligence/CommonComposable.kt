@@ -176,16 +176,16 @@ fun CustomTextField(
     )
 }
 
-@Composable
-fun TextFieldComposable(
-    fieldLabel: @Composable (() -> Unit),
-    customTextField: @Composable (() -> Unit)
-) {
-    Column {
-        fieldLabel()
-        customTextField()
-    }
-}
+//@Composable
+//fun TextFieldComposable(
+//    fieldLabel: @Composable () -> Unit,
+//    customTextField: @Composable () -> Unit
+//) {
+//    Column {
+//        fieldLabel()
+//        customTextField()
+//    }
+//}
 
 @Composable
 fun FunctionButton(
@@ -251,8 +251,8 @@ fun CompanyDropdownMenu(
 
 @Composable
 fun CompanyDropdownMenuComposable(
-    fieldLabel: @Composable (() -> Unit),
-    companyDropdownMenu: @Composable (() -> Unit)
+    fieldLabel: @Composable () -> Unit,
+    companyDropdownMenu: @Composable () -> Unit
 ) {
     Column(
         modifier = Modifier

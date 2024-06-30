@@ -141,8 +141,8 @@ fun CustomRadioButtonGroup(
 
 @Composable
 fun CustomRadioButtonComposable(
-    fieldLabel: @Composable (() -> Unit),
-    customRadioButtonGroup: @Composable (() -> Unit)
+    fieldLabel: @Composable () -> Unit,
+    customRadioButtonGroup: @Composable () -> Unit
 ) {
     Column(
         modifier = Modifier

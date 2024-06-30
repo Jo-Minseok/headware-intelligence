@@ -33,17 +33,19 @@ int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
 String latitude;
 String longitude;
 
+unsigned long currentTime = 0; // 최근 시간
+
 unsigned long lastPingTime = 0;
 const unsigned long pingInterval = 30000; // 30 seconds
 
+unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
 const int buttonDebounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
 int lastButtonState = LOW;     // 이전 버튼 상태
 int buttonState;               // 현재 버튼 상태
-unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
 
-const int shockDebounceDelay = 1000;  // 디바운싱을 위한 지연 시간 (밀리초)
 unsigned long lastShockTime = 0; // 마지막 충격 감지 시간
 unsigned long lastReadTime = 0;  // 마지막 센서 읽기 시간
+const int shockDebounceDelay = 1000;  // 디바운싱을 위한 지연 시간 (밀리초)
 const int readInterval = 50;     // 센서 읽기 간격 (밀리초)
 
 const int numReadings = 10;      // 평균값을 계산할 때 사용할 읽기 횟수
@@ -51,7 +53,6 @@ int readings[numReadings];       // 읽은 값을 저장할 배열
 int readIndex = 0;               // 현재 읽기 인덱스
 int total = 0;                   // 읽은 값의 총합
 int average = 0;                 // 평균값
-unsigned long currentTime = 0;
 
 /*
 ############################################################################
@@ -496,7 +497,6 @@ void CAMERA_setup(){
 }  
 
 void capture_and_send_image(String send_id) {
-//  client.close();
   HTTPClient http;
   camera_fb_t * fb = esp_camera_fb_get();
   if (fb != NULL && fb->format == PIXFORMAT_JPEG) {
@@ -527,12 +527,10 @@ void capture_and_send_image(String send_id) {
   }
   else {
     Serial.println("[ERROR] CAMERA: TAKE ERROR");
-    WEBSOCKET_setup();
     return;
   }
   Serial.println("[SYSTEM] CAMERA: TAKE SUCCESS");
 
-//  WEBSOCKET_setup();
   client.send(send_id+":카메라완료");
 }
 
@@ -545,7 +543,6 @@ void capture_and_send_image(String send_id) {
 const int OLED_addr = 0x3C;
 void OLED_setup(){
   Serial.println("[SETUP] OLED: SETUP START");
-  //Wire.begin(0,9);
   display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
   display.clearDisplay();
   HELMETNUM_display();
@@ -620,7 +617,7 @@ void GYRO_check(){
 
 void setup(){
   Serial.begin(115200);
-  Wire.begin();
+  Wire.begin(2,1);
 
   OLED_setup(); // OLED
   delay(1000);

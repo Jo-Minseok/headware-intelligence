@@ -78,7 +78,7 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
                 )
             }
         )
-        RadioButtonComposable(
+        CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
@@ -108,7 +108,7 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
                                 message = "로그인 화면으로 이동합니다.",
                                 buttonText = "확인"
                             ) {
-                                navController.navigate("loginScreen")
+                                navController.navigate("LoginScreen")
                             }
                         } else {
                             showAlertDialog(
@@ -182,8 +182,8 @@ fun FindPwCustomTextFieldPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FindPwRadioButtonComposablePreview() {
-    RadioButtonComposable(
+fun FindPwCustomRadioButtonComposablePreview() {
+    CustomRadioButtonComposable(
         fieldLabel = { LoginFieldLabel(text = "직무") },
         customRadioButtonGroup = { CustomRadioButtonGroup() }
     )

@@ -1,14 +1,10 @@
 package com.headmetal.headwareintelligence
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -36,7 +32,7 @@ import androidx.navigation.NavController
 
 
 @Composable
-fun Countermeasures(navController: NavController) {
+fun Countermeasure(navController: NavController) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)

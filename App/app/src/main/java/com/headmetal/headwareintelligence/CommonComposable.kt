@@ -9,16 +9,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -38,13 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -148,22 +142,6 @@ fun BackOnPressed() {
 }
 
 @Composable
-fun HelmetImage() {
-    Image(
-        painter = painterResource(id = R.drawable.helmet),
-        contentDescription = null
-    )
-}
-
-@Composable
-fun AppNameText() {
-    Text(
-        text = stringResource(id = R.string.app_name),
-        fontWeight = FontWeight.Bold
-    )
-}
-
-@Composable
 fun FieldLabel(
     text: String = "",
     fontSize: TextUnit = TextUnit.Unspecified
@@ -199,44 +177,6 @@ fun CustomTextField(
 }
 
 @Composable
-fun FunctionButton(
-    modifier: Modifier = Modifier,
-    buttonText: String = "",
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
-    onClick: () -> Unit = {}
-) {
-    Button(
-        modifier = modifier,
-        content = { Text(text = buttonText, fontWeight = FontWeight.Bold) },
-        colors = colors,
-        elevation = elevation,
-        shape = RoundedCornerShape(8.dp),
-        onClick = onClick,
-    )
-}
-
-// 로그인, 회원가입, ID찾기, PW찾기에서 사용하는 공통 컴포저블
-@Composable
-fun LoginFieldLabel(text: String = "") {
-    FieldLabel(text = text, fontSize = 16.sp)
-}
-
-@Composable
-fun LoginFunctionButton(
-    modifier: Modifier = Modifier,
-    buttonText: String = "",
-    onClick: () -> Unit = {}
-) {
-    FunctionButton(
-        modifier = modifier,
-        buttonText = buttonText,
-        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-        onClick = onClick
-    )
-}
-
-@Composable
 fun TextFieldComposable(
     fieldLabel: @Composable (() -> Unit),
     customTextField: @Composable (() -> Unit)
@@ -252,67 +192,21 @@ fun TextFieldComposable(
 }
 
 @Composable
-fun CustomRadioButtonSingle(
+fun FunctionButton(
     modifier: Modifier = Modifier,
     buttonText: String = "",
-    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
-    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
+    onClick: () -> Unit = {}
 ) {
     Button(
         modifier = modifier,
-        onClick = {
-            firstButtonSwitch.value = true
-            secondButtonSwitch.value = false
-        },
+        content = { Text(text = buttonText, fontWeight = FontWeight.Bold) },
+        colors = colors,
+        elevation = elevation,
         shape = RoundedCornerShape(8.dp),
-        content = { Text(text = buttonText, color = Color.Black) },
-        colors = ButtonDefaults.buttonColors(
-            if (firstButtonSwitch.value) Color(0xDFFFFFFF) else Color(
-                0x5FFFFFFF
-            )
-        )
+        onClick = onClick,
     )
-}
-
-@Composable
-fun CustomRadioButtonGroup(
-    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
-    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
-) {
-    Row {
-        CustomRadioButtonSingle(
-            modifier = Modifier
-                .weight(1f)
-                .height(50.dp),
-            buttonText = "일반직",
-            firstButtonSwitch = firstButtonSwitch,
-            secondButtonSwitch = secondButtonSwitch,
-        )
-        Spacer(modifier = Modifier.width(20.dp))
-        CustomRadioButtonSingle(
-            modifier = Modifier
-                .weight(1f)
-                .height(50.dp),
-            buttonText = "관리직",
-            firstButtonSwitch = secondButtonSwitch,
-            secondButtonSwitch = firstButtonSwitch,
-        )
-    }
-}
-
-@Composable
-fun RadioButtonComposable(
-    fieldLabel: @Composable (() -> Unit),
-    customRadioButtonGroup: @Composable (() -> Unit)
-) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
-        fieldLabel()
-        customRadioButtonGroup()
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -373,4 +267,26 @@ fun CompanyDropdownMenuComposable(
         companyDropdownMenu()
     }
 }
-//
+
+@Composable
+fun ClickableIcon(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector
+) {
+    Icon(
+        modifier = modifier,
+        imageVector = imageVector,
+        contentDescription = null
+    )
+}
+
+@Composable
+fun DrawerMenuIcon(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector
+) {
+    ClickableIcon(
+        modifier = modifier.padding(top = 20.dp),
+        imageVector = imageVector
+    )
+}

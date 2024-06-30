@@ -70,7 +70,7 @@ data class WorkShopList(
 )
 
 @Composable
-fun Worklist(navController: NavController) {
+fun WorkList(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val userId = sharedAccount.getString("userid", null)
@@ -149,7 +149,7 @@ fun Worklist(navController: NavController) {
             ) {
                 for (i in workshopId.indices) {
                     Button(
-                        onClick = { navController.navigate("workScreen/${workshopId[i]}") },
+                        onClick = { navController.navigate("WorkScreen/${workshopId[i]}") },
                         shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
                             Color(255, 150, 0, 80)

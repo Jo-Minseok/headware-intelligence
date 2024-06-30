@@ -98,7 +98,7 @@ fun Menu(navController: NavController) {
                                     sharedAccountEdit.apply()
                                     sharedConfigureEdit.clear()
                                     sharedConfigureEdit.apply()
-                                    navController.navigate("loginScreen")
+                                    navController.navigate("LoginScreen")
                                 }
 
                                 override fun onFailure(p0: Call<Void>, p1: Throwable) {
@@ -120,7 +120,7 @@ fun Menu(navController: NavController) {
                             sharedAccountEdit.apply()
                             sharedConfigureEdit.clear()
                             sharedConfigureEdit.apply()
-                            navController.navigate("loginScreen")
+                            navController.navigate("LoginScreen")
                         }
                     }
                 ) { Text(text = "예") }
@@ -152,7 +152,7 @@ fun Menu(navController: NavController) {
             )
             Column(modifier = Modifier.padding(horizontal = 30.dp)) {
                 Button(
-                    onClick = { navController.navigate("privacyScreen") },
+                    onClick = { navController.navigate("PrivacyScreen") },
                     modifier = Modifier.fillMaxWidth(),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                     colors = ButtonDefaults.buttonColors(Color.White),
@@ -194,7 +194,7 @@ fun Menu(navController: NavController) {
                 }
                 Column(modifier = Modifier.padding(top = 10.dp)) {
                     Button(
-                        onClick = { navController.navigate("companyinfoScreen") },
+                        onClick = { navController.navigate("CompanyInfoScreen") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 3.dp)
@@ -261,7 +261,7 @@ fun Menu(navController: NavController) {
                         }
                     }
                     Button(
-                        onClick = { navController.navigate("etcScreen") },
+                        onClick = { navController.navigate("EtcScreen") },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .padding(vertical = 3.dp)

@@ -11,25 +11,25 @@ import androidx.navigation.navigation
 import com.naver.maps.map.compose.ExperimentalNaverMapApi
 
 sealed class Destinations(val route: String) {
-    data object Loading : Destinations("loadingScreen")
-    data object Login : Destinations("loginScreen")
-    data object Signup : Destinations("signupScreen")
-    data object FindId : Destinations("findidScreen")
-    data object FindPw : Destinations("findpwScreen")
-    data object Main : Destinations("mainScreen")
-    data object Processing : Destinations("processingScreen")
-    data object Menu : Destinations("menuScreen")
-    data object Countermeasures : Destinations("countermeasuresScreen")
-    data object Map : Destinations("mapScreen")
-    data object Trend : Destinations("trendScreen")
-    data object Helmet : Destinations("helmetScreen")
-    data object NullMap : Destinations("nullmapScreen")
-    data object CompanyInfo : Destinations("companyinfoScreen")
-    data object Etc : Destinations("etcScreen")
-    data object License : Destinations("licenseScreen")
-    data object Privacy : Destinations("privacyScreen")
-    data object Worklist : Destinations("worklistScreen")
-    data class Work(val workId: Int) : Destinations("workScreen/$workId")
+    data object Loading : Destinations("LoadingScreen")
+    data object Login : Destinations("LoginScreen")
+    data object Signup : Destinations("SignUpScreen")
+    data object FindId : Destinations("FindIdScreen")
+    data object FindPw : Destinations("FindPwScreen")
+    data object Main : Destinations("MainScreen")
+    data object Processing : Destinations("ProcessingScreen")
+    data object Menu : Destinations("MenuScreen")
+    data object Countermeasure : Destinations("CountermeasureScreen")
+    data object Map : Destinations("MapScreen")
+    data object NullMap : Destinations("NullMapScreen")
+    data object Trend : Destinations("TrendScreen")
+    data object Helmet : Destinations("HelmetScreen")
+    data object CompanyInfo : Destinations("CompanyInfoScreen")
+    data object Etc : Destinations("EtcScreen")
+    data object License : Destinations("LicenseScreen")
+    data object Privacy : Destinations("PrivacyScreen")
+    data object WorkList : Destinations("WorkListScreen")
+    data object Work : Destinations("WorkScreen/{workId}")
 }
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
@@ -40,7 +40,7 @@ fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
         Login(navController)
     }
     composable(Destinations.Signup.route) {
-        Signup(navController)
+        SignUp(navController)
     }
     composable(Destinations.FindId.route) {
         FindId(navController)
@@ -70,21 +70,23 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     composable(Destinations.NullMap.route) {
         NullMap(navController)
     }
-    composable(Destinations.Countermeasures.route) {
-        Countermeasures(navController)
+    composable(Destinations.Countermeasure.route) {
+        Countermeasure(navController)
     }
     composable(Destinations.Menu.route) {
         Menu(navController)
     }
-    composable(Destinations.Worklist.route) {
-        Worklist(navController)
+    composable(Destinations.WorkList.route) {
+        WorkList(navController)
     }
     composable(
-        route = "workScreen/{workId}",
+        route = Destinations.Work.route,
         arguments = listOf(navArgument("workId") { type = NavType.IntType })
     ) { backStackEntry ->
-        val workId = backStackEntry.arguments?.getInt("workId")
-        Work(workId = workId ?: 0, navController = navController)
+        Work(
+            workId = backStackEntry.arguments?.getInt("workId") ?: 0,
+            navController = navController
+        )
     }
 }
 

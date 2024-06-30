@@ -71,7 +71,7 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
                 )
             }
         )
-        RadioButtonComposable(
+        CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "Part") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
@@ -144,7 +144,7 @@ fun LoginFunctionButtonComposable(
                                 if (isManager.value) "manager" else "employee"
                             )
                             sharedAccountEdit.apply()
-                            navController.navigate("mainScreen")
+                            navController.navigate("MainScreen")
                             Toast.makeText(
                                 navController.context,
                                 response.body()?.name + "님 반갑습니다",
@@ -182,11 +182,11 @@ fun LoginFunctionButtonComposable(
                     .weight(1f)
                     .padding(horizontal = 4.dp),
                 buttonText = "회원가입"
-            ) { navController.navigate("signupScreen") }
+            ) { navController.navigate("SignUpScreen") }
             LoginFunctionButton(
                 modifier = Modifier.weight(1f),
                 buttonText = "계정 찾기"
-            ) { navController.navigate("findidScreen") }
+            ) { navController.navigate("FindIdScreen") }
         }
     }
 }
@@ -233,8 +233,8 @@ fun LoginCustomTextFieldPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginRadioButtonComposablePreview() {
-    RadioButtonComposable(
+fun LoginCustomRadioButtonComposablePreview() {
+    CustomRadioButtonComposable(
         fieldLabel = { LoginFieldLabel(text = "Part") },
         customRadioButtonGroup = { CustomRadioButtonGroup() }
     )

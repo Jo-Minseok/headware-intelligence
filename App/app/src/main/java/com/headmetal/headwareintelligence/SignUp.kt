@@ -145,7 +145,7 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
                 )
             }
         )
-        RadioButtonComposable(
+        CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
@@ -184,7 +184,7 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
                                 title = "회원가입 성공",
                                 message = "로그인 화면으로 이동합니다.",
                                 buttonText = "확인"
-                            ) { navController.navigate("loginScreen") }
+                            ) { navController.navigate("LoginScreen") }
                         } else {
                             showAlertDialog(
                                 context = navController.context,
@@ -278,8 +278,8 @@ fun SignUpCompanyDropdownMenuPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignupRadioButtonComposablePreview() {
-    RadioButtonComposable(
+fun SignupCustomRadioButtonComposablePreview() {
+    CustomRadioButtonComposable(
         fieldLabel = { LoginFieldLabel(text = "직무") },
         customRadioButtonGroup = { CustomRadioButtonGroup() }
     )

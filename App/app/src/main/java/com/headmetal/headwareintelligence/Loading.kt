@@ -96,14 +96,14 @@ fun Loading(navController: NavController = rememberNavController()) {
                                 response: Response<LoginResponse>
                             ) {
                                 if (response.isSuccessful) {
-                                    if (navController.currentDestination?.route != "mainScreen") {
+                                    if (navController.currentDestination?.route != "MainScreen") {
                                         Toast.makeText(
                                             navController.context,
                                             response.body()?.name + "님 반갑습니다",
                                             Toast.LENGTH_SHORT
                                         ).show()
-                                        navController.navigate("mainScreen") {
-                                            popUpTo("loadingScreen") {
+                                        navController.navigate("MainScreen") {
+                                            popUpTo("LoadingScreen") {
                                                 inclusive = true
                                             }
                                         }
@@ -115,7 +115,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                                         message = "변경된 비밀번호를 확인하세요.",
                                         buttonText = "확인"
                                     ) {
-                                        navController.navigate("loginScreen")
+                                        navController.navigate("LoginScreen")
                                         sharedAccountEdit.clear()
                                         sharedAccountEdit.apply()
                                     }
@@ -133,7 +133,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                             }
                         })
                     } else {
-                        navController.navigate("loginScreen")
+                        navController.navigate("LoginScreen")
                     }
                 } else {
                     showAlertDialog(

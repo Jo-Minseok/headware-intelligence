@@ -77,8 +77,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.UUID
 
-data class WorklistResponse(
-    val workList: List<String>
+data class WorkListResponse(
+    val WorkList: List<String>
 )
 
 data class DeviceData(
@@ -101,23 +101,23 @@ fun Helmet(navController: NavController) {
     var expanded by remember { mutableStateOf(false) }
     var itemOptions by remember { mutableStateOf(listOf<String>()) }
     var selectedOption by remember { mutableStateOf("") }
-    val apiServiceWorklist =
-        RetrofitInstance.apiService.apiWorklist(
+    val apiServiceWorkList =
+        RetrofitInstance.apiService.apiWorkList(
             id = sharedAccount.getString("userid", null).toString()
         )
-    apiServiceWorklist.enqueue(object : Callback<WorklistResponse> {
+    apiServiceWorkList.enqueue(object : Callback<WorkListResponse> {
         override fun onResponse(
-            call: Call<WorklistResponse>,
-            response: Response<WorklistResponse>
+            call: Call<WorkListResponse>,
+            response: Response<WorkListResponse>
         ) {
             if (response.isSuccessful) {
-                response.body()?.let { workListResponse ->
-                    itemOptions = workListResponse.workList
+                response.body()?.let { WorkListResponse ->
+                    itemOptions = WorkListResponse.WorkList
                 }
             }
         }
 
-        override fun onFailure(call: Call<WorklistResponse>, t: Throwable) {
+        override fun onFailure(call: Call<WorkListResponse>, t: Throwable) {
             Log.e("HEAD METAL", "Failed to fetch work list")
         }
     })
@@ -571,7 +571,7 @@ fun Helmet(navController: NavController) {
                 .setTitle("블루투스 연결 실패")
                 .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
                 .setPositiveButton("확인") { dialog, which ->
-                    navController.navigate("mainScreen")
+                    navController.navigate("MainScreen")
                 }
                 .show()
             // 기능이 있다면
@@ -633,7 +633,7 @@ fun Helmet(navController: NavController) {
                 modifier = Modifier
                     .padding(20.dp)
                     .clickable {
-                        navController.navigate("mainScreen")
+                        navController.navigate("MainScreen")
                     }
             )
             // 제목

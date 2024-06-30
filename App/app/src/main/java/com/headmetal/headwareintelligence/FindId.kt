@@ -60,7 +60,7 @@ fun FindIdComposable(navController: NavController = rememberNavController()) {
             fieldLabel = { LoginFieldLabel(text = "이메일") },
             customTextField = { CustomTextField(inputText = email) }
         )
-        RadioButtonComposable(
+        CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
         )
@@ -144,7 +144,7 @@ fun FindIdFunctionButtonComposable(
                     .padding(horizontal = 8.dp)
                     .weight(1f),
                 buttonText = "비밀번호 변경"
-            ) { navController.navigate("findpwScreen") }
+            ) { navController.navigate("FindPwScreen") }
         }
     }
 }
@@ -191,8 +191,8 @@ fun FindIdCustomTextFieldPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FindIdRadioButtonComposablePreview() {
-    RadioButtonComposable(
+fun FindIdCustomRadioButtonComposablePreview() {
+    CustomRadioButtonComposable(
         fieldLabel = { LoginFieldLabel(text = "직무") },
         customRadioButtonGroup = { CustomRadioButtonGroup() }
     )

@@ -30,9 +30,9 @@ interface ApiService {
     ): Call<Void>
 
     @GET("/company/work_list")
-    fun apiWorklist(
+    fun apiWorkList(
         @Query("userId") id: String
-    ): Call<WorklistResponse>
+    ): Call<WorkListResponse>
 
     @GET("/company/list")
     fun getCompanyList(): Call<CompanyList>

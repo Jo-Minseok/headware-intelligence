@@ -47,14 +47,14 @@ fun LoginFieldLabel(text: String = "") {
 @Composable
 fun LoginTextFieldComposable(
     fieldLabel: @Composable () -> Unit,
-    customTextField: @Composable () -> Unit
+    inputTextField: @Composable () -> Unit
 ) {
     TextFieldComposable(
         modifier = Modifier
             .padding(horizontal = 10.dp)
             .padding(bottom = 16.dp),
         fieldLabel = fieldLabel,
-        customTextField = customTextField
+        inputTextField = inputTextField
     )
 }
 

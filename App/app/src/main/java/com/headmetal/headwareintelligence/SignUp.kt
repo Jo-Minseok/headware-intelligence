@@ -93,12 +93,12 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
         HelmetImage()
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "아이디") },
-            customTextField = { CustomTextField(inputText = id) }
+            inputTextField = { InputTextField(inputText = id) }
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "비밀번호") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = pw,
                     visualTransformation = PasswordVisualTransformation()
                 )
@@ -106,8 +106,8 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "비밀번호 확인") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = rePw,
                     visualTransformation = PasswordVisualTransformation()
                 )
@@ -115,8 +115,8 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "이름") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = name,
                     placeholder = { Text("4글자 이내") }
                 )
@@ -124,12 +124,12 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "전화번호") },
-            customTextField = { CustomTextField(inputText = phone) }
+            inputTextField = { InputTextField(inputText = phone) }
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "이메일") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = email,
                     placeholder = { Text("'@' 를 포함한 이메일 형식") }
                 )
@@ -233,7 +233,7 @@ fun SignUpHelmetImagePreview() {
 fun SignUpTextFieldComposablePreview() {
     LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "아이디") },
-        customTextField = { CustomTextField() }
+        inputTextField = { InputTextField() }
     )
 }
 
@@ -245,8 +245,8 @@ fun SignUpFieldLabelPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpCustomTextFieldPreview() {
-    CustomTextField()
+fun SignUpInputTextFieldPreview() {
+    InputTextField()
 }
 
 @Preview(showBackground = true)
@@ -254,14 +254,14 @@ fun SignUpCustomTextFieldPreview() {
 fun SignUpTextFieldPlaceHolderComposablePreview() {
     LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "이름") },
-        customTextField = { CustomTextField(placeholder = { Text("4글자 이내") }) }
+        inputTextField = { InputTextField(placeholder = { Text("4글자 이내") }) }
     )
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpCustomTextFieldPlaceHolderPreview() {
-    CustomTextField(placeholder = { Text("4글자 이내") })
+fun SignUpInputTextFieldPlaceHolderPreview() {
+    InputTextField(placeholder = { Text("4글자 이내") })
 }
 
 @Preview(showBackground = true)

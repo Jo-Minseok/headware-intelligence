@@ -52,16 +52,16 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
         HelmetImage()
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "아이디") },
-            customTextField = { CustomTextField(inputText = id) }
+            inputTextField = { InputTextField(inputText = id) }
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "전화번호") },
-            customTextField = { CustomTextField(inputText = phone) }
+            inputTextField = { InputTextField(inputText = phone) }
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "새 비밀번호") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = pw,
                     visualTransformation = PasswordVisualTransformation()
                 )
@@ -69,8 +69,8 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "비밀번호 확인") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = rePw,
                     visualTransformation = PasswordVisualTransformation()
                 )
@@ -165,7 +165,7 @@ fun FindPwHelmetImagePreview() {
 fun FindPwTextFieldComposablePreview() {
     LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "아이디") },
-        customTextField = { CustomTextField() }
+        inputTextField = { InputTextField() }
     )
 }
 
@@ -177,8 +177,8 @@ fun FindPwFieldLabelPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun FindPwCustomTextFieldPreview() {
-    CustomTextField()
+fun FindPwInputTextFieldPreview() {
+    InputTextField()
 }
 
 @Preview(showBackground = true)

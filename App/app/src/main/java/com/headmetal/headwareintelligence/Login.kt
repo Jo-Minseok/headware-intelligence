@@ -59,12 +59,12 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
         HelmetImage()
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "ID") },
-            customTextField = { CustomTextField(inputText = id) }
+            inputTextField = { InputTextField(inputText = id) }
         )
         LoginTextFieldComposable(
             fieldLabel = { LoginFieldLabel(text = "PW") },
-            customTextField = {
-                CustomTextField(
+            inputTextField = {
+                InputTextField(
                     inputText = pw,
                     visualTransformation = PasswordVisualTransformation()
                 )
@@ -197,7 +197,7 @@ fun LoginHelmetImagePreview() {
 fun LoginTextFieldComposablePreview() {
     LoginTextFieldComposable(
         fieldLabel = { LoginFieldLabel(text = "ID") },
-        customTextField = { CustomTextField() }
+        inputTextField = { InputTextField() }
     )
 }
 
@@ -209,8 +209,8 @@ fun LoginFieldLabelPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginCustomTextFieldPreview() {
-    CustomTextField()
+fun LoginInputTextFieldPreview() {
+    InputTextField()
 }
 
 @Preview(showBackground = true)

@@ -49,14 +49,13 @@ fun LoginTextFieldComposable(
     fieldLabel: @Composable () -> Unit,
     customTextField: @Composable () -> Unit
 ) {
-    Column(
+    TextFieldComposable(
         modifier = Modifier
             .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
-        fieldLabel()
-        customTextField()
-    }
+            .padding(bottom = 16.dp),
+        fieldLabel = fieldLabel,
+        customTextField = customTextField
+    )
 }
 
 @Composable

@@ -135,9 +135,7 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
                                         title = "로그인 실패",
                                         message = "아이디 및 비밀번호를 확인하세요.",
                                         buttonText = "확인"
-                                    ) {
-                                        pw.value = ""
-                                    }
+                                    ) { pw.value = "" }
                                 }
                                 LoadingState.hide()
                             }
@@ -148,9 +146,7 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
                                     title = "로그인 실패",
                                     message = "서버 상태 및 네트워크 접속 불안정",
                                     buttonText = "확인"
-                                ) {
-                                    (navController.context as Activity).finish()
-                                }
+                                ) { (navController.context as Activity).finish() }
                                 LoadingState.hide()
                                 Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                             }

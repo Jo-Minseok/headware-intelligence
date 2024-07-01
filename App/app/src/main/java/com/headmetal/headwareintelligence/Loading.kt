@@ -28,6 +28,14 @@ import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun Loading(navController: NavController = rememberNavController()) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9C94C)
+    ) { LoadingComposable(navController = navController) }
+}
+
+@Composable
+fun LoadingComposable(navController: NavController = rememberNavController()) {
     val sharedAlert: SharedPreferences =
         LocalContext.current.getSharedPreferences("Alert", MODE_PRIVATE)
     val sharedAccount: SharedPreferences =
@@ -157,17 +165,12 @@ fun Loading(navController: NavController = rememberNavController()) {
         })
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9C94C)
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            HelmetImage()
-            AppNameText()
-        }
+        HelmetImage()
+        AppNameText()
     }
 }
 
@@ -176,6 +179,12 @@ fun Loading(navController: NavController = rememberNavController()) {
 @Composable
 fun LoadingPreview() {
     Loading()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LoadingComposablePreview() {
+    LoadingComposable()
 }
 
 @Preview(showBackground = true)

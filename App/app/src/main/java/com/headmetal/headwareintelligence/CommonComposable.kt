@@ -11,10 +11,21 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.TextButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -39,6 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -142,6 +155,36 @@ fun BackOnPressed() {
 }
 
 @Composable
+fun YesNoAlertDialog(
+    title: String = "",
+    textComposable: @Composable () -> Unit,
+    confirmButton: () -> Unit = {},
+    dismissButton: () -> Unit = {}
+) {
+    AlertDialog(
+        onDismissRequest = dismissButton,
+        title = { Text(text = title) },
+        text = textComposable,
+        confirmButton = { TextButton(onClick = confirmButton) { Text(text = "예") } },
+        dismissButton = { TextButton(onClick = dismissButton) { Text(text = "아니오") } }
+    )
+}
+
+@Composable
+fun OnlyYesAlertDialog(
+    title: String = "",
+    textComposable: @Composable () -> Unit,
+    dismissButton: () -> Unit = {}
+) {
+    AlertDialog(
+        onDismissRequest = dismissButton,
+        title = { Text(text = title) },
+        text = textComposable,
+        confirmButton = { TextButton(onClick = dismissButton) { Text(text = "확인") } }
+    )
+}
+
+@Composable
 fun FieldLabel(
     text: String = "",
     fontSize: TextUnit = TextUnit.Unspecified
@@ -154,7 +197,7 @@ fun FieldLabel(
 }
 
 @Composable
-fun CustomTextField(
+fun InputTextField(
     inputText: MutableState<String> = remember { mutableStateOf("") },
     visualTransformation: VisualTransformation = VisualTransformation.None,
     placeholder: @Composable (() -> Unit)? = null
@@ -176,32 +219,62 @@ fun CustomTextField(
     )
 }
 
-//@Composable
-//fun TextFieldComposable(
-//    fieldLabel: @Composable () -> Unit,
-//    customTextField: @Composable () -> Unit
-//) {
-//    Column {
-//        fieldLabel()
-//        customTextField()
-//    }
-//}
+@Composable
+fun TextFieldComposable(
+    modifier: Modifier = Modifier,
+    fieldLabel: @Composable () -> Unit,
+    inputTextField: @Composable () -> Unit
+) {
+    Column(modifier = modifier) {
+        fieldLabel()
+        inputTextField()
+    }
+}
 
 @Composable
 fun FunctionButton(
     modifier: Modifier = Modifier,
     buttonText: String = "",
+    content: @Composable RowScope.() -> Unit = {
+        Text(
+            text = buttonText,
+            fontWeight = FontWeight.Bold
+        )
+    },
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
     onClick: () -> Unit = {}
 ) {
     Button(
         modifier = modifier,
-        content = { Text(text = buttonText, fontWeight = FontWeight.Bold) },
+        content = content,
         colors = colors,
         elevation = elevation,
         shape = RoundedCornerShape(8.dp),
         onClick = onClick,
+    )
+}
+
+@Composable
+fun ProgressFunctionButton(
+    buttonText: String = "",
+    additional: @Composable () -> Unit = { ProgressIcon() },
+    onClick: () -> Unit = {}
+) {
+    FunctionButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp)
+            .height(60.dp),
+        content = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = buttonText, color = Color.Black, fontSize = 22.sp)
+                Spacer(modifier = Modifier.weight(1f))
+                additional()
+            }
+        },
+        colors = ButtonDefaults.buttonColors(Color.Transparent),
+        onClick = onClick
     )
 }
 
@@ -278,11 +351,68 @@ fun ClickableIcon(
 
 @Composable
 fun DrawerMenuIcon(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector
+    modifier: Modifier = Modifier
 ) {
     ClickableIcon(
         modifier = modifier.padding(top = 20.dp),
-        imageVector = imageVector
+        imageVector = Icons.Default.Menu
+    )
+}
+
+@Composable
+fun BackIcon(
+    modifier: Modifier = Modifier
+) {
+    ClickableIcon(
+        modifier = modifier.padding(20.dp),
+        imageVector = Icons.Default.ArrowBackIosNew
+    )
+}
+
+@Composable
+fun ProgressIcon() {
+    Icon(
+        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+        contentDescription = null
+    )
+}
+
+@Composable
+fun TitleText(
+    text: String = ""
+) {
+    Text(
+        text = text,
+        fontWeight = FontWeight.Bold,
+        fontSize = 34.sp,
+        modifier = Modifier.padding(start = 30.dp, bottom = 10.dp)
+    )
+}
+
+@Composable
+fun LabelIcon(
+    imageVector: ImageVector,
+    color: Color = Color.Black
+) {
+    Icon(
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .size(40.dp),
+        imageVector = imageVector,
+        contentDescription = null,
+        tint = color
+    )
+}
+
+@Composable
+fun LabelText(
+    text: String = "",
+    color: Color = Color.Black
+) {
+    Text(
+        modifier = Modifier.padding(end = 10.dp),
+        text = text,
+        color = color,
+        fontSize = 20.sp
     )
 }

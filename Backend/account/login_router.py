@@ -24,6 +24,8 @@ class SecureSettings(BaseSettings):
 secureObject = SecureSettings(
     _env_file=r'./account/.env', _env_file_encoding='utf-8')
 
+expire = datetime.utcnow() + timedelta(minutes=secureObject.ACCESS_TOKEN_EXPIRE_MINUTES)
+
 
 class UserService:
     def __init__(self, repository: UserRepository):
@@ -38,7 +40,6 @@ class UserService:
 
     def create_access_token(self, data: dict) -> str:
         toEncode = data.copy()
-        expire = datetime.utcnow() + timedelta(minutes=secureObject.ACCESS_TOKEN_EXPIRE_MINUTES)
         toEncode.update({"exp": expire})
         encodedJwt = jwt.encode(
             toEncode, secureObject.SECRET_KEY, algorithm=secureObject.ALGORITHM)

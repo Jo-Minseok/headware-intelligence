@@ -9,7 +9,6 @@ from fcm_notification import fcm_function
 from account.login_crud import UserRepository
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from account.account_schema import LoginOutput
 from db.db_connection import get_db
 
@@ -38,11 +37,11 @@ class UserService:
         return None
 
     def create_access_token(self, data: dict) -> str:
-        toEnocde = data.copy()
+        toEncode = data.copy()
         expire = datetime.utcnow() + timedelta(minutes=secureObject.ACCESS_TOKEN_EXPIRE_MINUTES)
-        toEnocde.update({"exp": expire})
+        toEncode.update({"exp": expire})
         encodedJwt = jwt.encode(
-            toEnocde, secureObject.SECRET_KEY, algorithm=secureObject.ALGORITHM)
+            toEncode, secureObject.SECRET_KEY, algorithm=secureObject.ALGORITHM)
         return encodedJwt
 
     def update_user_tokens(self, user, accessToken: str, alertToken: str):

@@ -1,4 +1,4 @@
-#define CDS 8
+#define CDS 20
 
 void setup(){
 	Serial.begin(115200);

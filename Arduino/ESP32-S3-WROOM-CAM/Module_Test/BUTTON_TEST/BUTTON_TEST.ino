@@ -11,7 +11,7 @@ void loop(){
   Serial.println("PUSH = " + String(push));
 }
 */
-#define BUTTON 21
+#define BUTTON 46
 
 const int debounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
 int lastButtonState = LOW;     // 이전 버튼 상태
@@ -48,5 +48,4 @@ void loop(){
   }
 
   lastButtonState = reading; // 이전 버튼 상태 업데이트
-  Serial.println("눕");
 }

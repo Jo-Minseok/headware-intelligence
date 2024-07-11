@@ -9,7 +9,7 @@
 #include <HTTPClient.h>
 #include <NTPClient.h>
 #include <ArduinoWebsockets.h>
-//#include <MPU6050.h>
+//#include <MPU6050.h> I2C 인터페이스 개수 부족으로 구현 불가능
 
 #include "esp_camera.h"
 #include "camera_pins.h"
@@ -43,16 +43,10 @@ const int buttonDebounceDelay = 50;  // 디바운싱을 위한 지연 시간 (�
 int lastButtonState = LOW;     // 이전 버튼 상태
 int buttonState;               // 현재 버튼 상태
 
-unsigned long lastShockTime = 0; // 마지막 충격 감지 시간
-unsigned long lastReadTime = 0;  // 마지막 센서 읽기 시간
-const int shockDebounceDelay = 1000;  // 디바운싱을 위한 지연 시간 (밀리초)
-const int readInterval = 50;     // 센서 읽기 간격 (밀리초)
-
-const int numReadings = 10;      // 평균값을 계산할 때 사용할 읽기 횟수
-int readings[numReadings];       // 읽은 값을 저장할 배열
-int readIndex = 0;               // 현재 읽기 인덱스
-int total = 0;                   // 읽은 값의 총합
-int average = 0;                 // 평균값
+unsigned long shockStartTime = 0;
+bool shockDetected = false;
+bool shockConfirmed = false;
+unsigned long lastShockTime = 0;
 
 /*
 ############################################################################
@@ -437,9 +431,6 @@ void PIN_setup(){
   pinMode(LED,OUTPUT);
   digitalWrite(RESET,HIGH);
   pinMode(RESET,OUTPUT);
-  for (int i = 0; i < numReadings; i++) {
-    readings[i] = 0;
-  }
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -472,8 +463,7 @@ void CAMERA_setup(){
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_HVGA;
-  config.pixel_format = PIXFORMAT_JPEG; // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
@@ -484,7 +474,6 @@ void CAMERA_setup(){
       config.fb_count = 2;
       config.grab_mode = CAMERA_GRAB_LATEST;
   } else {
-      // Limit the frame size when PSRAM is not available
       config.frame_size = FRAMESIZE_SVGA;
       config.fb_location = CAMERA_FB_IN_DRAM;
   }
@@ -543,6 +532,7 @@ void capture_and_send_image(String send_id) {
 const int OLED_addr = 0x3C;
 void OLED_setup(){
   Serial.println("[SETUP] OLED: SETUP START");
+  Wire.begin(2,1);
   display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
   display.clearDisplay();
   HELMETNUM_display();
@@ -564,16 +554,16 @@ void HELMETNUM_display(){
 
 /*
 ############################################################################
-                                  GYRO
+                                  GYRO I2C 인터페이스 부족
 ############################################################################
 */
 /*
-MPU6050 mpu;
 const int MPU_addr=0x68;
+MPU6050 mpu(MPU_addr,&Wire1);
 int16_t ax,ay,az,gx,gy,gz;
 void GYRO_setup() {
   Serial.println("[SETUP] MPU6050: SETUP START");
-  //Wire.begin(GYRO_SDA,GYRO_SCL);
+  Wire1.begin(45,0);
   mpu.initialize();
   while (!mpu.testConnection())
   {
@@ -608,7 +598,6 @@ void GYRO_check(){
   Serial.println(gz / 1310);
 }
 */
-
 /*
 ############################################################################
                                   Main
@@ -617,8 +606,7 @@ void GYRO_check(){
 
 void setup(){
   Serial.begin(115200);
-  Wire.begin(2,1);
-
+  CAMERA_setup(); // 카메라
   OLED_setup(); // OLED
   delay(1000);
   PIN_setup(); // 핀 셋업
@@ -637,18 +625,19 @@ void setup(){
   delay(1000);
   WEBSOCKET_setup(); // WEBSOCKET
   delay(1000);
-  /*
-  GYRO_setup(); // 자이로스코프
-  delay(1000);
-  */
+
+  //GYRO_setup(); // 자이로스코프 I2C 인터페이스 부족으로 구현 불가능
+  //delay(1000);
+
   SUCCESS_setup(); // 셋업 완료
   delay(1000);
-  CAMERA_setup(); // 카메라
 }
 
 void loop(){
   currentTime = millis(); // 최근 시간 대입
+
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
+
   if(!deviceConnected){  // BLE 연결 여부
     digitalWrite(RESET,LOW); // BLE 연결 해제 시, 초기화 재실행
   }
@@ -693,22 +682,23 @@ void loop(){
     digitalWrite(LED,0);
   }
 
-  if (currentTime - lastReadTime >= readInterval) { // 0.05초 주기
-    lastReadTime = currentTime; // 마지막으로 센서 읽은 시간을 현재 시간으로
-    total = total - readings[readIndex];// 현재 읽기에서 이전 총합에서 해당 읽기 값을 뺌
-    readings[readIndex] = analogRead(SHOCK); // 새로운 센서 값을 읽고 배열에 저장
-    total = total + readings[readIndex]; // 새로운 읽기 값을 총합에 추가
-    readIndex = readIndex + 1; // 다음 읽기 인덱스로 이동
-    if (readIndex >= numReadings) { // 배열의 끝에 도달하면 다시 시작
-      readIndex = 0; // 인덱스를 0으로 설정
-    }
-
-    average = total / numReadings; // 평균값 계산
-
-    if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
+  currentTime = millis();
+  int shockState = digitalRead(SHOCK);
+  Serial.println(shockState);
+  if (shockState == 1 && currentTime - lastShockTime > 300) {
+    if (!shockDetected) {
+      shockDetected = true;
+      shockStartTime = currentTime;
+    } else if (currentTime - shockStartTime >= 50 && !shockConfirmed) {
+      tone(PIEZO,melody[4],500);
+      Serial.println("[SYSTEM] 낙하 감지");
       SendingData("낙하");
-      lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트
-      average = 0;
+      shockConfirmed = true;  // Mark the shock as confirmed
+      lastShockTime = currentTime;  // Update the last shock time
+      shockDetected = false;  // Reset the detection state
     }
+  } else if (shockState == 0) {
+    shockDetected = false;  // Reset the detection state if no shock is detected
+    shockConfirmed = false;  // Allow new shocks to be detected after cooldown
   }
 }

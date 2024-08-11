@@ -159,14 +159,16 @@ fun YesNoAlertDialog(
     title: String = "",
     textComposable: @Composable () -> Unit,
     confirmButton: () -> Unit = {},
-    dismissButton: () -> Unit = {}
+    dismissButton: () -> Unit = {},
+    yesButton: String = "",
+    noButton: String = ""
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
         title = { Text(text = title) },
         text = textComposable,
-        confirmButton = { TextButton(onClick = confirmButton) { Text(text = "예") } },
-        dismissButton = { TextButton(onClick = dismissButton) { Text(text = "아니오") } }
+        confirmButton = { TextButton(onClick = confirmButton) { Text(text = yesButton) } },
+        dismissButton = { TextButton(onClick = dismissButton) { Text(text = noButton) } }
     )
 }
 
@@ -174,13 +176,15 @@ fun YesNoAlertDialog(
 fun OnlyYesAlertDialog(
     title: String = "",
     textComposable: @Composable () -> Unit,
-    dismissButton: () -> Unit = {}
+    confirmButton: () -> Unit = {},
+    yesButton: String = "",
+    dismissButton: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
         title = { Text(text = title) },
         text = textComposable,
-        confirmButton = { TextButton(onClick = dismissButton) { Text(text = "확인") } }
+        confirmButton = { TextButton(onClick = confirmButton) { Text(text = yesButton) } },
     )
 }
 

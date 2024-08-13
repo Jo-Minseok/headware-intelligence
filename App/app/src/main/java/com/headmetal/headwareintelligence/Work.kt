@@ -3,11 +3,9 @@ package com.headmetal.headwareintelligence
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,8 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,7 +40,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -65,16 +63,72 @@ data class WorkerStatus(
     val phoneNo: String
 )
 
+@Preview(showBackground = true)
+@Composable
+fun WorkPreview() {
+    Work()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RefixWorkshopPreview(){
+    RefixWorkshop()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RemoveWorkshopPreview(){
+    RemoveWorkshop()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddWorkerPreview(){
+    AddWorker()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkerCardPreview(){
+    WorkerCard()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputWorkUpdateDialogPreview(){
+    InputWorkUpdateDialog()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkDeleteDialogPreview(){
+    WorkDeleteDialog()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkerAddDialogPreview(){
+    WorkerAddDialog()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkerManageDialogPreview(){
+    WorkerManageDialog()
+}
+
 @Composable
 fun Work(workId: Int = 0, navController: NavController? = null) {
+    // UI 변수 초기화
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var showWorkDeleteDialog by remember { mutableStateOf(false) }
     var showWorkerAddDialog by remember { mutableStateOf(false) }
     var showWorkerManageDialog by remember { mutableStateOf(false) }
     var workerId by remember { mutableStateOf(listOf<String>()) }
     var workerName by remember { mutableStateOf(listOf<String>()) }
-    var selectedWorkerId by remember { mutableStateOf("") }
+    val selectedWorkerId = remember { mutableStateOf("") }
 
+    // 작업장 수정 다이얼 로그
     if (showWorkDataInputDialog) {
         InputWorkUpdateDialog(
             onDismissRequest = { showWorkDataInputDialog = false },
@@ -82,6 +136,7 @@ fun Work(workId: Int = 0, navController: NavController? = null) {
         )
     }
 
+    // 작업장 삭제 다이얼 로그
     if (showWorkDeleteDialog) {
         WorkDeleteDialog(
             onDismissRequest = { showWorkDeleteDialog = false },
@@ -90,17 +145,20 @@ fun Work(workId: Int = 0, navController: NavController? = null) {
         )
     }
 
+    // 작업자 등록 다이얼 로그
     if (showWorkerAddDialog) {
         WorkerAddDialog(onDismissRequest = { showWorkerAddDialog = false }, workId = workId)
     }
 
+    // 작업자 관리 다이얼 로그
     if (showWorkerManageDialog) {
         WorkerManageDialog(
             onDismissRequest = { showWorkerManageDialog = false },
-            workerId = selectedWorkerId
+            workerId = selectedWorkerId.value
         )
     }
 
+    // UI 시작
     LaunchedEffect(showWorkerAddDialog) {
         RetrofitInstance.apiService.searchWorker(workId).enqueue(object : Callback<Worker> {
             override fun onResponse(
@@ -122,138 +180,51 @@ fun Work(workId: Int = 0, navController: NavController? = null) {
         })
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9F9F9)
-    ) {
+    // 뒤로 가기 버튼 + 화면
+    Screen(content = {
+        // 화면
         Column {
-            Icon(
-                imageVector = Icons.Default.ArrowBackIosNew,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(20.dp)
-                    .clickable { navController!!.navigateUp() }
-            )
-            Text(
-                text = "작업장 이름",
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                modifier = Modifier
-                    .padding(horizontal = 30.dp)
-                    .padding(bottom = 10.dp)
-            )
-            Row(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(bottom = 5.dp)
-                        .clickable { showWorkDataInputDialog = true }
-                )
-                Text(
-                    text = "작업장 수정",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier
-                        .padding(start = 5.dp, top = 5.dp)
-                        .clickable { showWorkDataInputDialog = true }
-                )
+            // 제목
+            ScreenTitleText(text = "작업장 이름")
+
+            // 작업장 수정, 삭제 부분
+            Row {
+                RefixWorkshop { showWorkDataInputDialog = true }
                 Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    imageVector = Icons.Default.RestoreFromTrash,
-                    contentDescription = "Trash",
-                    tint = Color.Red,
-                    modifier = Modifier.clickable { showWorkDeleteDialog = true }
-                )
-                Text(
-                    text = "작업장 삭제",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    color = Color.Red,
-                    modifier = Modifier
-                        .padding(start = 5.dp, top = 5.dp, end = 20.dp)
-                        .clickable { showWorkDeleteDialog = true }
-                )
+                RemoveWorkshop { showWorkDeleteDialog = true }
             }
-            Text(
-                text = "+ 작업자 등록",
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                color = Color(0xFF388E3C),
-                modifier = Modifier
-                    .padding(horizontal = 30.dp)
-                    .padding(top = 30.dp)
-                    .clickable { showWorkerAddDialog = true }
-            )
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(vertical = 5.dp)
-            ) {
-                for (i in workerId.indices) {
-                    Button(
-                        onClick = {
-                            selectedWorkerId = workerId[i]
-                            showWorkerManageDialog = true
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(
-                            Color(255, 150, 0, 80)
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .padding(vertical = 16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Engineering,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "작업자 아이디 : ${workerId[i]}",
-                                        color = Color.Black,
-                                        fontSize = 12.sp
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = workerName[i],
-                                    color = Color.Black,
-                                    fontSize = 18.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        }
+
+            // 작업장 수정 - 등록 사이 공백
+            Spacer(modifier = Modifier.height(30.dp))
+
+            // + 작업자 등록
+            AddWorker { showWorkerAddDialog = true }
+
+            // 작업자 목록
+            Surface {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .padding(vertical = 16.dp)
+                ) {
+                    // 작업자 카드 등록
+                    for (i in workerId.indices) {
+                        WorkerCard(workerId = workerId[i], workerName = workerName[i])
                     }
                 }
             }
         }
-    }
+    })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputWorkUpdateDialog(
-    onDismissRequest: () -> Unit,
-    workId: Int
+    onDismissRequest: () -> Unit = {},
+    workId: Int = 0
 ) {
-    var selectableCompany by remember { mutableStateOf(listOf<String>()) }
+    // UI 변수 초기화
+    var selectableCompanyList by remember { mutableStateOf(listOf<String>()) }
     var inputWorkName by remember { mutableStateOf("") }
     var inputWorkCompany by remember { mutableStateOf("") }
     var inputWorkStartDate by remember { mutableStateOf("") }
@@ -262,13 +233,14 @@ fun InputWorkUpdateDialog(
     val context = LocalContext.current
     val builder = android.app.AlertDialog.Builder(context)
 
+    // 다이얼 로그 시작
     LaunchedEffect(Unit) {
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
                     val companyList: CompanyList? = response.body()
                     companyList?.let {
-                        selectableCompany = it.companies
+                        selectableCompanyList = it.companies
                     }
                 }
             }
@@ -279,10 +251,11 @@ fun InputWorkUpdateDialog(
         })
     }
 
+    // 다이얼 로그 띄우기
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text(text = "작업장 수정")
+            Text(text="작업장 수정", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         },
         text = {
             Column {
@@ -323,7 +296,7 @@ fun InputWorkUpdateDialog(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.background(Color.White)
                     ) {
-                        selectableCompany.forEach { item ->
+                        selectableCompanyList.forEach { item ->
                             DropdownMenuItem(
                                 text = { Text(item) },
                                 onClick = {
@@ -436,9 +409,9 @@ fun InputWorkUpdateDialog(
 
 @Composable
 fun WorkDeleteDialog(
-    onDismissRequest: () -> Unit,
-    workId: Int,
-    navController: NavController?
+    onDismissRequest: () -> Unit = {},
+    workId: Int = 0,
+    navController: NavController? = null
 ) {
     val context = LocalContext.current
     val builder = android.app.AlertDialog.Builder(context)
@@ -502,8 +475,8 @@ fun WorkDeleteDialog(
 
 @Composable
 fun WorkerAddDialog(
-    onDismissRequest: () -> Unit,
-    workId: Int
+    onDismissRequest: () -> Unit = {},
+    workId: Int = 0
 ) {
     var workerId by remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -585,8 +558,8 @@ fun WorkerAddDialog(
 
 @Composable
 fun WorkerManageDialog(
-    onDismissRequest: () -> Unit,
-    workerId: String
+    onDismissRequest: () -> Unit = {},
+    workerId: String = "testId"
 ) {
     var workerName by remember { mutableStateOf("") }
     var workerPhone by remember { mutableStateOf("") }
@@ -710,8 +683,100 @@ fun WorkerManageDialog(
     )
 }
 
-@Preview(showBackground = true)
 @Composable
-fun WorkPreview() {
-    Work()
+fun RefixWorkshop(showWorkDataInputDialog:() -> Unit = {}){
+    Row(modifier = Modifier.clickable { showWorkDataInputDialog() }) {
+        Icon(
+            imageVector = Icons.Default.Settings,
+            contentDescription = null,
+            modifier = Modifier
+        )
+        Text(
+            text = "작업장 수정",
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier
+                .padding(start = 5.dp, top = 3.dp)
+        )
+    }
+}
+
+@Composable
+fun RemoveWorkshop(showDeleteDialog: () -> Unit = {}){
+    Row(modifier = Modifier.clickable { showDeleteDialog() }) {
+        Icon(
+            imageVector = Icons.Default.RestoreFromTrash,
+            contentDescription = "Trash",
+            tint = Color.Red
+        )
+        Text(
+            text = "작업장 삭제",
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = Color.Red,
+            modifier = Modifier
+                .padding(start = 5.dp, top = 3.dp)
+        )
+    }
+}
+
+@Composable
+fun AddWorker(showWorkerAddDialog: () -> Unit = {}){
+    Text(
+        text = "+ 작업자 등록",
+        fontWeight = FontWeight.Bold,
+        fontSize = 12.sp,
+        color = Color(0xFF388E3C),
+        modifier = Modifier.clickable { showWorkerAddDialog() }
+    )
+}
+
+@Composable
+fun WorkerCard(workerId:String = "testId",
+               workerName:String = "testName",
+               selectedWorkerId:MutableState<String> = remember{mutableStateOf("")},
+               showWorkerManageDialog:MutableState<Boolean> = remember{ mutableStateOf(false)}){
+    Button(
+        onClick = {
+            selectedWorkerId.value = workerId
+            showWorkerManageDialog.value = true
+        },
+        shape = MaterialTheme.shapes.medium,
+        colors = ButtonDefaults.buttonColors(
+            Color(255, 150, 0, 80)
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Engineering,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .align(Alignment.CenterVertically)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "작업자 아이디 : $workerId",
+                    color = Color.Black,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = workerName,
+                    color = Color.Black,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
 }

@@ -70,6 +70,42 @@ data class WorkShopList(
     val endDate: List<String?>
 )
 
+@Preview(showBackground = true)
+@Composable
+fun WorkCreateDialogPreview() {
+    WorkCreateDialog(onDismissRequest = {})
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkListPreview(){
+    WorkList()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputWorkNamePreview(){
+    InputWorkName()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ManagerCompanyPreview(){
+    ManagerCompany()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorkItemPreview(){
+    WorkItem()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DatePreview(){
+    Date(inputName = "시작일")
+}
+
 @Composable
 fun WorkList(navController: NavController = rememberNavController()) {
     val sharedAccount: SharedPreferences =
@@ -119,7 +155,7 @@ fun WorkList(navController: NavController = rememberNavController()) {
     ) {
         Column {
             BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-            TitleText(text = "작업장 관리")
+            ScreenTitleText(text = "작업장 관리")
             Text(
                 text = "+ 작업장 생성",
                 fontWeight = FontWeight.Bold,
@@ -192,7 +228,7 @@ fun WorkCreateDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text(text = "작업장 생성",fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            AlertTitleText("작업장 생성")
         },
         text = {
             Column {
@@ -203,9 +239,9 @@ fun WorkCreateDialog(
                 Spacer(modifier = Modifier.height(16.dp))
                 ManagerCompany(textContent = "담당 회사",expanded = expanded, inputWorkCompany = inputWorkCompany, selectableCompany = selectableCompany)
                 Spacer(modifier = Modifier.height(16.dp))
-                StartDate()
+                Date(inputName = "시작일")
                 Spacer(modifier = Modifier.height(16.dp))
-                EndDate()
+                Date(inputName = "종료일")
             }
         },
         confirmButton = {
@@ -230,48 +266,6 @@ fun WorkCreateDialog(
             },colors = ButtonDefaults.buttonColors(Color.Transparent),onClick=onDismissRequest)
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WorkCreateDialogPreview() {
-    WorkCreateDialog(onDismissRequest = {})
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WorkListPreview(){
-    WorkList()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InputWorkNamePreview(){
-    InputWorkName()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ManagerCompanyPreview(){
-    ManagerCompany()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WorkItemPreview(){
-    WorkItem()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun StartDatePreview(){
-    StartDate()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EndDatePreview(){
-    EndDate()
 }
 
 @Composable
@@ -370,7 +364,7 @@ fun ManagerCompany(
     inputWorkCompany: MutableState<String> = remember{mutableStateOf("")},
     selectableCompany: MutableState<List<String>> = remember{mutableStateOf(arrayOf("","").toList())}
     ){
-    Column() {
+    Column {
         Text(text = textContent, modifier = Modifier.padding(bottom = 4.dp))
         ExposedDropdownMenuBox(
             expanded = expanded.value,
@@ -410,34 +404,9 @@ fun ManagerCompany(
 }
 
 @Composable
-fun StartDate(inputWorkStartDate: MutableState<String> = remember{ mutableStateOf("")}){
-    Column{
-    Text("시작일", modifier = Modifier.padding(bottom = 4.dp))
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = Icons.Default.CalendarToday,
-            contentDescription = null,
-            modifier = Modifier.padding(start = 8.dp, end = 5.dp)
-        )
-        TextField(
-            value = inputWorkStartDate.value,
-            onValueChange = { inputWorkStartDate.value = it },
-            shape = RoundedCornerShape(8.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = Color(255, 150, 0, 80),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            )
-        )
-    }
-        }
-}
-
-@Composable
-fun EndDate(inputWorkEndDate: MutableState<String> = remember{ mutableStateOf("")}){
+fun Date(inputWorkEndDate: MutableState<String> = remember{ mutableStateOf("")},inputName:String = ""){
     Column {
-        Text("종료일", modifier = Modifier.padding(bottom = 4.dp))
+        Text(text = inputName, modifier = Modifier.padding(bottom = 4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.CalendarToday,

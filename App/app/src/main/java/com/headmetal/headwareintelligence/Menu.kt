@@ -75,7 +75,7 @@ fun Menu(navController: NavController = rememberNavController()) {
 fun MenuComposable(navController: NavController = rememberNavController()) {
     Column {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "메뉴")
+        ScreenTitleText(text = "메뉴")
         MenuContents(navController = navController)
     }
 }
@@ -327,7 +327,7 @@ fun MenuBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun MenuTitleTextPreview() {
-    TitleText(text = "메뉴")
+    ScreenTitleText(text = "메뉴")
 }
 
 @Preview(showBackground = true)

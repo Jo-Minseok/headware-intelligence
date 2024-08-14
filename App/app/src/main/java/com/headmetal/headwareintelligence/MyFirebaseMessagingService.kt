@@ -18,16 +18,15 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
 
         // 작업 표시줄 알림으로 왔을 경우 Foreground
         val notificationManager = NotificationManagerCompat.from(applicationContext)
-        var builder:NotificationCompat.Builder?=null
-        val CHANNEL_ID:String = remoteMessage.messageId.toString()
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            if(notificationManager.getNotificationChannel(CHANNEL_ID)==null){
-                val channel = NotificationChannel(CHANNEL_ID,"channel", NotificationManager.IMPORTANCE_DEFAULT)
+        var builder: NotificationCompat.Builder? = null
+        val channelId: String = remoteMessage.messageId.toString()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (notificationManager.getNotificationChannel(channelId) == null) {
+                val channel = NotificationChannel(channelId,"channel",NotificationManager.IMPORTANCE_DEFAULT)
                 notificationManager.createNotificationChannel(channel)
             }
-            builder = NotificationCompat.Builder(applicationContext,CHANNEL_ID)
-        }
-        else{
+            builder = NotificationCompat.Builder(applicationContext,channelId)
+        } else {
             builder = NotificationCompat.Builder(applicationContext)
         }
         val title:String = remoteMessage.notification?.title.toString()

@@ -9,23 +9,21 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -43,7 +41,6 @@ import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.math.log
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun notificationSettingOreo(context: Context): Intent {
@@ -65,19 +62,12 @@ fun notificationSettingOreoLess(context: Context): Intent {
 
 @Composable
 fun Menu(navController: NavController = rememberNavController()) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9F9F9)
-    ) { MenuComposable(navController = navController) }
-}
-
-@Composable
-fun MenuComposable(navController: NavController = rememberNavController()) {
-    Column {
-        BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        ScreenTitleText(text = "메뉴")
-        MenuContents(navController = navController)
-    }
+    Screen(navController = navController, content = {
+        Column {
+            ScreenTitleText(text = "메뉴")
+            MenuContents(navController = navController)
+        }
+    })
 }
 
 @Composable
@@ -87,43 +77,43 @@ fun MenuContents(navController: NavController = rememberNavController()) {
     val type = sharedAccount.getString("type", "")
     val userName = sharedAccount.getString("name", "")
 
-    Column(modifier = Modifier.padding(horizontal = 30.dp)) {
-        PrivacyUserButton(type = type!!, userName = userName!!, navController = navController)
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        UserCard(type = type!!, userName = userName!!, navController = navController)
         MenuFunctions(type = type, navController = navController)
     }
 }
 
 @Composable
-fun PrivacyUserButton(
+fun UserCard(
     type: String = "employee",
     userName: String = "근로자",
     navController: NavController = rememberNavController()
 ) {
-    FunctionButton(
+    Button(
         modifier = Modifier.fillMaxWidth(),
         content = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                LabelIcon(imageVector = Icons.Outlined.Person)
-                UserInfo(type = type, userName = userName)
+                Icon(
+                    imageVector = Icons.Outlined.Person,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.size(40.dp)
+                )
+                Column(verticalArrangement = Arrangement.Center) {
+                    UserDistinguish(type = type)
+                    UserName(userName = userName)
+                }
             }
         },
         colors = ButtonDefaults.buttonColors(Color.White),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-    ) { navController.navigate("PrivacyScreen") }
-}
-
-@Composable
-fun UserInfo(
-    type: String = "employee",
-    userName: String = "근로자"
-) {
-    Column(verticalArrangement = Arrangement.Center) {
-        UserDistinguish(type = type)
-        UserName(userName = userName)
-    }
+        onClick = { navController.navigate("PrivacyScreen") },
+        shape = MaterialTheme.shapes.medium
+    )
 }
 
 @Composable
@@ -163,72 +153,43 @@ fun MenuFunctions(
         )
     }
 
-    Column(modifier = Modifier.padding(top = 10.dp)) {
-        MenuFunctionButton(
-            menuIcon = { LabelIcon(imageVector = Icons.Outlined.Description) },
-            menuText = { LabelText(text = "참여 건설 업체") },
-            progressIcon = { ProgressIcon() }
-        ) { navController.navigate("CompanyInfoScreen") }
-
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        IconWithLabelButton(
+            leadIcon = Icons.Outlined.Description,
+            text = "참여 건설 업체",
+            onClick = { navController.navigate("CompanyInfoScreen")}
+        )
         if (type == "manager") {
-            MenuFunctionButton(
-                menuIcon = { LabelIcon(imageVector = Icons.Outlined.Notifications) },
-                menuText = { LabelText(text = "알림 설정") },
-                progressIcon = { ProgressIcon() }
-            ) {
-                val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    notificationSettingOreo(navController.context)
-                } else {
-                    notificationSettingOreoLess(navController.context)
+            IconWithLabelButton(
+                leadIcon = Icons.Outlined.Notifications,
+                text = "알림 설정",
+                onClick = {
+                    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        notificationSettingOreo(navController.context)
+                    } else {
+                        notificationSettingOreoLess(navController.context)
+                    }
+                    try {
+                        navController.context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        e.printStackTrace()
+                    }
                 }
-                try {
-                    navController.context.startActivity(intent)
-                } catch (e: ActivityNotFoundException) {
-                    e.printStackTrace()
-                }
-            }
+            )
         }
 
-        MenuFunctionButton(
-            menuIcon = { LabelIcon(imageVector = Icons.Outlined.Info) },
-            menuText = { LabelText(text = "기타") },
-            progressIcon = { ProgressIcon() }
-        ) { navController.navigate("EtcScreen") }
-        MenuFunctionButton(
-            menuIcon = {
-                LabelIcon(
-                    imageVector = Icons.AutoMirrored.Outlined.Logout,
-                    color = Color(0xFFFF6600)
-                )
-            },
-            menuText = { LabelText(text = "로그아웃", color = Color(0xFFFF6600)) }
-        ) { showLogoutDialog.value = true }
+        IconWithLabelButton(
+            leadIcon = Icons.Outlined.Info,
+            text = "기타",
+            onClick = { navController.navigate("EtcScreen") }
+        )
+        IconWithLabelButton(
+            leadIcon = Icons.AutoMirrored.Outlined.Logout,
+            color = Color(0xFFFF6600),
+            text = "로그아웃",
+            onClick = { showLogoutDialog.value = true }
+        )
     }
-}
-
-@Composable
-fun MenuFunctionButton(
-    menuIcon: @Composable () -> Unit,
-    menuText: @Composable () -> Unit,
-    progressIcon: @Composable () -> Unit = {},
-    onClick: () -> Unit = {}
-) {
-    FunctionButton(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 3.dp)
-            .height(60.dp),
-        content = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                menuIcon()
-                menuText()
-                Spacer(modifier = Modifier.weight(1f))
-                progressIcon()
-            }
-        },
-        colors = ButtonDefaults.buttonColors(Color.Transparent),
-        onClick = onClick
-    )
 }
 
 @Composable
@@ -248,7 +209,13 @@ fun LogoutAlertDialog(
         title = "로그아웃",
         textComposable = { Text(text = "로그아웃 하시겠습니까?") },
         confirmButton = {
-            logoutConfirm(sharedAccount,sharedConfigure,sharedAlert,navController,showAlertDialog)
+            logoutConfirm(
+                sharedAccount,
+                sharedConfigure,
+                sharedAlert,
+                navController,
+                showAlertDialog
+            )
         },
         dismissButton = dismissButton,
         yesButton = "예",
@@ -262,7 +229,7 @@ fun logoutConfirm(
     sharedAlert: SharedPreferences,
     navController: NavController,
     showAlertDialog: MutableState<Boolean>
-){
+) {
     if (sharedAccount.getString("type", null) == "manager") {
         RetrofitInstance.apiService.apiLogout(
             id = sharedAccount.getString("userid", null).toString(),
@@ -314,84 +281,14 @@ fun MenuPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun MenuComposablePreview() {
-    MenuComposable()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuBackIconPreview() {
-    BackIcon()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuTitleTextPreview() {
-    ScreenTitleText(text = "메뉴")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuContentsPreview() {
-    MenuContents()
-}
-
-@Preview(showBackground = true)
-@Composable
 fun MenuUserPrivacyButtonPreview() {
-    PrivacyUserButton(type = "manager", userName = "관리자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuUserInfoPreview() {
-    UserInfo(type = "manager", "관리자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuUserDistinguishPreview() {
-    UserDistinguish(type = "manager")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuUserNamePreview() {
-    UserName(userName = "관리자")
+    UserCard(type = "manager", userName = "관리자")
 }
 
 @Preview(showBackground = true)
 @Composable
 fun MenuFunctionsPreview() {
     MenuFunctions(type = "manager")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuFunctionButtonPreview() {
-    MenuFunctionButton(
-        menuIcon = { LabelIcon(imageVector = Icons.Outlined.Description) },
-        menuText = { LabelText(text = "참여 건설 업체") },
-        progressIcon = { ProgressIcon() }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuLabelIconPreview() {
-    LabelIcon(imageVector = Icons.Outlined.Description)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuLabelTextPreview() {
-    LabelText(text = "참여 건설 업체")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuProgressIconPreview() {
-    ProgressIcon()
 }
 
 @Preview(showBackground = true)

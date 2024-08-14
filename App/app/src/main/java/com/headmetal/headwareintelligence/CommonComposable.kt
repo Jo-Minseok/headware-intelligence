@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -21,9 +22,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
@@ -48,8 +53,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -316,6 +323,7 @@ fun LabelAndInputComposablePreview() {
         labelText = "test", inputText = remember {
             mutableStateOf("test")
         },
+        modifier = Modifier,
         placeholder = "placeholerTest"
     )
 }
@@ -334,10 +342,10 @@ fun LabelAndInputComposable(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
-    Column {
-        Text(text = labelText)
+    Column(Modifier.fillMaxWidth()) {
+        Text(text = labelText, modifier = Modifier.fillMaxWidth())
         TextField(
-            modifier = modifier,
+            modifier = modifier.fillMaxWidth(),
             value = inputText.value,
             onValueChange = { inputText.value = it },
             shape = MaterialTheme.shapes.medium,
@@ -396,7 +404,8 @@ fun LabelAndDropdownMenu(
     colors: TextFieldColors = TextFieldDefaults.colors(
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent
-    )
+    ),
+    modifier: Modifier = Modifier
 ) {
     Column {
         Text(text = fieldText)
@@ -405,7 +414,7 @@ fun LabelAndDropdownMenu(
             onExpandedChange = { expanded.value = !expanded.value }
         ) {
             TextField(
-                modifier = Modifier,
+                modifier = modifier.fillMaxWidth(),
                 value = selectedItem.value,
                 onValueChange = {},
                 readOnly = true,
@@ -437,8 +446,8 @@ fun LabelAndDropdownMenu(
  */
 @Preview(showBackground = true)
 @Composable
-fun DatePreview(){
-    Date(labelText = "test", inputText = remember{ mutableStateOf("")})
+fun DatePreview() {
+    Date(labelText = "test", inputText = remember { mutableStateOf("") })
 }
 
 @Composable
@@ -460,124 +469,17 @@ fun Date(labelText: String, inputText: MutableState<String>) {
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
         ),
+        modifier = Modifier
     )
 }
 
 /**
- * -------------------------------------------------------------------------------------------------------
+ * Font 20Size
  */
-
 @Preview(showBackground = true)
 @Composable
-fun FunctionButtonPreview() {
-    FunctionButton(buttonText = "test")
-}
-
-@Composable
-fun FunctionButton(
-    modifier: Modifier = Modifier,
-    buttonText: String = "",
-    content: @Composable RowScope.() -> Unit = {
-        Text(
-            text = buttonText,
-            fontWeight = FontWeight.Bold
-        )
-    },
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
-    onClick: () -> Unit = {}
-) {
-    Button(
-        modifier = modifier,
-        content = content,
-        colors = colors,
-        elevation = elevation,
-        shape = MaterialTheme.shapes.medium,
-        onClick = onClick,
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProgressFunctionButtonPreview() {
-    ProgressFunctionButton(buttonText = "test")
-}
-
-@Composable
-fun ProgressFunctionButton(
-    buttonText: String,
-    additional: @Composable () -> Unit = { ProgressIcon() },
-    onClick: () -> Unit = {}
-) {
-    FunctionButton(
-        modifier = Modifier
-            .fillMaxWidth(),
-        content = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = buttonText, color = Color.Black, fontSize = 22.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                additional()
-            }
-        },
-        buttonText = buttonText,
-        colors = ButtonDefaults.buttonColors(Color.Transparent),
-        onClick = onClick
-    )
-}
-
-@Composable
-fun ClickableIcon(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector
-) {
-    Icon(
-        modifier = modifier,
-        imageVector = imageVector,
-        contentDescription = null
-    )
-}
-
-@Composable
-fun DrawerMenuIcon(
-    modifier: Modifier = Modifier
-) {
-    ClickableIcon(
-        modifier = modifier.padding(top = 20.dp),
-        imageVector = Icons.Default.Menu
-    )
-}
-
-@Composable
-fun BackIcon(
-    modifier: Modifier = Modifier
-) {
-    ClickableIcon(
-        modifier = modifier.padding(20.dp),
-        imageVector = Icons.Default.ArrowBackIosNew
-    )
-}
-
-@Composable
-fun ProgressIcon() {
-    Icon(
-        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-        contentDescription = null
-    )
-}
-
-@Composable
-fun LabelIcon(
-    imageVector: ImageVector,
-    color: Color = Color.Black
-) {
-    Icon(
-        modifier = Modifier
-            .padding(end = 8.dp)
-            .size(40.dp),
-        imageVector = imageVector,
-        contentDescription = null,
-        tint = color
-    )
+fun LabelTextPreview() {
+    LabelText(text = "test")
 }
 
 @Composable
@@ -586,9 +488,111 @@ fun LabelText(
     color: Color = Color.Black
 ) {
     Text(
-        modifier = Modifier.padding(end = 10.dp),
+        modifier = Modifier,
         text = text,
         color = color,
         fontSize = 20.sp
     )
 }
+
+/**
+ * IconWithLabelButton
+ */
+@Preview(showBackground = true)
+@Composable
+fun IconWithLabelButtonPreview() {
+    IconWithLabelButton(
+        leadIcon = Icons.Default.Description,
+        text = "테스트용",
+        trailingIcon = Icons.Default.ArrowForwardIos,
+        onClick = {})
+}
+
+@Composable
+fun IconWithLabelButton(
+    leadIcon: ImageVector,
+    text: String,
+    trailingIcon: ImageVector = Icons.Default.ArrowForwardIos,
+    color: Color = Color.Black,
+    onClick: () -> Unit,
+    fontSize: TextUnit = 20.sp
+)
+{
+    Button(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        content = {
+            Icon(imageVector = leadIcon, contentDescription = null, tint = color, modifier = Modifier
+                .padding(end = 10.dp)
+                .size(30.dp))
+            Text(text = text, color = color, fontSize = fontSize)
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(imageVector = trailingIcon, contentDescription = null, tint = color)
+        },
+        colors = ButtonDefaults.buttonColors(Color.Transparent)
+    )
+}
+
+/**
+ * 메뉴 아이콘
+ */
+@Preview(showBackground = true)
+@Composable
+fun MenuIconPreview(){
+    MenuIcon()
+}
+
+@Composable
+fun MenuIcon(
+    onClick: () -> Unit = {}
+) {
+    Icon(
+        imageVector = Icons.Default.Menu,
+        contentDescription = null,
+        modifier = Modifier.clickable { onClick() }
+    )
+}
+
+/**
+ * 뒤로가기 아이콘
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun BackIconPreview(){
+    BackIcon()
+}
+
+@Composable
+fun BackIcon(
+    onClick: () -> Unit = {}
+) {
+    Icon(
+        contentDescription = null,
+        imageVector = Icons.Default.ArrowBackIosNew,
+        modifier = Modifier.clickable { onClick() }
+    )
+}
+
+/**
+ * 다음 아이콘
+ */
+@Preview(showBackground = true)
+@Composable
+fun NextIconPreview(){
+    NextIcon()
+}
+
+@Composable
+fun NextIcon(
+    onClick: () -> Unit = {}
+) {
+    Icon(
+        imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
+        contentDescription = null,
+        modifier = Modifier.clickable { onClick() }
+    )
+}
+
+
+

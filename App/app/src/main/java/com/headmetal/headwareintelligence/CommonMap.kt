@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import android.app.AlertDialog
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import retrofit2.Call
@@ -58,6 +60,12 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
             Log.e("HEAD METAL", "네트워크 오류 또는 예외 발생: ${t.message}")
         }
     })
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AlertDialogPreview(){
+    AlertDialog(onClose = { /*TODO*/ }, content = "test")
 }
 
 // 알림창 Composable

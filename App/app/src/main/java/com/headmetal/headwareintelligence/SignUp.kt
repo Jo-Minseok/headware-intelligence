@@ -7,7 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -17,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -81,84 +86,89 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
             }
         })
     }
-
-    Column(
-        modifier = Modifier
-            .padding(top = 10.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp),
+        color = Color.Transparent
     ) {
-        HelmetImage()
-        LabelAndInputComposable(labelText = "아이디", inputText = id)
-        LabelAndInputComposable(labelText = "비밀번호", inputText = pw, visualTransformation = PasswordVisualTransformation())
-        LabelAndInputComposable(labelText = "비밀번호 확인", inputText = rePw, visualTransformation = PasswordVisualTransformation())
-        LabelAndInputComposable(labelText = "이름", inputText = name, placeholder = "4글자 이내")
-        LabelAndInputComposable(labelText = "전화번호", inputText = phone)
-        LabelAndInputComposable(labelText = "이메일", inputText = email, placeholder = "'@' 를 포함한 이메일 형식")
-        LabelAndDropdownMenu(fieldText = "건설업체", expanded = expanded, selectedItem = selectCompany, selectableItems = selectableCompany)
-
-        CustomRadioButtonComposable(
-            fieldLabel = { LoginFieldLabel(text = "직무") },
-            customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
-        )
-        LoginFunctionButtonComposable(
-            loginFunctionButtons = arrayOf(
-                {
-                    LoginFunctionButton(buttonText = "회원가입") {
-                        if (pw.value != rePw.value) {
-                            showAlertDialog(
-                                context = navController.context,
-                                title = "비밀번호 불일치",
-                                message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-                                buttonText = "확인"
-                            )
-                        } else {
-                            LoadingState.show()
-                            RetrofitInstance.apiService.apiRegister(
-                                RegisterInputModel(
-                                    id.value,
-                                    pw.value,
-                                    rePw.value,
-                                    name.value,
-                                    email.value,
-                                    phone.value,
-                                    if (selectCompany.value == "없음") null else selectCompany.value,
-                                    if (isManager.value) "manager" else "employee"
-                                )
-                            ).enqueue(object : Callback<RegisterInputModel> {
-                                override fun onResponse(
-                                    call: Call<RegisterInputModel>,
-                                    response: Response<RegisterInputModel>
-                                ) {
-                                    if (response.isSuccessful) {
-                                        showAlertDialog(
-                                            context = navController.context,
-                                            title = "회원가입 성공",
-                                            message = "로그인 화면으로 이동합니다.",
-                                            buttonText = "확인"
-                                        ) { navController.navigate("LoginScreen") }
-                                    } else {
-                                        showAlertDialog(
-                                            context = navController.context,
-                                            title = "회원가입 실패",
-                                            message = "이미 존재하는 회원 또는 잘못된 정보입니다.",
-                                            buttonText = "확인"
-                                        )
-                                    }
-                                    LoadingState.hide()
-                                }
-
-                                override fun onFailure(call: Call<RegisterInputModel>, t: Throwable) {
-                                    LoadingState.hide()
-                                    Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-                                }
-                            })
-                        }
-                    }
-                }
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HelmetImage()
+            LabelAndInputComposable(
+                labelText = "아이디",
+                inputText = id,
+                modifier = Modifier.alpha(0.6f)
             )
-        )
+            LabelAndInputComposable(
+                labelText = "비밀번호",
+                inputText = pw,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.alpha(0.6f)
+            )
+            LabelAndInputComposable(
+                labelText = "비밀번호 확인",
+                inputText = rePw,
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.alpha(0.6f)
+            )
+            LabelAndInputComposable(
+                labelText = "이름",
+                inputText = name,
+                placeholder = "4글자 이내",
+                modifier = Modifier.alpha(0.6f)
+            )
+            LabelAndInputComposable(
+                labelText = "전화번호",
+                inputText = phone,
+                modifier = Modifier.alpha(0.6f)
+            )
+            LabelAndInputComposable(
+                labelText = "이메일",
+                inputText = email,
+                placeholder = "'@' 를 포함한 이메일 형식", modifier = Modifier.alpha(0.6f)
+            )
+            LabelAndDropdownMenu(
+                fieldText = "건설업체",
+                expanded = expanded,
+                selectedItem = selectCompany,
+                selectableItems = selectableCompany,
+                modifier = Modifier.alpha(0.6f)
+            )
+            CustomRadioButtonComposable(
+                fieldLabel = { LoginFieldLabel(text = "직무") },
+                customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
+            )
+            Button(
+                onClick = {
+                    if (pw.value != rePw.value) {
+                        showAlertDialog(
+                            context = navController.context,
+                            title = "비밀번호 불일치",
+                            message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+                            buttonText = "확인"
+                        )
+                    } else {
+                        register(
+                            id = id.value,
+                            pw = pw.value,
+                            rePw = rePw.value,
+                            name = name.value,
+                            email = email.value,
+                            phone = phone.value,
+                            selectCompany = selectCompany.value,
+                            isManager = isManager.value,
+                            navController = navController
+                        )
+                    }
+                },
+                shape = MaterialTheme.shapes.small,
+                content = { Text("회원가입") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0x59000000))
+            )
+        }
     }
 }
 
@@ -171,34 +181,19 @@ fun SignUpPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpComposablePreview() {
-    SignUpComposable()
-}
-
-@Preview(showBackground = true)
-@Composable
 fun SignUpHelmetImagePreview() {
     HelmetImage()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpTextFieldComposablePreview() {
-    LabelAndInputComposable(labelText = "이름", inputText = remember {
-        mutableStateOf("")
-    },placeholder = "4글자 이내")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpFieldLabelPreview() {
-    LoginFieldLabel(text = "아이디")
-}
-
-@Preview(showBackground = true)
-@Composable
 fun SignUpCompanyDropdownMenuComposablePreview() {
-    LabelAndDropdownMenu(fieldText = "건설업체", expanded = remember{ mutableStateOf(false)}, selectedItem = remember { mutableStateOf("")}, selectableItems = listOf(""))
+    LabelAndDropdownMenu(
+        fieldText = "건설업체",
+        expanded = remember { mutableStateOf(false) },
+        selectedItem = remember { mutableStateOf("") },
+        selectableItems = listOf("")
+    )
 }
 
 @Preview(showBackground = true)
@@ -210,20 +205,58 @@ fun SignupCustomRadioButtonComposablePreview() {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SignUpCustomRadioButtonGroupPreview() {
-    CustomRadioButtonGroup()
-}
+fun register(
+    id: String,
+    pw: String,
+    rePw: String,
+    name: String,
+    email: String,
+    phone: String,
+    selectCompany: String,
+    isManager: Boolean,
+    navController: NavController
+) {
+    LoadingState.show()
+    RetrofitInstance.apiService.apiRegister(
+        RegisterInputModel(
+            id,
+            pw,
+            rePw,
+            name,
+            email,
+            phone,
+            if (selectCompany == "없음") null else selectCompany,
+            if (isManager) "manager" else "employee"
+        )
+    ).enqueue(object : Callback<RegisterInputModel> {
+        override fun onResponse(
+            call: Call<RegisterInputModel>,
+            response: Response<RegisterInputModel>
+        ) {
+            if (response.isSuccessful) {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "회원가입 성공",
+                    message = "로그인 화면으로 이동합니다.",
+                    buttonText = "확인"
+                ) { navController.navigate("LoginScreen") }
+            } else {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "회원가입 실패",
+                    message = "이미 존재하는 회원 또는 잘못된 정보입니다.",
+                    buttonText = "확인"
+                )
+            }
+            LoadingState.hide()
+        }
 
-@Preview(showBackground = true)
-@Composable
-fun SignUpCustomRadioButtonSinglePreview() {
-    CustomRadioButtonSingle(buttonText = "일반직")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpFunctionButtonPreview() {
-    LoginFunctionButton(buttonText = "회원가입")
+        override fun onFailure(
+            call: Call<RegisterInputModel>,
+            t: Throwable
+        ) {
+            LoadingState.hide()
+            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+        }
+    })
 }

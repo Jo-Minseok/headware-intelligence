@@ -64,8 +64,6 @@ fun LoginFunctionButtonComposable(
 ) {
     Column(
         modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
     ) {
         Row {
             loginFunctionButtons.forEach { loginFunctionButton ->
@@ -129,11 +127,7 @@ fun CustomRadioButtonComposable(
     fieldLabel: @Composable () -> Unit,
     customRadioButtonGroup: @Composable () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
+    Column {
         fieldLabel()
         customRadioButtonGroup()
     }

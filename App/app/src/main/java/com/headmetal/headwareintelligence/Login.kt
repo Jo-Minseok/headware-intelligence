@@ -57,19 +57,8 @@ fun LoginComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "ID") },
-            inputTextField = { InputTextField(inputText = id) }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "PW") },
-            inputTextField = {
-                InputTextField(
-                    inputText = pw,
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        )
+        LabelAndInputComposable(labelText = "ID", inputText = id)
+        LabelAndInputComposable(labelText = "PW", inputText = pw, visualTransformation = PasswordVisualTransformation())
         CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "Part") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
@@ -195,22 +184,15 @@ fun LoginHelmetImagePreview() {
 @Preview(showBackground = true)
 @Composable
 fun LoginTextFieldComposablePreview() {
-    LoginTextFieldComposable(
-        fieldLabel = { LoginFieldLabel(text = "ID") },
-        inputTextField = { InputTextField() }
-    )
+    LabelAndInputComposable(labelText = "ID",inputText = remember {
+        mutableStateOf("")
+    })
 }
 
 @Preview(showBackground = true)
 @Composable
 fun LoginFieldLabelPreview() {
     LoginFieldLabel(text = "ID")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginInputTextFieldPreview() {
-    InputTextField()
 }
 
 @Preview(showBackground = true)

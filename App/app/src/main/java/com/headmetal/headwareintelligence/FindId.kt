@@ -51,14 +51,8 @@ fun FindIdComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "이름") },
-            inputTextField = { InputTextField(inputText = name) }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "이메일") },
-            inputTextField = { InputTextField(inputText = email) }
-        )
+        LabelAndInputComposable(labelText = "이름", inputText = name)
+        LabelAndInputComposable(labelText = "이메일", inputText = email)
         CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
@@ -155,22 +149,9 @@ fun FindIdHelmetImagePreview() {
 @Preview(showBackground = true)
 @Composable
 fun FindIdTextFieldComposablePreview() {
-    LoginTextFieldComposable(
-        fieldLabel = { LoginFieldLabel(text = "이름") },
-        inputTextField = { InputTextField() }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdFieldLabelPreview() {
-    LoginFieldLabel(text = "이름")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdInputTextFieldPreview() {
-    InputTextField()
+    LabelAndInputComposable(labelText = "이름", inputText = remember {
+        mutableStateOf("")
+    })
 }
 
 @Preview(showBackground = true)

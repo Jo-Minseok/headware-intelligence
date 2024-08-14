@@ -30,7 +30,7 @@ fun License(navController: NavController = rememberNavController()) {
 fun LicenseComposable(navController: NavController = rememberNavController()) {
     Column {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "라이센스")
+        ScreenTitleText(text = "라이센스")
         LicenseFunctions()
     }
 }
@@ -136,7 +136,7 @@ fun LicenseInfoBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun LicenseInfoTitleTextPreview() {
-    TitleText(text = "라이센스")
+    ScreenTitleText(text = "라이센스")
 }
 
 @Preview(showBackground = true)

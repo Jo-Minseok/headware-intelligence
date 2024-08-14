@@ -1,8 +1,9 @@
 package com.headmetal.headwareintelligence
 
+import android.app.AlertDialog
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Text
@@ -24,11 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Settings
@@ -36,11 +31,12 @@ import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Engineering
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
@@ -49,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -63,62 +60,92 @@ data class WorkerStatus(
     val phoneNo: String
 )
 
+/**
+ * 작업장 메인 화면 프리뷰
+ */
 @Preview(showBackground = true)
 @Composable
 fun WorkPreview() {
-    Work()
+    Work(navController = rememberNavController(), workId = 1)
 }
 
+/**
+ * 작업장 수정 버튼
+ */
 @Preview(showBackground = true)
 @Composable
-fun RefixWorkshopPreview(){
+fun RefixWorkshopPreview() {
     RefixWorkshop()
 }
 
+/**
+ * 작업장 삭제 버튼
+ */
 @Preview(showBackground = true)
 @Composable
-fun RemoveWorkshopPreview(){
+fun RemoveWorkshopPreview() {
     RemoveWorkshop()
 }
 
+/**
+ * 작업자 등록 버튼
+ */
 @Preview(showBackground = true)
 @Composable
-fun AddWorkerPreview(){
+fun AddWorkerPreview() {
     AddWorker()
 }
 
+/**
+ * 작업자 아이템 UI
+ */
 @Preview(showBackground = true)
 @Composable
-fun WorkerCardPreview(){
+fun WorkerCardPreview() {
     WorkerCard()
 }
 
+/**
+ * 작업장 수정 UI
+ */
 @Preview(showBackground = true)
 @Composable
-fun InputWorkUpdateDialogPreview(){
+fun InputWorkUpdateDialogPreview() {
     InputWorkUpdateDialog()
 }
 
+/**
+ * 작업장 삭제 다이얼로그
+ */
 @Preview(showBackground = true)
 @Composable
-fun WorkDeleteDialogPreview(){
-    WorkDeleteDialog()
+fun WorkDeleteDialogPreview() {
+    WorkDeleteDialog(navController = rememberNavController())
 }
 
+/**
+ * 작업자 등록 다이얼로그
+ */
 @Preview(showBackground = true)
 @Composable
-fun WorkerAddDialogPreview(){
+fun WorkerAddDialogPreview() {
     WorkerAddDialog()
 }
 
+/**
+ * 작업자 관리 UI
+ */
 @Preview(showBackground = true)
 @Composable
-fun WorkerManageDialogPreview(){
+fun WorkerManageDialogPreview() {
     WorkerManageDialog()
 }
 
+/**
+ * 작업장 메인 화면
+ */
 @Composable
-fun Work(workId: Int = 0, navController: NavController? = null) {
+fun Work(workId: Int, navController: NavController) {
     // UI 변수 초기화
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var showWorkDeleteDialog by remember { mutableStateOf(false) }
@@ -158,7 +185,7 @@ fun Work(workId: Int = 0, navController: NavController? = null) {
         )
     }
 
-    // UI 시작
+    // UI 변수 값이 바꼈을 때
     LaunchedEffect(showWorkerAddDialog) {
         RetrofitInstance.apiService.searchWorker(workId).enqueue(object : Callback<Worker> {
             override fun onResponse(
@@ -181,43 +208,45 @@ fun Work(workId: Int = 0, navController: NavController? = null) {
     }
 
     // 뒤로 가기 버튼 + 화면
-    Screen(content = {
-        // 화면
-        Column {
-            // 제목
-            ScreenTitleText(text = "작업장 이름")
+    Screen(
+        navController = navController,
+        content = {
+            // 화면
+            Column {
+                // 제목
+                ScreenTitleText(text = "작업장 이름")
 
-            // 작업장 수정, 삭제 부분
-            Row {
-                RefixWorkshop { showWorkDataInputDialog = true }
-                Spacer(modifier = Modifier.weight(1f))
-                RemoveWorkshop { showWorkDeleteDialog = true }
-            }
+                // 작업장 수정, 삭제 부분
+                Row {
+                    RefixWorkshop { showWorkDataInputDialog = true }
+                    Spacer(modifier = Modifier.weight(1f))
+                    RemoveWorkshop { showWorkDeleteDialog = true }
+                }
 
-            // 작업장 수정 - 등록 사이 공백
-            Spacer(modifier = Modifier.height(30.dp))
+                // 작업장 수정 - 등록 사이 공백
+                Spacer(modifier = Modifier.height(30.dp))
 
-            // + 작업자 등록
-            AddWorker { showWorkerAddDialog = true }
+                // + 작업자 등록
+                AddWorker { showWorkerAddDialog = true }
 
-            // 작업자 목록
-            Surface {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .padding(vertical = 16.dp)
-                ) {
-                    // 작업자 카드 등록
-                    for (i in workerId.indices) {
-                        WorkerCard(workerId = workerId[i], workerName = workerName[i])
+                // 작업자 목록
+                Surface {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .padding(vertical = 16.dp)
+                    ) {
+                        // 작업자 카드 등록
+                        for (i in workerId.indices) {
+                            WorkerCard(workerId = workerId[i], workerName = workerName[i])
+                        }
                     }
                 }
             }
         }
-    })
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputWorkUpdateDialog(
     onDismissRequest: () -> Unit = {},
@@ -225,13 +254,13 @@ fun InputWorkUpdateDialog(
 ) {
     // UI 변수 초기화
     var selectableCompanyList by remember { mutableStateOf(listOf<String>()) }
-    var inputWorkName by remember { mutableStateOf("") }
-    var inputWorkCompany by remember { mutableStateOf("") }
-    var inputWorkStartDate by remember { mutableStateOf("") }
-    var inputWorkEndDate by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
+    val inputWorkName = remember { mutableStateOf("") }
+    val inputWorkCompany = remember { mutableStateOf("") }
+    val inputWorkStartDate = remember { mutableStateOf("") }
+    val inputWorkEndDate = remember { mutableStateOf("") }
+    val expanded = remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val builder = android.app.AlertDialog.Builder(context)
+    val builder = AlertDialog.Builder(context)
 
     // 다이얼 로그 시작
     LaunchedEffect(Unit) {
@@ -255,154 +284,60 @@ fun InputWorkUpdateDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = {
-            Text(text="작업장 수정", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            AlertTitleText(text = "작업장 수정")
         },
         text = {
-            Column {
-                Text("작업장", modifier = Modifier.padding(bottom = 4.dp))
-                TextField(
-                    value = inputWorkName,
-                    onValueChange = { inputWorkName = it },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color(255, 150, 0, 80),
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                LabelAndInputComposable(
+                    labelText = "작업장", inputText = inputWorkName, colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(255, 150, 0, 80),
+                        unfocusedContainerColor = Color(255, 150, 0, 80),
+                        disabledContainerColor = Color(255, 150, 0, 80),
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                        disabledIndicatorColor = Color.Transparent,
                     )
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("담당 회사", modifier = Modifier.padding(bottom = 4.dp))
-                ExposedDropdownMenuBox(
+                LabelAndDropdownMenu(
+                    fieldText = "담당 회사",
                     expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    TextField(
-                        value = inputWorkCompany,
-                        onValueChange = {},
-                        readOnly = true,
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.menuAnchor(),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color(255, 150, 0, 80),
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        )
+                    selectedItem = inputWorkCompany,
+                    selectableItems = selectableCompanyList,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(255, 150, 0, 80),
+                        unfocusedContainerColor = Color(255, 150, 0, 80),
+                        disabledContainerColor = Color(255, 150, 0, 80),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
                     )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(Color.White)
-                    ) {
-                        selectableCompanyList.forEach { item ->
-                            DropdownMenuItem(
-                                text = { Text(item) },
-                                onClick = {
-                                    expanded = false
-                                    inputWorkCompany = item
-                                }
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("시작일", modifier = Modifier.padding(bottom = 4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = null,
-                        modifier = Modifier.padding(start = 8.dp, end = 5.dp)
-                    )
-                    TextField(
-                        value = inputWorkStartDate,
-                        onValueChange = { inputWorkStartDate = it },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color(255, 150, 0, 80),
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        )
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("종료일", modifier = Modifier.padding(bottom = 4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = null,
-                        modifier = Modifier.padding(start = 8.dp, end = 5.dp)
-                    )
-                    TextField(
-                        value = inputWorkEndDate,
-                        onValueChange = { inputWorkEndDate = it },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color(255, 150, 0, 80),
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        )
-                    )
-                }
+                )
+                Date(labelText = "시작일", inputText = inputWorkStartDate)
+                Date(labelText = "종료일", inputText = inputWorkEndDate)
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
-                    LoadingState.show()
-                    RetrofitInstance.apiService.updateWork(
-                        workId,
-                        WorkShopInputData(
-                            inputWorkName,
-                            inputWorkCompany,
-                            inputWorkStartDate,
-                            inputWorkEndDate
-                        )
-                    ).enqueue(object : Callback<WorkShopInputData> {
-                        override fun onResponse(
-                            call: Call<WorkShopInputData>,
-                            response: Response<WorkShopInputData>
-                        ) {
-                            if (response.isSuccessful) {
-                                builder.setTitle("작업장 수정 성공")
-                                builder.setMessage("작업장 수정에 성공하였습니다.")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                    onDismissRequest()
-                                }
-                            } else {
-                                builder.setTitle("작업장 수정 실패")
-                                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                            }
-                            val dialog = builder.create()
-                            dialog.show()
-                            LoadingState.hide()
-                        }
-
-                        override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-                            Log.e("HEAD METAL", t.message.toString())
-                            LoadingState.hide()
-                        }
-                    })
-                },
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
+            TextButton(onClick = {
+                updateWorkshop(
+                    workId = workId,
+                    inputWorkName = inputWorkName.value,
+                    inputWorkCompany = inputWorkCompany.value,
+                    inputWorkStartDate = inputWorkStartDate.value,
+                    inputWorkEndDate = inputWorkEndDate.value,
+                    builder = builder
+                )
+            },
+                content = {
+                    Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
+                })
         },
         dismissButton = {
-            Button(
+            TextButton(
                 onClick = onDismissRequest,
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
+                content = {
+                    Text(text = "취소", color = Color.Black, fontWeight = FontWeight.Bold)
+                }
+            )
         }
     )
 }
@@ -411,10 +346,10 @@ fun InputWorkUpdateDialog(
 fun WorkDeleteDialog(
     onDismissRequest: () -> Unit = {},
     workId: Int = 0,
-    navController: NavController? = null
+    navController: NavController
 ) {
     val context = LocalContext.current
-    val builder = android.app.AlertDialog.Builder(context)
+    val builder = AlertDialog.Builder(context)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -423,39 +358,11 @@ fun WorkDeleteDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    LoadingState.show()
-                    RetrofitInstance.apiService.deleteWork(
-                        workId
-                    ).enqueue(object : Callback<Void> {
-                        override fun onResponse(
-                            call: Call<Void>,
-                            response: Response<Void>
-                        ) {
-                            if (response.isSuccessful) {
-                                builder.setTitle("작업장 삭제 성공")
-                                builder.setMessage("작업장 삭제에 성공하였습니다.")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                    onDismissRequest()
-                                }
-                                navController!!.navigateUp()
-                            } else {
-                                builder.setTitle("작업장 삭제 실패")
-                                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                            }
-                            val dialog = builder.create()
-                            dialog.show()
-                            LoadingState.hide()
-                        }
-
-                        override fun onFailure(call: Call<Void>, t: Throwable) {
-                            Log.e("HEAD METAL", t.message.toString())
-                            LoadingState.hide()
-                        }
-                    })
+                    removeWorkshop(
+                        workId = workId,
+                        builder = builder,
+                        navController = navController
+                    )
                 },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
             ) {
@@ -478,9 +385,9 @@ fun WorkerAddDialog(
     onDismissRequest: () -> Unit = {},
     workId: Int = 0
 ) {
-    var workerId by remember { mutableStateOf("") }
+    val workerId = remember { mutableStateOf("") }
     val context = LocalContext.current
-    val builder = android.app.AlertDialog.Builder(context)
+    val builder = AlertDialog.Builder(context)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -488,70 +395,34 @@ fun WorkerAddDialog(
             Text(text = "작업자 등록")
         },
         text = {
-            Column {
-                Text("아이디", modifier = Modifier.padding(bottom = 4.dp))
-                TextField(
-                    value = workerId,
-                    onValueChange = { workerId = it },
-                    shape = RoundedCornerShape(8.dp),
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Color(255, 150, 0, 80),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    )
+            LabelAndInputComposable(
+                labelText = "아이디", inputText = workerId, colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color(255, 150, 0, 80),
+                    unfocusedContainerColor = Color(255, 150, 0, 80),
+                    disabledContainerColor = Color(255, 150, 0, 80),
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
                 )
-            }
+            )
         },
         confirmButton = {
-            Button(
-                onClick = {
-                    LoadingState.show()
-                    RetrofitInstance.apiService.assignWork(
-                        workId,
-                        workerId
-                    ).enqueue(object : Callback<Void> {
-                        override fun onResponse(
-                            call: Call<Void>,
-                            response: Response<Void>
-                        ) {
-                            if (response.isSuccessful) {
-                                builder.setTitle("작업자 등록 성공")
-                                builder.setMessage("작업자 등록에 성공하였습니다.")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                    onDismissRequest()
-                                }
-                            } else {
-                                builder.setTitle("작업자 등록 실패")
-                                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                                builder.setPositiveButton("확인") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                            }
-                            val dialog = builder.create()
-                            dialog.show()
-                            LoadingState.hide()
-                        }
-
-                        override fun onFailure(call: Call<Void>, t: Throwable) {
-                            Log.e("HEAD METAL", t.message.toString())
-                            LoadingState.hide()
-                        }
-                    })
-                },
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
+            TextButton(onClick = {
+                addWorker(
+                    workId = workId,
+                    workerId = workerId.value,
+                    builder = builder
+                )
+            },
+                content = {
+                    Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
+                })
         },
         dismissButton = {
-            Button(
-                onClick = onDismissRequest,
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
+            TextButton(onClick = onDismissRequest,
+                content = {
+                    Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
+                })
         }
     )
 }
@@ -561,8 +432,8 @@ fun WorkerManageDialog(
     onDismissRequest: () -> Unit = {},
     workerId: String = "testId"
 ) {
-    var workerName by remember { mutableStateOf("") }
-    var workerPhone by remember { mutableStateOf("") }
+    val workerName = remember { mutableStateOf("") }
+    val workerPhone = remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         RetrofitInstance.apiService.searchWorkerStatus(workerId)
@@ -574,10 +445,10 @@ fun WorkerManageDialog(
                     if (response.isSuccessful) {
                         val workerStatus: WorkerStatus? = response.body()
                         workerStatus?.let {
-                            workerName = it.name
-                            workerPhone = it.phoneNo
-                            Log.d("HEAD METAL", workerName)
-                            Log.d("HEAD METAL", workerPhone)
+                            workerName.value = it.name
+                            workerPhone.value = it.phoneNo
+                            Log.d("HEAD METAL", workerName.value)
+                            Log.d("HEAD METAL", workerPhone.value)
                         }
                     }
                 }
@@ -598,47 +469,39 @@ fun WorkerManageDialog(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Engineering,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .padding(5.dp)
+                    )
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Engineering,
-                            contentDescription = null,
-                            modifier = Modifier.size(80.dp)
-                        )
-                    }
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("이름", modifier = Modifier.padding(bottom = 4.dp))
-                        TextField(
-                            value = workerName,
-                            onValueChange = {},
-                            readOnly = true,
-                            shape = RoundedCornerShape(8.dp),
-                            colors = TextFieldDefaults.textFieldColors(
-                                backgroundColor = Color(255, 150, 0, 80),
+                        LabelAndInputComposable(
+                            labelText = "이름",
+                            inputText = workerName,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(255, 150, 0, 80),
+                                unfocusedContainerColor = Color(255, 150, 0, 80),
+                                disabledContainerColor = Color(255, 150, 0, 80),
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            ),
-                            modifier = Modifier.fillMaxWidth()
+                                disabledIndicatorColor = Color.Transparent,
+                            )
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("전화번호", modifier = Modifier.padding(bottom = 4.dp))
-                        TextField(
-                            value = workerPhone,
-                            onValueChange = {},
-                            readOnly = true,
-                            shape = RoundedCornerShape(8.dp),
-                            colors = TextFieldDefaults.textFieldColors(
-                                backgroundColor = Color(255, 150, 0, 80),
+                        LabelAndInputComposable(
+                            labelText = "전화번호", inputText = workerPhone,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(255, 150, 0, 80),
+                                unfocusedContainerColor = Color(255, 150, 0, 80),
+                                disabledContainerColor = Color(255, 150, 0, 80),
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
+                                disabledIndicatorColor = Color.Transparent,
                             ),
-                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
@@ -665,26 +528,20 @@ fun WorkerManageDialog(
             }
         },
         confirmButton = {
-            Button(
+            TextButton(
                 onClick = onDismissRequest,
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("확인", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
+                content = { Text("확인", color = Color.Black, fontWeight = FontWeight.Bold) })
         },
         dismissButton = {
-            Button(
+            TextButton(
                 onClick = onDismissRequest,
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("해제", color = Color.Red, fontWeight = FontWeight.Bold)
-            }
+                content = { Text("해제", color = Color.Red, fontWeight = FontWeight.Bold) })
         }
     )
 }
 
 @Composable
-fun RefixWorkshop(showWorkDataInputDialog:() -> Unit = {}){
+fun RefixWorkshop(showWorkDataInputDialog: () -> Unit = {}) {
     Row(modifier = Modifier.clickable { showWorkDataInputDialog() }) {
         Icon(
             imageVector = Icons.Default.Settings,
@@ -703,7 +560,7 @@ fun RefixWorkshop(showWorkDataInputDialog:() -> Unit = {}){
 }
 
 @Composable
-fun RemoveWorkshop(showDeleteDialog: () -> Unit = {}){
+fun RemoveWorkshop(showDeleteDialog: () -> Unit = {}) {
     Row(modifier = Modifier.clickable { showDeleteDialog() }) {
         Icon(
             imageVector = Icons.Default.RestoreFromTrash,
@@ -722,7 +579,7 @@ fun RemoveWorkshop(showDeleteDialog: () -> Unit = {}){
 }
 
 @Composable
-fun AddWorker(showWorkerAddDialog: () -> Unit = {}){
+fun AddWorker(showWorkerAddDialog: () -> Unit = {}) {
     Text(
         text = "+ 작업자 등록",
         fontWeight = FontWeight.Bold,
@@ -733,10 +590,12 @@ fun AddWorker(showWorkerAddDialog: () -> Unit = {}){
 }
 
 @Composable
-fun WorkerCard(workerId:String = "testId",
-               workerName:String = "testName",
-               selectedWorkerId:MutableState<String> = remember{mutableStateOf("")},
-               showWorkerManageDialog:MutableState<Boolean> = remember{ mutableStateOf(false)}){
+fun WorkerCard(
+    workerId: String = "testId",
+    workerName: String = "testName",
+    selectedWorkerId: MutableState<String> = remember { mutableStateOf("") },
+    showWorkerManageDialog: MutableState<Boolean> = remember { mutableStateOf(false) }
+) {
     Button(
         onClick = {
             selectedWorkerId.value = workerId
@@ -779,4 +638,129 @@ fun WorkerCard(workerId:String = "testId",
             }
         }
     }
+}
+
+fun updateWorkshop(
+    workId: Int,
+    inputWorkName: String,
+    inputWorkCompany: String,
+    inputWorkStartDate: String,
+    inputWorkEndDate: String,
+    builder: AlertDialog.Builder
+) {
+    LoadingState.show()
+    RetrofitInstance.apiService.updateWork(
+        workId,
+        WorkShopInputData(
+            inputWorkName,
+            inputWorkCompany,
+            inputWorkStartDate,
+            inputWorkEndDate
+        )
+    ).enqueue(object : Callback<WorkShopInputData> {
+        override fun onResponse(
+            call: Call<WorkShopInputData>,
+            response: Response<WorkShopInputData>
+        ) {
+            if (response.isSuccessful) {
+                builder.setTitle("작업장 수정 성공")
+                builder.setMessage("작업장 수정에 성공하였습니다.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+            } else {
+                builder.setTitle("작업장 수정 실패")
+                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+            }
+            val dialog = builder.create()
+            dialog.show()
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
+            Log.e("HEAD METAL", t.message.toString())
+            LoadingState.hide()
+        }
+    })
+}
+
+fun removeWorkshop(
+    workId: Int,
+    builder: AlertDialog.Builder,
+    navController: NavController
+) {
+    LoadingState.show()
+    RetrofitInstance.apiService.deleteWork(
+        workId
+    ).enqueue(object : Callback<Void> {
+        override fun onResponse(
+            call: Call<Void>,
+            response: Response<Void>
+        ) {
+            if (response.isSuccessful) {
+                builder.setTitle("작업장 삭제 성공")
+                builder.setMessage("작업장 삭제에 성공하였습니다.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                navController.navigateUp()
+            } else {
+                builder.setTitle("작업장 삭제 실패")
+                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+            }
+            val dialog = builder.create()
+            dialog.show()
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<Void>, t: Throwable) {
+            Log.e("HEAD METAL", t.message.toString())
+            LoadingState.hide()
+        }
+    })
+}
+
+fun addWorker(
+    workId: Int,
+    workerId: String,
+    builder: AlertDialog.Builder
+) {
+    LoadingState.show()
+    RetrofitInstance.apiService.assignWork(
+        workId,
+        workerId
+    ).enqueue(object : Callback<Void> {
+        override fun onResponse(
+            call: Call<Void>,
+            response: Response<Void>
+        ) {
+            if (response.isSuccessful) {
+                builder.setTitle("작업자 등록 성공")
+                builder.setMessage("작업자 등록에 성공하였습니다.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+            } else {
+                builder.setTitle("작업자 등록 실패")
+                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
+            }
+            val dialog = builder.create()
+            dialog.show()
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<Void>, t: Throwable) {
+            Log.e("HEAD METAL", t.message.toString())
+            LoadingState.hide()
+        }
+    })
 }

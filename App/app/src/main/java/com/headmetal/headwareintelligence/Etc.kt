@@ -37,7 +37,7 @@ fun Etc(navController: NavController = rememberNavController()) {
 fun EtcComposable(navController: NavController = rememberNavController()) {
     Column {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "기타")
+        ScreenTitleText(text = "기타")
         EtcFunctions(navController = navController)
     }
 }
@@ -112,7 +112,8 @@ fun DevelopersAlertDialog(
                 }
             }
         },
-        dismissButton = dismissButton
+        dismissButton = dismissButton,
+        yesButton = "확인"
     )
 }
 
@@ -152,7 +153,7 @@ fun EtcInfoBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun EtcInfoTitleTextPreview() {
-    TitleText(text = "기타")
+    ScreenTitleText(text = "기타")
 }
 
 @Preview(showBackground = true)

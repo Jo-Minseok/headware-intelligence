@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -91,60 +90,14 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "아이디") },
-            inputTextField = { InputTextField(inputText = id) }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "비밀번호") },
-            inputTextField = {
-                InputTextField(
-                    inputText = pw,
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "비밀번호 확인") },
-            inputTextField = {
-                InputTextField(
-                    inputText = rePw,
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "이름") },
-            inputTextField = {
-                InputTextField(
-                    inputText = name,
-                    placeholder = { Text("4글자 이내") }
-                )
-            }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "전화번호") },
-            inputTextField = { InputTextField(inputText = phone) }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "이메일") },
-            inputTextField = {
-                InputTextField(
-                    inputText = email,
-                    placeholder = { Text("'@' 를 포함한 이메일 형식") }
-                )
-            }
-        )
-        CompanyDropdownMenuComposable(
-            fieldLabel = { LoginFieldLabel(text = "건설업체") },
-            companyDropdownMenu = {
-                CompanyDropdownMenu(
-                    expanded,
-                    selectCompany,
-                    selectableCompany
-                )
-            }
-        )
+        LabelAndInputComposable(labelText = "아이디", inputText = id)
+        LabelAndInputComposable(labelText = "비밀번호", inputText = pw, visualTransformation = PasswordVisualTransformation())
+        LabelAndInputComposable(labelText = "비밀번호 확인", inputText = rePw, visualTransformation = PasswordVisualTransformation())
+        LabelAndInputComposable(labelText = "이름", inputText = name, placeholder = "4글자 이내")
+        LabelAndInputComposable(labelText = "전화번호", inputText = phone)
+        LabelAndInputComposable(labelText = "이메일", inputText = email, placeholder = "'@' 를 포함한 이메일 형식")
+        LabelAndDropdownMenu(fieldText = "건설업체", expanded = expanded, selectedItem = selectCompany, selectableItems = selectableCompany)
+
         CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
@@ -231,10 +184,9 @@ fun SignUpHelmetImagePreview() {
 @Preview(showBackground = true)
 @Composable
 fun SignUpTextFieldComposablePreview() {
-    LoginTextFieldComposable(
-        fieldLabel = { LoginFieldLabel(text = "아이디") },
-        inputTextField = { InputTextField() }
-    )
+    LabelAndInputComposable(labelText = "이름", inputText = remember {
+        mutableStateOf("")
+    },placeholder = "4글자 이내")
 }
 
 @Preview(showBackground = true)
@@ -245,38 +197,8 @@ fun SignUpFieldLabelPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun SignUpInputTextFieldPreview() {
-    InputTextField()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpTextFieldPlaceHolderComposablePreview() {
-    LoginTextFieldComposable(
-        fieldLabel = { LoginFieldLabel(text = "이름") },
-        inputTextField = { InputTextField(placeholder = { Text("4글자 이내") }) }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpInputTextFieldPlaceHolderPreview() {
-    InputTextField(placeholder = { Text("4글자 이내") })
-}
-
-@Preview(showBackground = true)
-@Composable
 fun SignUpCompanyDropdownMenuComposablePreview() {
-    CompanyDropdownMenuComposable(
-        fieldLabel = { LoginFieldLabel(text = "건설업체") },
-        companyDropdownMenu = { CompanyDropdownMenu() }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpCompanyDropdownMenuPreview() {
-    CompanyDropdownMenu()
+    LabelAndDropdownMenu(fieldText = "건설업체", expanded = remember{ mutableStateOf(false)}, selectedItem = remember { mutableStateOf("")}, selectableItems = listOf(""))
 }
 
 @Preview(showBackground = true)

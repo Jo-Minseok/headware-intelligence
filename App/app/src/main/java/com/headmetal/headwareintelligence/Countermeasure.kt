@@ -43,7 +43,7 @@ fun Countermeasure(navController: NavController = rememberNavController()) {
 fun CountermeasureComposable(navController: NavController = rememberNavController()) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "안전 행동 요령")
+        ScreenTitleText(text = "안전 행동 요령")
         CountermeasureListComposable()
     }
 }
@@ -242,7 +242,7 @@ fun CountermeasureInfoBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun CountermeasureInfoTitleTextPreview() {
-    TitleText(text = "안전 행동 요령")
+    ScreenTitleText(text = "안전 행동 요령")
 }
 
 @Preview(showBackground = true)

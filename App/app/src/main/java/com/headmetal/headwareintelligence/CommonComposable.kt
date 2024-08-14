@@ -17,16 +17,15 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -36,9 +35,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -47,7 +48,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -112,6 +113,9 @@ fun showAlertDialog(
     builder.create().show()
 }
 
+/**
+ * 로딩 상태
+ */
 object LoadingState {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -125,10 +129,12 @@ object LoadingState {
     }
 }
 
+/**
+ * 로딩 화면
+ */
 @Composable
 fun LoadingScreen() {
     val isLoading = LoadingState.isLoading.collectAsState().value
-
     if (isLoading) {
         Dialog(
             onDismissRequest = { LoadingState.hide() },
@@ -142,6 +148,10 @@ fun LoadingScreen() {
     }
 }
 
+/**
+ * 두 번 누를 경우 프로세스 종료 재반복
+ * 재반복 쿨타임: 0.8초
+ */
 @Composable
 fun BackOnPressed() {
     val context = LocalContext.current
@@ -159,42 +169,52 @@ fun BackOnPressed() {
     }
 }
 
+/**
+ * 뒤로가기 버튼 + 화면
+ */
 @Preview(showBackground = true)
 @Composable
-fun ScreenPreview(){
-    Screen()
+fun ScreenPreview() {
+    Screen(navController = rememberNavController(), content = {
+        ScreenTitleText(text = "제목")
+    })
 }
 
 @Composable
-fun Screen(navController: NavController? = null,content:@Composable () -> Unit = {}){
+fun Screen(navController: NavController, content: @Composable () -> Unit = {}) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)
-    ){
-        Column (modifier = Modifier.padding(top=30.dp,start=20.dp,end=20.dp)) {
+    ) {
+        Column(modifier = Modifier.padding(top = 30.dp, start = 20.dp, end = 20.dp)) {
             Icon(
                 imageVector = Icons.Default.ArrowBackIosNew,
                 contentDescription = null,
                 modifier = Modifier
-                    .clickable { navController!!.navigateUp() }
+                    .clickable { navController.navigateUp() }
             )
-            Surface(modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp)){
+            Surface(
+                modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp),
+                color = Color.Transparent
+            ) {
                 content()
             }
         }
     }
 }
 
-// 화면 제목
+/**
+ * 화면 제목
+ */
 @Preview(showBackground = true)
 @Composable
-fun ScreenTitleTextPreivew(){
+fun ScreenTitleTextPreivew() {
     ScreenTitleText("test")
 }
 
 @Composable
 fun ScreenTitleText(
-    text: String = ""
+    text: String
 ) {
     Text(
         text = text,
@@ -204,15 +224,18 @@ fun ScreenTitleText(
     )
 }
 
+/**
+ * 다이얼로그 제목
+ */
 @Preview(showBackground = true)
 @Composable
-fun AlertTitleTextPreivew(){
-    AlertTitleText("test")
+fun AlertTitleTextPreivew() {
+    AlertTitleText(text = "test")
 }
 
 @Composable
 fun AlertTitleText(
-    text: String = ""
+    text: String
 ) {
     Text(
         text = text,
@@ -221,23 +244,28 @@ fun AlertTitleText(
     )
 }
 
-// 예, 아니오 다이얼로그
+/**
+ * 예, 아니오 다이얼로그
+ */
 @Preview
 @Composable
-fun YesNoAlertDialogPreview(){
-    YesNoAlertDialog(textComposable = {Text(text="test")},
+fun YesNoAlertDialogPreview() {
+    YesNoAlertDialog(
+        title = "Title",
+        textComposable = { Text(text = "test") },
         yesButton = "yesTest",
-        noButton = "noTest")
+        noButton = "noTest"
+    )
 }
 
 @Composable
 fun YesNoAlertDialog(
-    title: String = "",
+    title: String,
     textComposable: @Composable () -> Unit = {},
     confirmButton: () -> Unit = {},
     dismissButton: () -> Unit = {},
-    yesButton: String = "",
-    noButton: String = ""
+    yesButton: String,
+    noButton: String
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
@@ -248,19 +276,26 @@ fun YesNoAlertDialog(
     )
 }
 
-// 오직 예 다이얼로그
+
+/**
+ * 오직 'Yes' 다이얼로그
+ */
 @Preview(showBackground = true)
 @Composable
-fun OnlyYesAlertDialogPreview(){
-    OnlyYesAlertDialog(textComposable = {Text(text="test")}, yesButton = "yesTest")
+fun OnlyYesAlertDialogPreview() {
+    OnlyYesAlertDialog(
+        title = "Title",
+        textComposable = { Text(text = "test") },
+        yesButton = "yesTest"
+    )
 }
 
 @Composable
 fun OnlyYesAlertDialog(
-    title: String = "",
+    title: String,
     textComposable: @Composable () -> Unit,
     confirmButton: () -> Unit = {},
-    yesButton: String = "",
+    yesButton: String = "확인",
     dismissButton: () -> Unit = {}
 ) {
     AlertDialog(
@@ -271,19 +306,64 @@ fun OnlyYesAlertDialog(
     )
 }
 
-
-// 정리 안 됨
-
-@Preview
+/**
+ * Label 아래에 텍스트 필드
+ */
+@Preview(showBackground = true)
 @Composable
-fun BoldFieldLabelPreview(){
-    BoldFieldLabel(text="test", fontSize = 20.sp)
+fun LabelAndInputComposablePreview() {
+    LabelAndInputComposable(
+        labelText = "test", inputText = remember {
+            mutableStateOf("test")
+        },
+        placeholder = "placeholerTest"
+    )
 }
 
 @Composable
-fun BoldFieldLabel(
-    text: String = "",
-    fontSize: TextUnit = TextUnit.Unspecified
+fun LabelAndInputComposable(
+    labelText: String,
+    modifier: Modifier = Modifier,
+    inputText: MutableState<String>,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    placeholder: String = "",
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent
+    ),
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    Column {
+        Text(text = labelText)
+        TextField(
+            modifier = modifier,
+            value = inputText.value,
+            onValueChange = { inputText.value = it },
+            shape = MaterialTheme.shapes.medium,
+            singleLine = true,
+            colors = colors,
+            visualTransformation = visualTransformation,
+            placeholder = { Text(text = placeholder) },
+            leadingIcon = leadingIcon,  // leadingIcon이 null이 아니면 추가
+            trailingIcon = trailingIcon  // trailingIcon이 null이 아니면 추가
+        )
+    }
+}
+
+/**
+ * 굵은 폰트
+ */
+@Preview
+@Composable
+fun BoldFieldLabelPreview() {
+    BoldTextField(text = "test", fontSize = 20.sp)
+}
+
+@Composable
+fun BoldTextField(
+    text: String,
+    fontSize: TextUnit
 ) {
     Text(
         text = text,
@@ -292,47 +372,105 @@ fun BoldFieldLabel(
     )
 }
 
-// 여기서 컴포저블 정리 필요 TextFieldComposable 쪽 이상함.
-
+/**
+ * Label & DropDownMenu
+ */
+@Preview(showBackground = true)
 @Composable
-fun InputTextField(
-    inputText: MutableState<String> = remember { mutableStateOf("") },
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    placeholder: @Composable (() -> Unit)? = null
-) {
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(0.6f),
-        value = inputText.value,
-        onValueChange = { inputText.value = it },
-        shape = RoundedCornerShape(8.dp),
-        singleLine = true,
-        colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        visualTransformation = visualTransformation,
-        placeholder = placeholder
+fun LabelAndDropdownMenuPreview() {
+    LabelAndDropdownMenu(
+        fieldText = "test",
+        expanded = remember { mutableStateOf(false) },
+        selectedItem = remember { mutableStateOf("없음") },
+        selectableItems = listOf("hello", "없음")
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TextFieldComposable(
-    modifier: Modifier = Modifier,
-    fieldLabel: @Composable () -> Unit,
-    inputTextField: @Composable () -> Unit
+fun LabelAndDropdownMenu(
+    fieldText: String,
+    expanded: MutableState<Boolean>,
+    selectedItem: MutableState<String>,
+    selectableItems: List<String>,
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent
+    )
 ) {
-    Column(modifier = modifier) {
-        fieldLabel()
-        inputTextField()
+    Column {
+        Text(text = fieldText)
+        ExposedDropdownMenuBox(
+            expanded = expanded.value,
+            onExpandedChange = { expanded.value = !expanded.value }
+        ) {
+            TextField(
+                modifier = Modifier,
+                value = selectedItem.value,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
+                shape = MaterialTheme.shapes.medium,
+                colors = colors
+            )
+            ExposedDropdownMenu(
+                modifier = Modifier.background(Color.White),
+                expanded = expanded.value,
+                onDismissRequest = { expanded.value = false }
+            ) {
+                selectableItems.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(item) },
+                        onClick = {
+                            expanded.value = false
+                            selectedItem.value = item
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
+/**
+ * Date 입력 부분
+ */
 @Preview(showBackground = true)
 @Composable
-fun FunctionButtonPreview(){
-    FunctionButton(buttonText="test")
+fun DatePreview(){
+    Date(labelText = "test", inputText = remember{ mutableStateOf("")})
+}
+
+@Composable
+fun Date(labelText: String, inputText: MutableState<String>) {
+    LabelAndInputComposable(
+        labelText = labelText,
+        inputText = inputText,
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.CalendarToday,
+                contentDescription = "달력"
+            )
+        },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color(255, 150, 0, 80),
+            unfocusedContainerColor = Color(255, 150, 0, 80),
+            disabledContainerColor = Color(255, 150, 0, 80),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+        ),
+    )
+}
+
+/**
+ * -------------------------------------------------------------------------------------------------------
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun FunctionButtonPreview() {
+    FunctionButton(buttonText = "test")
 }
 
 @Composable
@@ -354,22 +492,26 @@ fun FunctionButton(
         content = content,
         colors = colors,
         elevation = elevation,
-        shape = RoundedCornerShape(8.dp),
+        shape = MaterialTheme.shapes.medium,
         onClick = onClick,
     )
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ProgressFunctionButtonPreview() {
+    ProgressFunctionButton(buttonText = "test")
+}
+
 @Composable
 fun ProgressFunctionButton(
-    buttonText: String = "",
+    buttonText: String,
     additional: @Composable () -> Unit = { ProgressIcon() },
     onClick: () -> Unit = {}
 ) {
     FunctionButton(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 10.dp)
-            .height(60.dp),
+            .fillMaxWidth(),
         content = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = buttonText, color = Color.Black, fontSize = 22.sp)
@@ -377,68 +519,10 @@ fun ProgressFunctionButton(
                 additional()
             }
         },
+        buttonText = buttonText,
         colors = ButtonDefaults.buttonColors(Color.Transparent),
         onClick = onClick
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CompanyDropdownMenu(
-    expanded: MutableState<Boolean> = remember { mutableStateOf(false) },
-    selectedCompany: MutableState<String> = remember { mutableStateOf("없음") },
-    selectableCompany: List<String> = listOf("없음")
-) {
-    ExposedDropdownMenuBox(
-        expanded = expanded.value,
-        onExpandedChange = { expanded.value = !expanded.value }
-    ) {
-        TextField(
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-                .alpha(0.6f),
-            value = selectedCompany.value,
-            onValueChange = {},
-            readOnly = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
-            shape = RoundedCornerShape(8.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
-        )
-        ExposedDropdownMenu(
-            modifier = Modifier.background(Color.White),
-            expanded = expanded.value,
-            onDismissRequest = { expanded.value = false }
-        ) {
-            selectableCompany.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        expanded.value = false
-                        selectedCompany.value = item
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CompanyDropdownMenuComposable(
-    fieldLabel: @Composable () -> Unit,
-    companyDropdownMenu: @Composable () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp)
-            .padding(bottom = 16.dp)
-    ) {
-        fieldLabel()
-        companyDropdownMenu()
-    }
 }
 
 @Composable

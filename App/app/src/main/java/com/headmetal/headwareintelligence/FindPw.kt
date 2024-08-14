@@ -50,32 +50,10 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HelmetImage()
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "아이디") },
-            inputTextField = { InputTextField(inputText = id) }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "전화번호") },
-            inputTextField = { InputTextField(inputText = phone) }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "새 비밀번호") },
-            inputTextField = {
-                InputTextField(
-                    inputText = pw,
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        )
-        LoginTextFieldComposable(
-            fieldLabel = { LoginFieldLabel(text = "비밀번호 확인") },
-            inputTextField = {
-                InputTextField(
-                    inputText = rePw,
-                    visualTransformation = PasswordVisualTransformation()
-                )
-            }
-        )
+        LabelAndInputComposable(labelText = "아이디", inputText = id)
+        LabelAndInputComposable(labelText = "전화번호", inputText = phone)
+        LabelAndInputComposable(labelText = "새 비밀번호", inputText = pw, visualTransformation = PasswordVisualTransformation())
+        LabelAndInputComposable(labelText = "비밀번호 확인", inputText = rePw, visualTransformation = PasswordVisualTransformation())
         CustomRadioButtonComposable(
             fieldLabel = { LoginFieldLabel(text = "직무") },
             customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
@@ -163,22 +141,15 @@ fun FindPwHelmetImagePreview() {
 @Preview(showBackground = true)
 @Composable
 fun FindPwTextFieldComposablePreview() {
-    LoginTextFieldComposable(
-        fieldLabel = { LoginFieldLabel(text = "아이디") },
-        inputTextField = { InputTextField() }
-    )
+    LabelAndInputComposable(labelText = "아이디",inputText = remember {
+        mutableStateOf("")
+    })
 }
 
 @Preview(showBackground = true)
 @Composable
 fun FindPwFieldLabelPreview() {
     LoginFieldLabel(text = "아이디")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindPwInputTextFieldPreview() {
-    InputTextField()
 }
 
 @Preview(showBackground = true)

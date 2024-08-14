@@ -10,10 +10,12 @@ import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,6 +36,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -49,11 +52,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -154,38 +159,129 @@ fun BackOnPressed() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ScreenPreview(){
+    Screen()
+}
+
+@Composable
+fun Screen(navController: NavController? = null,content:@Composable () -> Unit = {}){
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF9F9F9)
+    ){
+        Column (modifier = Modifier.padding(top=30.dp,start=20.dp,end=20.dp)) {
+            Icon(
+                imageVector = Icons.Default.ArrowBackIosNew,
+                contentDescription = null,
+                modifier = Modifier
+                    .clickable { navController!!.navigateUp() }
+            )
+            Surface(modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp)){
+                content()
+            }
+        }
+    }
+}
+
+// 화면 제목
+@Preview(showBackground = true)
+@Composable
+fun ScreenTitleTextPreivew(){
+    ScreenTitleText("test")
+}
+
+@Composable
+fun ScreenTitleText(
+    text: String = ""
+) {
+    Text(
+        text = text,
+        fontWeight = FontWeight.Bold,
+        fontSize = 34.sp,
+        modifier = Modifier.padding(bottom = 20.dp)
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AlertTitleTextPreivew(){
+    AlertTitleText("test")
+}
+
+@Composable
+fun AlertTitleText(
+    text: String = ""
+) {
+    Text(
+        text = text,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+    )
+}
+
+// 예, 아니오 다이얼로그
+@Preview
+@Composable
+fun YesNoAlertDialogPreview(){
+    YesNoAlertDialog(textComposable = {Text(text="test")},
+        yesButton = "yesTest",
+        noButton = "noTest")
+}
+
 @Composable
 fun YesNoAlertDialog(
     title: String = "",
-    textComposable: @Composable () -> Unit,
+    textComposable: @Composable () -> Unit = {},
     confirmButton: () -> Unit = {},
-    dismissButton: () -> Unit = {}
+    dismissButton: () -> Unit = {},
+    yesButton: String = "",
+    noButton: String = ""
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
         title = { Text(text = title) },
         text = textComposable,
-        confirmButton = { TextButton(onClick = confirmButton) { Text(text = "예") } },
-        dismissButton = { TextButton(onClick = dismissButton) { Text(text = "아니오") } }
+        confirmButton = { TextButton(onClick = confirmButton) { Text(text = yesButton) } },
+        dismissButton = { TextButton(onClick = dismissButton) { Text(text = noButton) } }
     )
+}
+
+// 오직 예 다이얼로그
+@Preview(showBackground = true)
+@Composable
+fun OnlyYesAlertDialogPreview(){
+    OnlyYesAlertDialog(textComposable = {Text(text="test")}, yesButton = "yesTest")
 }
 
 @Composable
 fun OnlyYesAlertDialog(
     title: String = "",
     textComposable: @Composable () -> Unit,
+    confirmButton: () -> Unit = {},
+    yesButton: String = "",
     dismissButton: () -> Unit = {}
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
         title = { Text(text = title) },
         text = textComposable,
-        confirmButton = { TextButton(onClick = dismissButton) { Text(text = "확인") } }
+        confirmButton = { TextButton(onClick = confirmButton) { Text(text = yesButton) } },
     )
 }
 
+
+// 정리 안 됨
+
+@Preview
 @Composable
-fun FieldLabel(
+fun BoldFieldLabelPreview(){
+    BoldFieldLabel(text="test", fontSize = 20.sp)
+}
+
+@Composable
+fun BoldFieldLabel(
     text: String = "",
     fontSize: TextUnit = TextUnit.Unspecified
 ) {
@@ -195,6 +291,8 @@ fun FieldLabel(
         fontSize = fontSize
     )
 }
+
+// 여기서 컴포저블 정리 필요 TextFieldComposable 쪽 이상함.
 
 @Composable
 fun InputTextField(
@@ -229,6 +327,12 @@ fun TextFieldComposable(
         fieldLabel()
         inputTextField()
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FunctionButtonPreview(){
+    FunctionButton(buttonText="test")
 }
 
 @Composable
@@ -374,18 +478,6 @@ fun ProgressIcon() {
     Icon(
         imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
         contentDescription = null
-    )
-}
-
-@Composable
-fun TitleText(
-    text: String = ""
-) {
-    Text(
-        text = text,
-        fontWeight = FontWeight.Bold,
-        fontSize = 34.sp,
-        modifier = Modifier.padding(start = 30.dp, bottom = 10.dp)
     )
 }
 

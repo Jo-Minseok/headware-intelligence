@@ -49,7 +49,7 @@ fun Privacy(navController: NavController = rememberNavController()) {
 fun PrivacyComposable(navController: NavController = rememberNavController()) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "사용자 정보")
+        ScreenTitleText(text = "사용자 정보")
         PrivacyUserContents()
         PrivacyChangeButton()
     }
@@ -162,7 +162,7 @@ fun PrivacyBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun PrivacyTitleTextPreview() {
-    TitleText(text = "사용자 정보")
+    ScreenTitleText(text = "사용자 정보")
 }
 
 @Preview(showBackground = true)

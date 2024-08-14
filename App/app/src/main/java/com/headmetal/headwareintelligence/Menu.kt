@@ -43,6 +43,7 @@ import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import kotlin.math.log
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun notificationSettingOreo(context: Context): Intent {
@@ -74,7 +75,7 @@ fun Menu(navController: NavController = rememberNavController()) {
 fun MenuComposable(navController: NavController = rememberNavController()) {
     Column {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "메뉴")
+        ScreenTitleText(text = "메뉴")
         MenuContents(navController = navController)
     }
 }
@@ -242,58 +243,67 @@ fun LogoutAlertDialog(
         LocalContext.current.getSharedPreferences("Configure", Activity.MODE_PRIVATE)
     val sharedAlert: SharedPreferences =
         LocalContext.current.getSharedPreferences("Alert", Activity.MODE_PRIVATE)
-    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-    val sharedConfigureEdit: SharedPreferences.Editor = sharedConfigure.edit()
 
     YesNoAlertDialog(
         title = "로그아웃",
         textComposable = { Text(text = "로그아웃 하시겠습니까?") },
         confirmButton = {
-            if (sharedAccount.getString("type", null) == "manager") {
-                RetrofitInstance.apiService.apiLogout(
-                    id = sharedAccount.getString("userid", null).toString(),
-                    alertToken = sharedAlert.getString("alert_token", null).toString()
-                ).enqueue(object : Callback<Void> {
-                    override fun onResponse(p0: Call<Void>, p1: Response<Void>) {
-                        showAlertDialog.value = false
-                        Toast.makeText(
-                            navController.context,
-                            "로그아웃을 성공하였습니다.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        sharedAccountEdit.clear()
-                        sharedAccountEdit.apply()
-                        sharedConfigureEdit.clear()
-                        sharedConfigureEdit.apply()
-                        navController.navigate("LoginScreen")
-                    }
+            logoutConfirm(sharedAccount,sharedConfigure,sharedAlert,navController,showAlertDialog)
+        },
+        dismissButton = dismissButton,
+        yesButton = "예",
+        noButton = "아니오"
+    )
+}
 
-                    override fun onFailure(p0: Call<Void>, p1: Throwable) {
-                        Toast.makeText(
-                            navController.context,
-                            "로그아웃을 실패하였습니다. 인터넷을 확인하세요.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                })
-            } else {
+fun logoutConfirm(
+    sharedAccount: SharedPreferences,
+    sharedConfigure: SharedPreferences,
+    sharedAlert: SharedPreferences,
+    navController: NavController,
+    showAlertDialog: MutableState<Boolean>
+){
+    if (sharedAccount.getString("type", null) == "manager") {
+        RetrofitInstance.apiService.apiLogout(
+            id = sharedAccount.getString("userid", null).toString(),
+            alertToken = sharedAlert.getString("alert_token", null).toString()
+        ).enqueue(object : Callback<Void> {
+            override fun onResponse(p0: Call<Void>, p1: Response<Void>) {
                 showAlertDialog.value = false
                 Toast.makeText(
                     navController.context,
                     "로그아웃을 성공하였습니다.",
                     Toast.LENGTH_SHORT
                 ).show()
-                sharedAccountEdit.clear()
-                sharedAccountEdit.apply()
-                sharedConfigureEdit.clear()
-                sharedConfigureEdit.apply()
+                sharedAccount.edit().clear()
+                sharedAccount.edit().apply()
+                sharedConfigure.edit().clear()
+                sharedConfigure.edit().apply()
                 navController.navigate("LoginScreen")
             }
-        },
-        dismissButton = dismissButton
-    )
-}
 
+            override fun onFailure(p0: Call<Void>, p1: Throwable) {
+                Toast.makeText(
+                    navController.context,
+                    "로그아웃을 실패하였습니다. 인터넷을 확인하세요.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        })
+    } else {
+        showAlertDialog.value = false
+        Toast.makeText(
+            navController.context,
+            "로그아웃을 성공하였습니다.",
+            Toast.LENGTH_SHORT
+        ).show()
+        sharedAccount.edit().clear()
+        sharedAccount.edit().apply()
+        sharedConfigure.edit().clear()
+        sharedConfigure.edit().apply()
+        navController.navigate("LoginScreen")
+    }
+}
 
 // 프리뷰
 @Preview(showBackground = true)
@@ -317,7 +327,7 @@ fun MenuBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun MenuTitleTextPreview() {
-    TitleText(text = "메뉴")
+    ScreenTitleText(text = "메뉴")
 }
 
 @Preview(showBackground = true)

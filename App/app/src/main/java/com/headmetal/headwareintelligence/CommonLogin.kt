@@ -41,7 +41,7 @@ fun AppNameText() {
 
 @Composable
 fun LoginFieldLabel(text: String = "") {
-    FieldLabel(text = text, fontSize = 16.sp)
+    BoldFieldLabel(text = text, fontSize = 16.sp)
 }
 
 @Composable

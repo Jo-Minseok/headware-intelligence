@@ -34,7 +34,7 @@ fun CompanyInfo(navController: NavController = rememberNavController()) {
 fun CompanyInfoComposable(navController: NavController = rememberNavController()) {
     Column {
         BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
-        TitleText(text = "참여 건설 업체")
+        ScreenTitleText(text = "참여 건설 업체")
         CompanyListComposable()
     }
 }
@@ -105,7 +105,7 @@ fun CompanyInfoBackIconPreview() {
 @Preview(showBackground = true)
 @Composable
 fun CompanyInfoTitleTextPreview() {
-    TitleText(text = "참여 견설 업체")
+    ScreenTitleText(text = "참여 견설 업체")
 }
 
 @Preview(showBackground = true)

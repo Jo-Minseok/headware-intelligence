@@ -132,7 +132,7 @@ fun WelcomeUserName(
 fun MainFieldLabel(
     text: String = ""
 ) {
-    FieldLabel(
+    BoldFieldLabel(
         text = text,
         fontSize = 18.sp
     )
@@ -366,7 +366,7 @@ fun MainContentsHeader(
     var isRefreshClickable by remember { mutableStateOf(true) }
 
     Row(modifier = Modifier.padding(top = 30.dp)) {
-        FieldLabel(
+        BoldFieldLabel(
             text = "정보",
             fontSize = 18.sp
         )

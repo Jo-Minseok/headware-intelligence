@@ -254,7 +254,7 @@ fun WorkCreateDialog(
                         disabledIndicatorColor = Color.Transparent,
                     )
                 )
-                Date(labelText = "시작일", inputText = inputWorkEndDate)
+                Date(labelText = "시작일", inputText = inputWorkStartDate)
                 Date(labelText = "종료일", inputText = inputWorkEndDate)
             }
         },

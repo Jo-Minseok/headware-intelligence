@@ -286,50 +286,52 @@ fun MainContents(type: String, navController: NavController) {
 
     Column {
         MainContentsHeader(refreshState = refreshState)
-        ContentsBox(
-            imageVector = weatherIcon,
-            iconColor = weatherColor,
-            contentsTexts = arrayOf(
-                { MainContentsBoxText(text = "기상 정보 : $weatherInfo") },
-                { MainContentsBoxText(text = "1시간 강수량 : ${precipitation}mm") },
-                {
-                    MainContentsBoxText(
-                        text = "기온 : ${temperature}ºC" + if (temperature > 35) {
-                            "(폭염 경보)"
-                        } else if (temperature > 33) {
-                            "(폭염 주의보)"
-                        } else {
-                            ""
-                        }
-                    )
-                },
-                {
-                    MainContentsBoxText(
-                        text = "풍속 : ${airVelocity}m/s" + if (airVelocity > 21) {
-                            "(강풍 경보)"
-                        } else if (airVelocity > 14) {
-                            "(강풍 주의보)"
-                        } else {
-                            ""
-                        }
-                    )
-                },
-                { MainContentsBoxText(text = "습도 : $humidity%") }
-            )
-        )
-        ContentsBox(
-            modifier = Modifier.clickable { navController.navigate("CountermeasureScreen") },
-            imageVector = Icons.Default.Report,
-            iconColor = Color(0xFFFFCC00),
-            contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
-        )
-        if (type == "manager") {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             ContentsBox(
-                modifier = Modifier.clickable { navController.navigate("ProcessingScreen") },
-                imageVector = Icons.Default.Inventory,
-                iconColor = Color.Gray,
-                contentsTexts = arrayOf({ MainContentsBoxText(text = "사고 처리 내역") })
+                imageVector = weatherIcon,
+                iconColor = weatherColor,
+                contentsTexts = arrayOf(
+                    { MainContentsBoxText(text = "기상 정보 : $weatherInfo") },
+                    { MainContentsBoxText(text = "1시간 강수량 : ${precipitation}mm") },
+                    {
+                        MainContentsBoxText(
+                            text = "기온 : ${temperature}ºC" + if (temperature > 35) {
+                                "(폭염 경보)"
+                            } else if (temperature > 33) {
+                                "(폭염 주의보)"
+                            } else {
+                                ""
+                            }
+                        )
+                    },
+                    {
+                        MainContentsBoxText(
+                            text = "풍속 : ${airVelocity}m/s" + if (airVelocity > 21) {
+                                "(강풍 경보)"
+                            } else if (airVelocity > 14) {
+                                "(강풍 주의보)"
+                            } else {
+                                ""
+                            }
+                        )
+                    },
+                    { MainContentsBoxText(text = "습도 : $humidity%") }
+                )
             )
+            ContentsBox(
+                modifier = Modifier.clickable { navController.navigate("CountermeasureScreen") },
+                imageVector = Icons.Default.Report,
+                iconColor = Color(0xFFFFCC00),
+                contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
+            )
+            if (type == "manager") {
+                ContentsBox(
+                    modifier = Modifier.clickable { navController.navigate("ProcessingScreen") },
+                    imageVector = Icons.Default.Inventory,
+                    iconColor = Color.Gray,
+                    contentsTexts = arrayOf({ MainContentsBoxText(text = "사고 처리 내역") })
+                )
+            }
         }
     }
 }

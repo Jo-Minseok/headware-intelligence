@@ -18,8 +18,11 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
@@ -594,5 +597,72 @@ fun NextIcon(
     )
 }
 
+//
+@Composable
+fun RadioButtonSingle(
+    modifier: Modifier = Modifier,
+    buttonText: String = "",
+    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
+    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
+) {
+    Button(
+        modifier = modifier,
+        onClick = {
+            firstButtonSwitch.value = true
+            secondButtonSwitch.value = false
+        },
+        shape = RoundedCornerShape(8.dp),
+        content = { Text(text = buttonText, color = Color.Black) },
+        colors = ButtonDefaults.buttonColors(
+            if (firstButtonSwitch.value) Color(0xDFFFFFFF) else Color(
+                0x5FFFFFFF
+            )
+        )
+    )
+}
 
+@Composable
+fun LabelAndRadioButtonComposable(
+    labelText: String = "",
+    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
+    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) },
+    firstButtonText: String = "",
+    secondButtonText: String = ""
+) {
+    Column {
+        Text(text = labelText, modifier = Modifier.fillMaxWidth())
+        Row {
+            RadioButtonSingle(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp),
+                buttonText = firstButtonText,
+                firstButtonSwitch = firstButtonSwitch,
+                secondButtonSwitch = secondButtonSwitch,
+            )
+            Spacer(modifier = Modifier.width(20.dp))
+            RadioButtonSingle(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(50.dp),
+                buttonText = secondButtonText,
+                firstButtonSwitch = secondButtonSwitch,
+                secondButtonSwitch = firstButtonSwitch,
+            )
+        }
+    }
+}
 
+@Composable
+fun LoginFunctionButton(
+    modifier: Modifier = Modifier,
+    buttonText: String = "",
+    onClick: () -> Unit = {}
+) {
+    Button(
+        modifier = modifier,
+        content = { Text(text = buttonText) },
+        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+        onClick = onClick
+    )
+}

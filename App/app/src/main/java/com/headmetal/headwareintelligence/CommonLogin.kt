@@ -78,20 +78,6 @@ fun LoginFieldLabel(text: String = "") {
 }
 
 @Composable
-fun LoginFunctionButton(
-    modifier: Modifier = Modifier,
-    buttonText: String = "",
-    onClick: () -> Unit = {}
-) {
-    Button(
-        modifier = modifier,
-        content = { Text(text = buttonText) },
-        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-        onClick = onClick
-    )
-}
-
-@Composable
 fun LoginFunctionButtonComposable(
     vararg loginFunctionButtons: @Composable () -> Unit
 ) {
@@ -102,59 +88,6 @@ fun LoginFunctionButtonComposable(
             loginFunctionButtons.forEach { loginFunctionButton ->
                 loginFunctionButton()
             }
-        }
-    }
-}
-
-@Composable
-fun RadioButtonSingle(
-    modifier: Modifier = Modifier,
-    buttonText: String = "",
-    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
-    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
-) {
-    Button(
-        modifier = modifier,
-        onClick = {
-            firstButtonSwitch.value = true
-            secondButtonSwitch.value = false
-        },
-        shape = RoundedCornerShape(8.dp),
-        content = { Text(text = buttonText, color = Color.Black) },
-        colors = ButtonDefaults.buttonColors(
-            if (firstButtonSwitch.value) Color(0xDFFFFFFF) else Color(
-                0x5FFFFFFF
-            )
-        )
-    )
-}
-
-@Composable
-fun LabelAndRadioButtonComposable(
-    labelText: String = "",
-    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
-    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
-) {
-    Column {
-        Text(text = labelText, modifier = Modifier.fillMaxWidth())
-        Row {
-            RadioButtonSingle(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
-                buttonText = "일반직",
-                firstButtonSwitch = firstButtonSwitch,
-                secondButtonSwitch = secondButtonSwitch,
-            )
-            Spacer(modifier = Modifier.width(20.dp))
-            RadioButtonSingle(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
-                buttonText = "관리직",
-                firstButtonSwitch = secondButtonSwitch,
-                secondButtonSwitch = firstButtonSwitch,
-            )
         }
     }
 }

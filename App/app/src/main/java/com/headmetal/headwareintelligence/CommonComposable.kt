@@ -323,7 +323,6 @@ fun LabelAndInputComposablePreview() {
         labelText = "test", inputText = remember {
             mutableStateOf("test")
         },
-        modifier = Modifier,
         placeholder = "placeholerTest"
     )
 }
@@ -331,7 +330,8 @@ fun LabelAndInputComposablePreview() {
 @Composable
 fun LabelAndInputComposable(
     labelText: String,
-    modifier: Modifier = Modifier,
+    textFieldmodifier: Modifier = Modifier,
+    textmodifier: Modifier = Modifier,
     inputText: MutableState<String>,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     placeholder: String = "",
@@ -343,9 +343,9 @@ fun LabelAndInputComposable(
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Text(text = labelText, modifier = Modifier.fillMaxWidth())
+        Text(text = labelText, modifier = textmodifier.fillMaxWidth())
         TextField(
-            modifier = modifier.fillMaxWidth(),
+            modifier = textFieldmodifier.fillMaxWidth(),
             value = inputText.value,
             onValueChange = { inputText.value = it },
             shape = MaterialTheme.shapes.medium,
@@ -469,7 +469,6 @@ fun Date(labelText: String, inputText: MutableState<String>) {
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
         ),
-        modifier = Modifier
     )
 }
 

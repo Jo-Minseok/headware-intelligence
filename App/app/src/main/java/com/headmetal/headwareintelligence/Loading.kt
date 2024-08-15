@@ -4,12 +4,8 @@ import android.app.Activity
 import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import retrofit2.Call
@@ -21,27 +17,27 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 
+@Preview(showBackground = true)
 @Composable
-fun Loading(navController: NavController = rememberNavController()) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9C94C)
-    ) { LoadingComposable(navController = navController) }
+fun LoadingPreview() {
+    Loading()
 }
 
 @Composable
-fun LoadingComposable(navController: NavController = rememberNavController()) {
+fun Loading(navController: NavController = rememberNavController()) {
     val sharedAlert: SharedPreferences =
         LocalContext.current.getSharedPreferences("Alert", MODE_PRIVATE)
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-
     val userId = sharedAccount.getString("userid", null)
     val userPassword = sharedAccount.getString("password", null)
     val accessToken = sharedAccount.getString("token", null)
@@ -165,36 +161,16 @@ fun LoadingComposable(navController: NavController = rememberNavController()) {
         })
     }
 
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HelmetImage()
-        AppNameText()
+    LoginScreen {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HelmetImage()
+            Text(
+                text = stringResource(id = R.string.app_name),
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
-}
-
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun LoadingPreview() {
-    Loading()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoadingComposablePreview() {
-    LoadingComposable()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoadingHelmetImagePreview() {
-    HelmetImage()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoadingAppNameTextPreview() {
-    AppNameText()
 }

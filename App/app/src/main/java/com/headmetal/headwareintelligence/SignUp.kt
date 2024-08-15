@@ -100,35 +100,36 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
             LabelAndInputComposable(
                 labelText = "아이디",
                 inputText = id,
-                modifier = Modifier.alpha(0.6f)
+                textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndInputComposable(
                 labelText = "비밀번호",
                 inputText = pw,
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.alpha(0.6f)
+                textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndInputComposable(
                 labelText = "비밀번호 확인",
                 inputText = rePw,
                 visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.alpha(0.6f)
+                textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndInputComposable(
                 labelText = "이름",
                 inputText = name,
                 placeholder = "4글자 이내",
-                modifier = Modifier.alpha(0.6f)
+                textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndInputComposable(
                 labelText = "전화번호",
                 inputText = phone,
-                modifier = Modifier.alpha(0.6f)
+                textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndInputComposable(
                 labelText = "이메일",
                 inputText = email,
-                placeholder = "'@' 를 포함한 이메일 형식", modifier = Modifier.alpha(0.6f)
+                placeholder = "'@' 를 포함한 이메일 형식",
+                textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndDropdownMenu(
                 fieldText = "건설업체",
@@ -137,9 +138,12 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
                 selectableItems = selectableCompany,
                 modifier = Modifier.alpha(0.6f)
             )
-            CustomRadioButtonComposable(
-                fieldLabel = { LoginFieldLabel(text = "직무") },
-                customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
+            LabelAndRadioButtonComposable(
+                labelText = "직무",
+                firstButtonSwitch = isEmployee,
+                secondButtonSwitch = isManager,
+                firstButtonText = "일반직",
+                secondButtonText = "관리직"
             )
             Button(
                 onClick = {
@@ -193,15 +197,6 @@ fun SignUpCompanyDropdownMenuComposablePreview() {
         expanded = remember { mutableStateOf(false) },
         selectedItem = remember { mutableStateOf("") },
         selectableItems = listOf("")
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignupCustomRadioButtonComposablePreview() {
-    CustomRadioButtonComposable(
-        fieldLabel = { LoginFieldLabel(text = "직무") },
-        customRadioButtonGroup = { CustomRadioButtonGroup() }
     )
 }
 

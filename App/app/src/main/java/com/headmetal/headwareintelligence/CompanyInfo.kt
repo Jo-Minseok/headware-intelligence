@@ -33,7 +33,7 @@ fun CompanyInfo(navController: NavController = rememberNavController()) {
 @Composable
 fun CompanyInfoComposable(navController: NavController = rememberNavController()) {
     Column {
-        BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
+        BackIcon(onClick = { navController.navigateUp() })
         ScreenTitleText(text = "참여 건설 업체")
         CompanyListComposable()
     }

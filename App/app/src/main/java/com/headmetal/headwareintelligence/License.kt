@@ -29,7 +29,7 @@ fun License(navController: NavController = rememberNavController()) {
 @Composable
 fun LicenseComposable(navController: NavController = rememberNavController()) {
     Column {
-        BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
+        BackIcon(onClick = { navController.navigateUp() })
         ScreenTitleText(text = "라이센스")
         LicenseFunctions()
     }
@@ -108,9 +108,9 @@ fun LicenseFunctions() {
     }
 
     Column(modifier = Modifier.padding(horizontal = 30.dp)) {
-        ProgressFunctionButton(buttonText = "Apache License 2.0") { showApacheDialog = true }
-        ProgressFunctionButton(buttonText = "MIT License") { showMITDialog = true }
-        ProgressFunctionButton(buttonText = "The GPL License 2.0") { showGPLDialog = true }
+        LabelWithNextIcon(text = "Apache License 2.0", onClick = { showApacheDialog = true })
+        LabelWithNextIcon(text = "MIT License", onClick = { showMITDialog = true })
+        LabelWithNextIcon(text = "The GPL License 2.0", onClick = { showGPLDialog = true })
     }
 }
 
@@ -129,38 +129,14 @@ fun LicenseComposablePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LicenseInfoBackIconPreview() {
-    BackIcon()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LicenseInfoTitleTextPreview() {
-    ScreenTitleText(text = "라이센스")
-}
-
-@Preview(showBackground = true)
-@Composable
 fun LicenseFunctionsPreview() {
     LicenseFunctions()
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LicenseProgressFunctionButtonPreview() {
-    ProgressFunctionButton(buttonText = "Apache License 2.0")
-}
-
-@Preview(showBackground = true)
-@Composable
 fun LicenseLabelTextPreview() {
     LabelText(text = "Apache License 2.0")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LicenseProgressIconPreview() {
-    ProgressIcon()
 }
 
 @Preview(showBackground = true)

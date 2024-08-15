@@ -84,6 +84,8 @@ fun Login(navController: NavController = rememberNavController()) {
             )
             LabelAndRadioButtonComposable(
                 labelText = "Part",
+                firstButtonText = "일반직",
+                secondButtonText="관리직",
                 firstButtonSwitch = isEmployee,
                 secondButtonSwitch = isManager
             )

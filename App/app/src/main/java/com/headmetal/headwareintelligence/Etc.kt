@@ -36,7 +36,7 @@ fun Etc(navController: NavController = rememberNavController()) {
 @Composable
 fun EtcComposable(navController: NavController = rememberNavController()) {
     Column {
-        BackIcon(modifier = Modifier.clickable { navController.navigateUp() })
+        BackIcon(onClick = { navController.navigateUp() })
         ScreenTitleText(text = "기타")
         EtcFunctions(navController = navController)
     }
@@ -51,12 +51,9 @@ fun EtcFunctions(navController: NavController = rememberNavController()) {
     }
 
     Column(modifier = Modifier.padding(horizontal = 30.dp)) {
-        ProgressFunctionButton(buttonText = "개발자") { showDeveloperDialog = true }
-        ProgressFunctionButton(
-            buttonText = "버전 정보",
-            additional = { Text(text = "1.0.0", color = Color.Black, fontSize = 20.sp) }
-        )
-        ProgressFunctionButton(buttonText = "라이센스") { navController.navigate("LicenseScreen") }
+        LabelWithNextIcon(onClick = { showDeveloperDialog = true}, text = "개발자")
+        LabelWithNextIcon(onClick = { navController.navigate("LicenseScreen")}, text = "라이센스")
+        LabelWithNextIcon(onClick = {}, text = "버전 정보\n1.0.0")
         AppInfoText()
     }
 }
@@ -164,20 +161,8 @@ fun EtcFunctionsPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun EtcProgressFunctionButtonPreview() {
-    ProgressFunctionButton(buttonText = "개발자")
-}
-
-@Preview(showBackground = true)
-@Composable
 fun EtcLabelTextPreview() {
     LabelText(text = "개발자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcProgressIconPreview() {
-    ProgressIcon()
 }
 
 @Preview(showBackground = true)

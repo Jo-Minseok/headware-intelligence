@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,7 +105,9 @@ fun PrivacyUser(
         modifier = Modifier
     ) {
         Row {
-            LabelIcon(imageVector = imageVector)
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null)
             LabelText(text = text)
         }
         PrivacyUserTextField(userInfo = userInfo)

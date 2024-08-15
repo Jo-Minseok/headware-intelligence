@@ -3,6 +3,7 @@ package com.headmetal.headwareintelligence
 import android.app.Activity
 import android.content.Context
 import android.util.Log
+import android.widget.RadioButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -518,15 +519,16 @@ fun IconWithLabelButton(
     color: Color = Color.Black,
     onClick: () -> Unit,
     fontSize: TextUnit = 20.sp
-)
-{
+) {
     Button(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         content = {
-            Icon(imageVector = leadIcon, contentDescription = null, tint = color, modifier = Modifier
-                .padding(end = 10.dp)
-                .size(30.dp))
+            Icon(
+                imageVector = leadIcon, contentDescription = null, tint = color, modifier = Modifier
+                    .padding(end = 10.dp)
+                    .size(30.dp)
+            )
             Text(text = text, color = color, fontSize = fontSize)
             Spacer(modifier = Modifier.weight(1f))
             Icon(imageVector = trailingIcon, contentDescription = null, tint = color)
@@ -540,7 +542,7 @@ fun IconWithLabelButton(
  */
 @Preview(showBackground = true)
 @Composable
-fun MenuIconPreview(){
+fun MenuIconPreview() {
     MenuIcon()
 }
 
@@ -561,7 +563,7 @@ fun MenuIcon(
 
 @Preview(showBackground = true)
 @Composable
-fun BackIconPreview(){
+fun BackIconPreview() {
     BackIcon()
 }
 
@@ -581,7 +583,7 @@ fun BackIcon(
  */
 @Preview(showBackground = true)
 @Composable
-fun NextIconPreview(){
+fun NextIconPreview() {
     NextIcon()
 }
 
@@ -596,13 +598,26 @@ fun NextIcon(
     )
 }
 
-//
+/**
+ * RadioButton 값
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun RadioButtonSinglePreview() {
+    RadioButtonSingle(
+        buttonText = "test",
+        firstButtonSwitch = remember { mutableStateOf(false) },
+        secondButtonSwitch = remember { mutableStateOf(true) }
+    )
+}
+
 @Composable
 fun RadioButtonSingle(
     modifier: Modifier = Modifier,
-    buttonText: String = "",
-    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
-    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) }
+    buttonText: String,
+    firstButtonSwitch: MutableState<Boolean>,
+    secondButtonSwitch: MutableState<Boolean>
 ) {
     Button(
         modifier = modifier,
@@ -620,13 +635,29 @@ fun RadioButtonSingle(
     )
 }
 
+/**
+ * RadioButton 2개
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun LabelAndRadioButtonPreview(){
+    LabelAndRadioButtonComposable(
+        labelText = "test",
+        firstButtonSwitch = remember{ mutableStateOf(true)},
+        secondButtonSwitch = remember{ mutableStateOf(false)},
+        firstButtonText = "1",
+        secondButtonText = "2"
+    )
+}
+
 @Composable
 fun LabelAndRadioButtonComposable(
-    labelText: String = "",
-    firstButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(true) },
-    secondButtonSwitch: MutableState<Boolean> = remember { mutableStateOf(false) },
-    firstButtonText: String = "",
-    secondButtonText: String = ""
+    labelText: String,
+    firstButtonSwitch: MutableState<Boolean>,
+    secondButtonSwitch: MutableState<Boolean>,
+    firstButtonText: String,
+    secondButtonText: String
 ) {
     Column {
         Text(text = labelText, modifier = Modifier.fillMaxWidth())
@@ -664,4 +695,27 @@ fun LoginFunctionButton(
         colors = ButtonDefaults.buttonColors(Color(0x59000000)),
         onClick = onClick
     )
+}
+
+/**
+ * LabelWithNextIcon
+ */
+@Preview(showBackground = true)
+@Composable
+fun LabelWithNextIconPreview(){
+    LabelWithNextIcon(
+        onClick = { /*TODO*/ },
+        text = "test"
+    )
+}
+
+@Composable
+fun LabelWithNextIcon(
+    onClick: () -> Unit,
+    text: String
+    ){
+    Row(modifier = Modifier.clickable { onClick() }){
+        Text(text = text)
+        NextIcon()
+    }
 }

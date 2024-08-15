@@ -53,9 +53,12 @@ fun FindIdComposable(navController: NavController = rememberNavController()) {
         HelmetImage()
         LabelAndInputComposable(labelText = "이름", inputText = name)
         LabelAndInputComposable(labelText = "이메일", inputText = email)
-        CustomRadioButtonComposable(
-            fieldLabel = { LoginFieldLabel(text = "직무") },
-            customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
+        LabelAndRadioButtonComposable(
+            labelText = "직무",
+            firstButtonSwitch = isEmployee,
+            secondButtonSwitch = isManager,
+            firstButtonText = "일반직",
+            secondButtonText = "관리직"
         )
         LoginFunctionButtonComposable(
             loginFunctionButtons = arrayOf(
@@ -152,27 +155,6 @@ fun FindIdTextFieldComposablePreview() {
     LabelAndInputComposable(labelText = "이름", inputText = remember {
         mutableStateOf("")
     })
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdCustomRadioButtonComposablePreview() {
-    CustomRadioButtonComposable(
-        fieldLabel = { LoginFieldLabel(text = "직무") },
-        customRadioButtonGroup = { CustomRadioButtonGroup() }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdCustomRadioButtonGroupPreview() {
-    CustomRadioButtonGroup()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdCustomRadioButtonSinglePreview() {
-    CustomRadioButtonSingle(buttonText = "일반직")
 }
 
 @Preview(showBackground = true)

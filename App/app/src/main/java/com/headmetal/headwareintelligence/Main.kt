@@ -22,18 +22,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -91,7 +93,11 @@ fun MainComposable(navController: NavController = rememberNavController()) {
             .padding(bottom = 10.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        DrawerMenuIcon(modifier = Modifier.clickable { navController.navigate("MenuScreen") })
+        Icon(
+            modifier = Modifier.clickable { navController.navigate("MenuScreen") },
+            imageVector = Icons.Default.Menu,
+            contentDescription = null
+        )
         WelcomeUserComposable(userName = userName!!)
         MainFunctionButtonMenu(type = type!!, navController = navController)
         MainContents(type = type, navController = navController)
@@ -178,11 +184,11 @@ fun MainFunctionButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     onClick: () -> Unit = {}
 ) {
-    FunctionButton(
+    Button(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp),
-        buttonText = buttonText,
+        content = { Text(text = buttonText)},
         colors = colors,
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         onClick = onClick
@@ -371,7 +377,7 @@ fun MainContentsHeader(
             fontSize = 18.sp
         )
         Spacer(modifier = Modifier.weight(1f))
-        ClickableIcon(
+        Icon(
             modifier = Modifier.clickable(enabled = isRefreshClickable) {
                 refreshState.value = true
                 isRefreshClickable = false
@@ -380,7 +386,8 @@ fun MainContentsHeader(
                     isRefreshClickable = true
                 }
             },
-            imageVector = Icons.Default.Update
+            imageVector = Icons.Default.Update,
+            contentDescription = null
         )
     }
 }
@@ -455,12 +462,6 @@ fun MainPreview() {
 @Composable
 fun MainComposablePreview() {
     MainComposable()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DrawerMenuIconPreview() {
-    DrawerMenuIcon()
 }
 
 @Preview(showBackground = true)

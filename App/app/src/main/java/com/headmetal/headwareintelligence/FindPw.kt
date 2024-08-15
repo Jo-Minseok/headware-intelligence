@@ -54,9 +54,12 @@ fun FindPwComposable(navController: NavController = rememberNavController()) {
         LabelAndInputComposable(labelText = "전화번호", inputText = phone)
         LabelAndInputComposable(labelText = "새 비밀번호", inputText = pw, visualTransformation = PasswordVisualTransformation())
         LabelAndInputComposable(labelText = "비밀번호 확인", inputText = rePw, visualTransformation = PasswordVisualTransformation())
-        CustomRadioButtonComposable(
-            fieldLabel = { LoginFieldLabel(text = "직무") },
-            customRadioButtonGroup = { CustomRadioButtonGroup(isEmployee, isManager) }
+        LabelAndRadioButtonComposable(
+            labelText = "직무",
+            firstButtonSwitch = isEmployee,
+            secondButtonSwitch = isManager,
+            firstButtonText = "일반직",
+            secondButtonText = "관리직"
         )
         LoginFunctionButtonComposable(
             loginFunctionButtons = arrayOf(
@@ -150,27 +153,6 @@ fun FindPwTextFieldComposablePreview() {
 @Composable
 fun FindPwFieldLabelPreview() {
     LoginFieldLabel(text = "아이디")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindPwCustomRadioButtonComposablePreview() {
-    CustomRadioButtonComposable(
-        fieldLabel = { LoginFieldLabel(text = "직무") },
-        customRadioButtonGroup = { CustomRadioButtonGroup() }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindPwCustomRadioButtonGroupPreview() {
-    CustomRadioButtonGroup()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindPwCustomRadioButtonSinglePreview() {
-    CustomRadioButtonSingle(buttonText = "일반직")
 }
 
 @Preview(showBackground = true)

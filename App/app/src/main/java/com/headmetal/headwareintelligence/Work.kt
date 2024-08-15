@@ -66,7 +66,7 @@ data class WorkerStatus(
 @Preview(showBackground = true)
 @Composable
 fun WorkPreview() {
-    Work(navController = rememberNavController(), workId = 1)
+    Work(navController = rememberNavController(), workshopName="작업장 이름", workId = 1)
 }
 
 /**
@@ -160,7 +160,7 @@ fun WorkerManageDialogPreview() {
  * 작업장 메인 화면
  */
 @Composable
-fun Work(workId: Int, navController: NavController) {
+fun Work(workId: Int, workshopName: String, navController: NavController) {
     // UI 변수 초기화
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var showWorkDeleteDialog by remember { mutableStateOf(false) }
@@ -230,7 +230,7 @@ fun Work(workId: Int, navController: NavController) {
             // 화면
             Column {
                 // 제목
-                ScreenTitleText(text = "작업장 이름")
+                ScreenTitleText(text = workshopName)
 
                 // 작업장 수정, 삭제 부분
                 Row {

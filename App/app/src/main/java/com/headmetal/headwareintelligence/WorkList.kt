@@ -301,7 +301,7 @@ fun WorkItem(
     navController: NavController
 ) {
     Button(
-        onClick = { navController.navigate("WorkScreen/${workshopId}") },
+        onClick = { navController.navigate("WorkScreen/${workshopId}/${workshopName}") },
         shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
             Color(255, 150, 0, 80)

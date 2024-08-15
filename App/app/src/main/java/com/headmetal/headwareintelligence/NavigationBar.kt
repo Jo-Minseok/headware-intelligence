@@ -81,10 +81,13 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
     }
     composable(
         route = Destinations.Work.route,
-        arguments = listOf(navArgument("workId") { type = NavType.IntType })
+        arguments = listOf(
+            navArgument("workId") { type = NavType.IntType },
+            navArgument("workshopName") { type = NavType.StringType })
     ) { backStackEntry ->
         Work(
             workId = backStackEntry.arguments?.getInt("workId") ?: 0,
+            workshopName = backStackEntry.arguments?.getString("workshopName") ?: "없음",
             navController = navController
         )
     }

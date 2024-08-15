@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.Lock
@@ -36,8 +37,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
+@Preview(showBackground = true)
 @Composable
-fun Privacy(navController: NavController = rememberNavController()) {
+fun PrivacyPreview() {
+    Privacy(navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PrivacyUserPreview() {
+    PrivacyUser(text = "아이디", userInfo = "id", imageVector = Icons.Outlined.Person)
+}
+
+@Composable
+fun Privacy(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val userId = sharedAccount.getString("userid", "")
@@ -45,54 +58,58 @@ fun Privacy(navController: NavController = rememberNavController()) {
     val userPhone = sharedAccount.getString("phone", "")
     val userEmail = sharedAccount.getString("email", "")
 
-    Screen(navController = navController, content = {
-        Column {
-            ScreenTitleText(text = "사용자 정보")
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                PrivacyUser(
-                    text = "아이디",
-                    userInfo = userId!!,
-                    imageVector = Icons.Outlined.Person
-                )
-                PrivacyUser(
-                    text = "이름",
-                    userInfo = userName!!,
-                    imageVector = Icons.Outlined.PermContactCalendar
-                )
-                PrivacyUser(
-                    text = "전화번호",
-                    userInfo = userPhone!!,
-                    imageVector = Icons.Outlined.Call
-                )
-                PrivacyUser(
-                    text = "이메일",
-                    userInfo = userEmail!!,
-                    imageVector = Icons.Outlined.Mail
-                )
-                PrivacyUser(
-                    text = "비밀번호",
-                    userInfo = "****",
-                    imageVector = Icons.Outlined.Lock
-                )
-                PrivacyUser(
-                    text = "건설업체",
-                    userInfo = "없음",
-                    imageVector = Icons.Outlined.Business
-                ) // 추후 구현 필요
-                Button(
-                    onClick = { /**TODO**/ },
-                    content = {
-                        Text(text = "개인 정보 변경")
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(Color(0xFF372A1F))
-                )
+    IconScreen(
+        imageVector = Icons.Default.ArrowBackIosNew,
+        onClick = { navController.navigateUp() },
+        content = {
+            Column {
+                ScreenTitleText(text = "사용자 정보")
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    PrivacyUser(
+                        text = "아이디",
+                        userInfo = userId!!,
+                        imageVector = Icons.Outlined.Person
+                    )
+                    PrivacyUser(
+                        text = "이름",
+                        userInfo = userName!!,
+                        imageVector = Icons.Outlined.PermContactCalendar
+                    )
+                    PrivacyUser(
+                        text = "전화번호",
+                        userInfo = userPhone!!,
+                        imageVector = Icons.Outlined.Call
+                    )
+                    PrivacyUser(
+                        text = "이메일",
+                        userInfo = userEmail!!,
+                        imageVector = Icons.Outlined.Mail
+                    )
+                    PrivacyUser(
+                        text = "비밀번호",
+                        userInfo = "****",
+                        imageVector = Icons.Outlined.Lock
+                    )
+                    PrivacyUser(
+                        text = "건설업체",
+                        userInfo = "없음",
+                        imageVector = Icons.Outlined.Business
+                    ) // 추후 구현 필요
+                    Button(
+                        onClick = { /**TODO**/ },
+                        content = {
+                            Text(text = "개인 정보 변경")
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(Color(0xFF372A1F))
+                    )
+                }
             }
         }
-    })
+    )
 }
 
 @Composable
@@ -136,17 +153,4 @@ fun PrivacyUserTextField(
             disabledIndicatorColor = Color.Transparent
         )
     )
-}
-
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun PrivacyPreview() {
-    Privacy()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PrivacyUserPreview() {
-    PrivacyUser(text = "아이디", userInfo = "id", imageVector = Icons.Outlined.Person)
 }

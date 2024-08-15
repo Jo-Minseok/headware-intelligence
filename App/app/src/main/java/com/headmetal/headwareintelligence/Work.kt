@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,7 +34,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
@@ -75,7 +75,7 @@ fun WorkPreview() {
 @Preview(showBackground = true)
 @Composable
 fun RefixWorkshopPreview() {
-    RefixWorkshop()
+    RefixWorkshop(showWorkDataInputDialog = {})
 }
 
 /**
@@ -84,7 +84,7 @@ fun RefixWorkshopPreview() {
 @Preview(showBackground = true)
 @Composable
 fun RemoveWorkshopPreview() {
-    RemoveWorkshop()
+    RemoveWorkshop(showDeleteDialog = {})
 }
 
 /**
@@ -93,7 +93,7 @@ fun RemoveWorkshopPreview() {
 @Preview(showBackground = true)
 @Composable
 fun AddWorkerPreview() {
-    AddWorker()
+    AddWorker(showWorkerAddDialog = {})
 }
 
 /**
@@ -102,7 +102,12 @@ fun AddWorkerPreview() {
 @Preview(showBackground = true)
 @Composable
 fun WorkerCardPreview() {
-    WorkerCard()
+    WorkerCard(
+        workerId = "testId",
+        workerName = "testName",
+        selectedWorkerId = remember { mutableStateOf("1") },
+        showWorkerManageDialog = remember { mutableStateOf(false) }
+    )
 }
 
 /**
@@ -111,7 +116,7 @@ fun WorkerCardPreview() {
 @Preview(showBackground = true)
 @Composable
 fun InputWorkUpdateDialogPreview() {
-    InputWorkUpdateDialog()
+    InputWorkUpdateDialog(onDismissRequest = {}, workId = 0)
 }
 
 /**
@@ -120,7 +125,11 @@ fun InputWorkUpdateDialogPreview() {
 @Preview(showBackground = true)
 @Composable
 fun WorkDeleteDialogPreview() {
-    WorkDeleteDialog(navController = rememberNavController())
+    WorkDeleteDialog(
+        onDismissRequest = {},
+        navController = rememberNavController(),
+        workId = 0
+    )
 }
 
 /**
@@ -129,7 +138,10 @@ fun WorkDeleteDialogPreview() {
 @Preview(showBackground = true)
 @Composable
 fun WorkerAddDialogPreview() {
-    WorkerAddDialog()
+    WorkerAddDialog(
+        onDismissRequest = {},
+        workId = 0
+    )
 }
 
 /**
@@ -138,7 +150,10 @@ fun WorkerAddDialogPreview() {
 @Preview(showBackground = true)
 @Composable
 fun WorkerManageDialogPreview() {
-    WorkerManageDialog()
+    WorkerManageDialog(
+        onDismissRequest = {},
+        workerId = "0"
+    )
 }
 
 /**
@@ -150,10 +165,10 @@ fun Work(workId: Int, navController: NavController) {
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var showWorkDeleteDialog by remember { mutableStateOf(false) }
     var showWorkerAddDialog by remember { mutableStateOf(false) }
-    var showWorkerManageDialog by remember { mutableStateOf(false) }
     var workerId by remember { mutableStateOf(listOf<String>()) }
     var workerName by remember { mutableStateOf(listOf<String>()) }
     val selectedWorkerId = remember { mutableStateOf("") }
+    val showWorkerManageDialog = remember { mutableStateOf(false) }
 
     // 작업장 수정 다이얼 로그
     if (showWorkDataInputDialog) {
@@ -178,9 +193,9 @@ fun Work(workId: Int, navController: NavController) {
     }
 
     // 작업자 관리 다이얼 로그
-    if (showWorkerManageDialog) {
+    if (showWorkerManageDialog.value) {
         WorkerManageDialog(
-            onDismissRequest = { showWorkerManageDialog = false },
+            onDismissRequest = { showWorkerManageDialog.value = false },
             workerId = selectedWorkerId.value
         )
     }
@@ -208,8 +223,9 @@ fun Work(workId: Int, navController: NavController) {
     }
 
     // 뒤로 가기 버튼 + 화면
-    Screen(
-        navController = navController,
+    IconScreen(
+        imageVector = Icons.Default.ArrowBackIosNew,
+        onClick = { navController.navigateUp() },
         content = {
             // 화면
             Column {
@@ -238,7 +254,12 @@ fun Work(workId: Int, navController: NavController) {
                     ) {
                         // 작업자 카드 등록
                         for (i in workerId.indices) {
-                            WorkerCard(workerId = workerId[i], workerName = workerName[i])
+                            WorkerCard(
+                                workerId = workerId[i],
+                                workerName = workerName[i],
+                                selectedWorkerId = selectedWorkerId,
+                                showWorkerManageDialog = showWorkerManageDialog
+                            )
                         }
                     }
                 }
@@ -249,8 +270,8 @@ fun Work(workId: Int, navController: NavController) {
 
 @Composable
 fun InputWorkUpdateDialog(
-    onDismissRequest: () -> Unit = {},
-    workId: Int = 0
+    onDismissRequest: () -> Unit,
+    workId: Int
 ) {
     // UI 변수 초기화
     var selectableCompanyList by remember { mutableStateOf(listOf<String>()) }
@@ -324,7 +345,8 @@ fun InputWorkUpdateDialog(
                     inputWorkCompany = inputWorkCompany.value,
                     inputWorkStartDate = inputWorkStartDate.value,
                     inputWorkEndDate = inputWorkEndDate.value,
-                    builder = builder
+                    builder = builder,
+                    onDismissRequest = onDismissRequest
                 )
             },
                 content = {
@@ -344,8 +366,8 @@ fun InputWorkUpdateDialog(
 
 @Composable
 fun WorkDeleteDialog(
-    onDismissRequest: () -> Unit = {},
-    workId: Int = 0,
+    onDismissRequest: () -> Unit,
+    workId: Int,
     navController: NavController
 ) {
     val context = LocalContext.current
@@ -361,7 +383,8 @@ fun WorkDeleteDialog(
                     removeWorkshop(
                         workId = workId,
                         builder = builder,
-                        navController = navController
+                        navController = navController,
+                        onDismissRequest = onDismissRequest
                     )
                 },
                 colors = ButtonDefaults.buttonColors(Color.Transparent)
@@ -382,8 +405,8 @@ fun WorkDeleteDialog(
 
 @Composable
 fun WorkerAddDialog(
-    onDismissRequest: () -> Unit = {},
-    workId: Int = 0
+    onDismissRequest: () -> Unit,
+    workId: Int
 ) {
     val workerId = remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -429,8 +452,8 @@ fun WorkerAddDialog(
 
 @Composable
 fun WorkerManageDialog(
-    onDismissRequest: () -> Unit = {},
-    workerId: String = "testId"
+    onDismissRequest: () -> Unit,
+    workerId: String
 ) {
     val workerName = remember { mutableStateOf("") }
     val workerPhone = remember { mutableStateOf("") }
@@ -541,7 +564,7 @@ fun WorkerManageDialog(
 }
 
 @Composable
-fun RefixWorkshop(showWorkDataInputDialog: () -> Unit = {}) {
+fun RefixWorkshop(showWorkDataInputDialog: () -> Unit) {
     Row(modifier = Modifier.clickable { showWorkDataInputDialog() }) {
         Icon(
             imageVector = Icons.Default.Settings,
@@ -560,7 +583,7 @@ fun RefixWorkshop(showWorkDataInputDialog: () -> Unit = {}) {
 }
 
 @Composable
-fun RemoveWorkshop(showDeleteDialog: () -> Unit = {}) {
+fun RemoveWorkshop(showDeleteDialog: () -> Unit) {
     Row(modifier = Modifier.clickable { showDeleteDialog() }) {
         Icon(
             imageVector = Icons.Default.RestoreFromTrash,
@@ -579,7 +602,7 @@ fun RemoveWorkshop(showDeleteDialog: () -> Unit = {}) {
 }
 
 @Composable
-fun AddWorker(showWorkerAddDialog: () -> Unit = {}) {
+fun AddWorker(showWorkerAddDialog: () -> Unit) {
     Text(
         text = "+ 작업자 등록",
         fontWeight = FontWeight.Bold,
@@ -591,10 +614,10 @@ fun AddWorker(showWorkerAddDialog: () -> Unit = {}) {
 
 @Composable
 fun WorkerCard(
-    workerId: String = "testId",
-    workerName: String = "testName",
-    selectedWorkerId: MutableState<String> = remember { mutableStateOf("") },
-    showWorkerManageDialog: MutableState<Boolean> = remember { mutableStateOf(false) }
+    workerId: String,
+    workerName: String,
+    selectedWorkerId: MutableState<String>,
+    showWorkerManageDialog: MutableState<Boolean>
 ) {
     Button(
         onClick = {
@@ -646,7 +669,8 @@ fun updateWorkshop(
     inputWorkCompany: String,
     inputWorkStartDate: String,
     inputWorkEndDate: String,
-    builder: AlertDialog.Builder
+    builder: AlertDialog.Builder,
+    onDismissRequest: () -> Unit
 ) {
     LoadingState.show()
     RetrofitInstance.apiService.updateWork(
@@ -667,6 +691,7 @@ fun updateWorkshop(
                 builder.setMessage("작업장 수정에 성공하였습니다.")
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
+                    onDismissRequest()
                 }
             } else {
                 builder.setTitle("작업장 수정 실패")
@@ -690,7 +715,8 @@ fun updateWorkshop(
 fun removeWorkshop(
     workId: Int,
     builder: AlertDialog.Builder,
-    navController: NavController
+    navController: NavController,
+    onDismissRequest: () -> Unit
 ) {
     LoadingState.show()
     RetrofitInstance.apiService.deleteWork(
@@ -705,6 +731,7 @@ fun removeWorkshop(
                 builder.setMessage("작업장 삭제에 성공하였습니다.")
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
+                    onDismissRequest()
                 }
                 navController.navigateUp()
             } else {

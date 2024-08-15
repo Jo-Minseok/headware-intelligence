@@ -47,8 +47,21 @@ data class CompanyList(
     val companies: List<String>
 )
 
+// 프리뷰
+@Preview(showBackground = true)
 @Composable
-fun SignUp(navController: NavController = rememberNavController()) {
+fun SignUpPreview() {
+    SignUp(navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SignUpHelmetImagePreview() {
+    HelmetImage()
+}
+
+@Composable
+fun SignUp(navController: NavController) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
@@ -59,7 +72,7 @@ fun SignUp(navController: NavController = rememberNavController()) {
 }
 
 @Composable
-fun SignUpComposable(navController: NavController = rememberNavController()) {
+fun SignUpComposable(navController: NavController) {
     val id: MutableState<String> = remember { mutableStateOf("") }
     val pw: MutableState<String> = remember { mutableStateOf("") }
     val rePw: MutableState<String> = remember { mutableStateOf("") }
@@ -174,30 +187,6 @@ fun SignUpComposable(navController: NavController = rememberNavController()) {
             )
         }
     }
-}
-
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun SignUpPreview() {
-    SignUp()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpHelmetImagePreview() {
-    HelmetImage()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignUpCompanyDropdownMenuComposablePreview() {
-    LabelAndDropdownMenu(
-        fieldText = "건설업체",
-        expanded = remember { mutableStateOf(false) },
-        selectedItem = remember { mutableStateOf("") },
-        selectableItems = listOf("")
-    )
 }
 
 fun register(

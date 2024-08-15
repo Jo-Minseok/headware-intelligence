@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
@@ -42,6 +43,35 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+// 프리뷰
+@Preview(showBackground = true)
+@Composable
+fun MenuPreview() {
+    Menu(navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MenuUserPrivacyButtonPreview() {
+    UserCard(type = "manager", userName = "관리자", navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MenuFunctionsPreview() {
+    MenuFunctions(type = "manager", navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MenuLogoutAlertDialogPreview() {
+    LogoutAlertDialog(
+        showAlertDialog = remember { mutableStateOf(false) },
+        dismissButton = {},
+        navController = rememberNavController()
+    )
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 fun notificationSettingOreo(context: Context): Intent {
     return Intent().also { intent ->
@@ -61,25 +91,29 @@ fun notificationSettingOreoLess(context: Context): Intent {
 }
 
 @Composable
-fun Menu(navController: NavController = rememberNavController()) {
+fun Menu(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val type = sharedAccount.getString("type", "")
     val userName = sharedAccount.getString("name", "")
 
-    Screen(navController = navController, content = {
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            UserCard(type = type!!, userName = userName!!, navController = navController)
-            MenuFunctions(type = type, navController = navController)
+    IconScreen(
+        imageVector = Icons.Default.ArrowBackIosNew,
+        onClick = { navController.navigateUp() },
+        content = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                UserCard(type = type!!, userName = userName!!, navController = navController)
+                MenuFunctions(type = type, navController = navController)
+            }
         }
-    })
+    )
 }
 
 @Composable
 fun UserCard(
-    type: String = "employee",
-    userName: String = "근로자",
-    navController: NavController = rememberNavController()
+    type: String,
+    userName: String,
+    navController: NavController
 ) {
     Button(
         modifier = Modifier.fillMaxWidth(),
@@ -118,8 +152,8 @@ fun UserCard(
 
 @Composable
 fun MenuFunctions(
-    type: String = "employee",
-    navController: NavController = rememberNavController()
+    type: String,
+    navController: NavController
 ) {
     val showLogoutDialog: MutableState<Boolean> = remember { mutableStateOf(false) }
 
@@ -172,9 +206,9 @@ fun MenuFunctions(
 
 @Composable
 fun LogoutAlertDialog(
-    showAlertDialog: MutableState<Boolean> = remember { mutableStateOf(false) },
-    dismissButton: () -> Unit = {},
-    navController: NavController = rememberNavController()
+    showAlertDialog: MutableState<Boolean>,
+    dismissButton: () -> Unit,
+    navController: NavController
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
@@ -244,29 +278,4 @@ fun logoutConfirm(
         sharedConfigure.edit().clear().apply()
         navController.navigate("LoginScreen")
     }
-}
-
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun MenuPreview() {
-    Menu()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuUserPrivacyButtonPreview() {
-    UserCard(type = "manager", userName = "관리자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuFunctionsPreview() {
-    MenuFunctions(type = "manager")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MenuLogoutAlertDialogPreview() {
-    LogoutAlertDialog()
 }

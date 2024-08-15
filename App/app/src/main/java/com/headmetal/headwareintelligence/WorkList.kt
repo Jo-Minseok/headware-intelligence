@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
@@ -35,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -68,7 +67,7 @@ data class WorkShopList(
 @Preview(showBackground = true)
 @Composable
 fun WorkListPreview() {
-    WorkList()
+    WorkList(navController = rememberNavController())
 }
 
 /**
@@ -91,7 +90,8 @@ fun WorkItemPreview() {
         workshopCompany = "company",
         workshopName = "test",
         workshopStartDate = "2024-01-01",
-        workshopEndDate = "2024-01-02"
+        workshopEndDate = "2024-01-02",
+        navController = rememberNavController()
     )
 }
 
@@ -99,7 +99,7 @@ fun WorkItemPreview() {
  * WorkList 전체 화면
  */
 @Composable
-fun WorkList(navController: NavController = rememberNavController()) {
+fun WorkList(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val userId = sharedAccount.getString("userid", null)
@@ -131,7 +131,7 @@ fun WorkList(navController: NavController = rememberNavController()) {
                 }
 
                 override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
-                    println("서버 통신 실패: ${t.message}")
+                    Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
                 }
             })
         }
@@ -147,8 +147,9 @@ fun WorkList(navController: NavController = rememberNavController()) {
     /**
      * 메인 화면
      */
-    Screen(
-        navController = navController,
+    IconScreen(
+        imageVector = Icons.Default.ArrowBackIosNew,
+        onClick = { navController.navigateUp() },
         content = {
             Column {
                 ScreenTitleText(text = "작업장 관리")
@@ -297,7 +298,7 @@ fun WorkItem(
     workshopCompany: String,
     workshopStartDate: String,
     workshopEndDate: String?,
-    navController: NavController = rememberNavController()
+    navController: NavController
 ) {
     Button(
         onClick = { navController.navigate("WorkScreen/${workshopId}") },

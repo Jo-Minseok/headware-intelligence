@@ -11,16 +11,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory
@@ -30,12 +29,9 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material3.Button
-import androidx.compose.material3.Surface
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -50,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,73 +68,94 @@ data class WeatherResponse(
     val humidity: Float
 )
 
+// 프리뷰
+@Preview(showBackground = true)
 @Composable
-fun Main(navController: NavController = rememberNavController()) {
+fun MainPreview() {
+    Main(navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WelcomeUserComposablePreview() {
+    WelcomeUserComposable(userName = "사용자")
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainFieldLabelPreview() {
+    MainFieldLabel(text = "관리자 기능")
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainFunctionButtonMenuPreview() {
+    MainFunctionButtonMenu(type = "manager", navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainContentsHeaderPreview() {
+    MainContentsHeader()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainContentsPreview() {
+    MainContents(type = "manager", navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainContentsBoxPreview() {
+    ContentsBox(
+        imageVector = Icons.Default.Report,
+        iconColor = Color(0xFFFFCC00),
+        contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
+    )
+}
+
+
+@Composable
+fun Main(navController: NavController) {
     BackOnPressed()
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9F9F9)
-    ) { MainComposable(navController = navController) }
+    IconScreen(
+        imageVector = Icons.Default.Menu,
+        onClick = { navController.navigate("MenuScreen") },
+        content = {
+            val sharedAccount: SharedPreferences =
+                LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+            val type = sharedAccount.getString("type", "")
+            val userName = sharedAccount.getString("name", "")
+
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(30.dp)
+            ) {
+                WelcomeUserComposable(userName = userName!!)
+                MainFunctionButtonMenu(type = type!!, navController = navController)
+                MainContents(type = type, navController = navController)
+            }
+        }
+    )
 }
 
 @Composable
-fun MainComposable(navController: NavController = rememberNavController()) {
-    val sharedAccount: SharedPreferences =
-        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val type = sharedAccount.getString("type", "")
-    val userName = sharedAccount.getString("name", "")
-
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 10.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Icon(
-            modifier = Modifier.clickable { navController.navigate("MenuScreen") },
-            imageVector = Icons.Default.Menu,
-            contentDescription = null
-        )
-        WelcomeUserComposable(userName = userName!!)
-        MainFunctionButtonMenu(type = type!!, navController = navController)
-        MainContents(type = type, navController = navController)
-    }
-}
-
-@Composable
-fun WelcomeUserComposable(
-    userName: String = ""
-) {
-    Box(modifier = Modifier.padding(top = 26.dp)) {
-        Column {
-            WelcomeMessage()
-            WelcomeUserName(userName)
+fun WelcomeUserComposable(userName: String) {
+    Column {
+        Text(text = "반갑습니다,", fontSize = 16.sp)
+        Row {
+            Text(text = userName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "님", fontSize = 24.sp)
         }
     }
 }
 
+/**
+ * MainFunction
+ */
 @Composable
-fun WelcomeMessage() {
-    Text(
-        text = "반갑습니다,",
-        fontSize = 16.sp
-    )
-}
-
-@Composable
-fun WelcomeUserName(
-    userName: String = ""
-) {
-    Text(
-        text = userName + "님",
-        fontSize = 24.sp
-    )
-}
-
-@Composable
-fun MainFieldLabel(
-    text: String = ""
-) {
+fun MainFieldLabel(text: String) {
     BoldTextField(
         text = text,
         fontSize = 18.sp
@@ -145,61 +163,46 @@ fun MainFieldLabel(
 }
 
 @Composable
-fun MainFunctionButtonMenu(
-    type: String = "employee",
-    navController: NavController = rememberNavController()
-) {
-    Column(Modifier.padding(top = 30.dp)) {
+fun MainFunctionButtonMenu(type: String, navController: NavController) {
+    Column {
         if (type == "manager") {
             MainFieldLabel(text = "관리자 기능")
-            MainFunctionButton(
+            RoundedButton(
                 buttonText = "사고 추세 확인",
-                colors = ButtonDefaults.buttonColors(Color(0xFF99CCFF)),
-            ) { navController.navigate("TrendScreen") }
-            MainFunctionButton(
+                colors = Color(0xFF99CCFF),
+                onClick = { navController.navigate("TrendScreen") }
+            )
+            RoundedButton(
                 buttonText = "사고 발생지 확인",
-                colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-            ) { navController.navigate("MapScreen") }
-            MainFunctionButton(
+                colors = Color(0xFFFF6600),
+                onClick = { navController.navigate("MapScreen") }
+            )
+            RoundedButton(
                 buttonText = "미처리 사고 발생지 확인",
-                colors = ButtonDefaults.buttonColors(Color(0xFFFF8000)),
-            ) { navController.navigate("NullMapScreen") }
-            MainFunctionButton(
+                colors = Color(0xFFFF8000),
+                onClick = { navController.navigate("NullMapScreen") }
+            )
+            RoundedButton(
                 buttonText = "작업장 관리",
-                colors = ButtonDefaults.buttonColors(Color(0xFFFF8000)),
-            ) { navController.navigate("WorkListScreen") }
+                colors = Color(0xFFFF8000),
+                onClick = { navController.navigate("WorkListScreen") }
+            )
         } else {
             MainFieldLabel(text = "근로자 기능")
-            MainFunctionButton(
+            RoundedButton(
                 buttonText = "안전모 등록",
-                colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
-            ) { navController.navigate("HelmetScreen") }
+                colors = Color(0xFFFFB266),
+                onClick = { navController.navigate("HelmetScreen") }
+            )
         }
     }
 }
 
+/**
+ * MainContents
+ */
 @Composable
-fun MainFunctionButton(
-    buttonText: String = "",
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    onClick: () -> Unit = {}
-) {
-    Button(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp),
-        content = { Text(text = buttonText)},
-        colors = colors,
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-        onClick = onClick
-    )
-}
-
-@Composable
-fun MainContents(
-    type: String = "employee",
-    navController: NavController = rememberNavController()
-) {
+fun MainContents(type: String, navController: NavController) {
     val context = LocalContext.current
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var hasLocationPermission by remember { mutableStateOf(false) }
@@ -240,8 +243,7 @@ fun MainContents(
             val location = fusedLocationClient.lastLocation.await()
             location?.let { pos ->
                 RetrofitInstance.retryApiService.getWeather(pos.latitude, pos.longitude)
-                    .enqueue(object :
-                        Callback<WeatherResponse> {
+                    .enqueue(object : Callback<WeatherResponse> {
                         override fun onResponse(
                             call: Call<WeatherResponse>,
                             response: Response<WeatherResponse>
@@ -280,37 +282,13 @@ fun MainContents(
         }
     }
 
-    val weatherInfo: String
-    val weatherIcon: ImageVector
-    val weatherColor: Color
-
-    if (precipitation > 30) {
-        weatherInfo = "호우 경보"
-        weatherIcon = Icons.Default.Water
-        weatherColor = Color(0xFF00BFFF)
-    } else if (precipitation > 20) {
-        weatherInfo = "호우 주의보"
-        weatherIcon = Icons.Default.Water
-        weatherColor = Color(0xFF00BFFF)
-    } else if (precipitation > 0) {
-        weatherInfo = "비"
-        weatherIcon = Icons.Default.WaterDrop
-        weatherColor = Color(0xFF00BFFF)
-    } else {
-        weatherInfo = "맑음"
-        weatherIcon = Icons.Default.WbSunny
-        weatherColor = Color(0xFFFF7F00)
-    }
+    val (weatherInfo, weatherIcon, weatherColor) = getWeatherInfo(precipitation)
 
     Column {
         MainContentsHeader(refreshState = refreshState)
-        MainContentsBox(
-            contentsBoxIcon = {
-                MainContentsBoxIcon(
-                    imageVector = weatherIcon,
-                    color = weatherColor
-                )
-            },
+        ContentsBox(
+            imageVector = weatherIcon,
+            iconColor = weatherColor,
             contentsTexts = arrayOf(
                 { MainContentsBoxText(text = "기상 정보 : $weatherInfo") },
                 { MainContentsBoxText(text = "1시간 강수량 : ${precipitation}mm") },
@@ -339,25 +317,17 @@ fun MainContents(
                 { MainContentsBoxText(text = "습도 : $humidity%") }
             )
         )
-        MainContentsBox(
+        ContentsBox(
             modifier = Modifier.clickable { navController.navigate("CountermeasureScreen") },
-            contentsBoxIcon = {
-                MainContentsBoxIcon(
-                    imageVector = Icons.Default.Report,
-                    color = Color(0xFFFFCC00)
-                )
-            },
+            imageVector = Icons.Default.Report,
+            iconColor = Color(0xFFFFCC00),
             contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
         )
         if (type == "manager") {
-            MainContentsBox(
+            ContentsBox(
                 modifier = Modifier.clickable { navController.navigate("ProcessingScreen") },
-                contentsBoxIcon = {
-                    MainContentsBoxIcon(
-                        imageVector = Icons.Default.Inventory,
-                        color = Color.Gray
-                    )
-                },
+                imageVector = Icons.Default.Inventory,
+                iconColor = Color.Gray,
                 contentsTexts = arrayOf({ MainContentsBoxText(text = "사고 처리 내역") })
             )
         }
@@ -371,11 +341,8 @@ fun MainContentsHeader(
     val coroutineScope = rememberCoroutineScope()
     var isRefreshClickable by remember { mutableStateOf(true) }
 
-    Row(modifier = Modifier.padding(top = 30.dp)) {
-        BoldTextField(
-            text = "정보",
-            fontSize = 18.sp
-        )
+    Row {
+        BoldTextField(text = "정보", fontSize = 18.sp)
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             modifier = Modifier.clickable(enabled = isRefreshClickable) {
@@ -392,27 +359,37 @@ fun MainContentsHeader(
     }
 }
 
+/**
+ * ContentBox
+ */
 @Composable
-fun MainContentsBox(
+fun ContentsBox(
     modifier: Modifier = Modifier,
-    contentsBoxIcon: @Composable () -> Unit,
+    imageVector: ImageVector,
+    iconColor: Color = Color.Black,
     vararg contentsTexts: @Composable () -> Unit
 ) {
     Box(
         modifier = modifier
-            .padding(vertical = 6.dp)
             .background(color = Color.White)
             .border(
                 width = 1.dp,
                 color = Color(0xFFE0E0E0),
-                shape = RoundedCornerShape(8.dp)
+                shape = MaterialTheme.shapes.medium
             )
             .fillMaxWidth()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            contentsBoxIcon()
+            Icon(
+                modifier = modifier
+                    .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                    .size(40.dp),
+                imageVector = imageVector,
+                contentDescription = null,
+                tint = iconColor
+            )
             Column {
                 contentsTexts.forEach { contentsText ->
                     contentsText()
@@ -423,24 +400,8 @@ fun MainContentsBox(
 }
 
 @Composable
-fun MainContentsBoxIcon(
-    modifier: Modifier = Modifier,
-    imageVector: ImageVector,
-    color: Color = Color.Black
-) {
-    Icon(
-        modifier = modifier
-            .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
-            .size(40.dp),
-        imageVector = imageVector,
-        contentDescription = null,
-        tint = color
-    )
-}
-
-@Composable
 fun MainContentsBoxText(
-    text: String = ""
+    text: String
 ) {
     Text(
         text = text,
@@ -451,68 +412,11 @@ fun MainContentsBoxText(
     )
 }
 
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun MainPreview() {
-    Main()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainComposablePreview() {
-    MainComposable()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WelcomeUserComposablePreview() {
-    WelcomeUserComposable(userName = "사용자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainFunctionButtonMenuPreview() {
-    MainFunctionButtonMenu(type = "manager")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainFieldLabelPreview() {
-    MainFieldLabel(text = "관리자 기능")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainFunctionButtonPreview() {
-    MainFunctionButton(
-        buttonText = "사고 추세 확인",
-        colors = ButtonDefaults.buttonColors(Color(0xFF99CCFF))
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainContentsPreview() {
-    MainContents(type = "관리자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainContentsHeaderPreview() {
-    MainContentsHeader()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainContentsBoxPreview() {
-    MainContentsBox(
-        contentsBoxIcon = {
-            MainContentsBoxIcon(
-                imageVector = Icons.Default.Report,
-                color = Color(0xFFFFCC00)
-            )
-        },
-        contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
-    )
+fun getWeatherInfo(precipitation: Float): Triple<String, ImageVector, Color> {
+    return when {
+        precipitation > 30 -> Triple("호우 경보", Icons.Default.Water, Color(0xFF00BFFF))
+        precipitation > 20 -> Triple("호우 주의보", Icons.Default.Water, Color(0xFF00BFFF))
+        precipitation > 0 -> Triple("비", Icons.Default.WaterDrop, Color(0xFF00BFFF))
+        else -> Triple("맑음", Icons.Default.WbSunny, Color(0xFFFF7F00))
+    }
 }

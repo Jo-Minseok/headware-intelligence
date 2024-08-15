@@ -280,7 +280,7 @@ fun YesNoAlertDialog(
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
-        title = { Text(text = title) },
+        title = { AlertTitleText (text = title) },
         text = textComposable,
         confirmButton = { TextButton(onClick = confirmButton) { Text(text = yesButton) } },
         dismissButton = { TextButton(onClick = dismissButton) { Text(text = noButton) } }
@@ -311,7 +311,7 @@ fun OnlyYesAlertDialog(
 ) {
     AlertDialog(
         onDismissRequest = dismissButton,
-        title = { Text(text = title) },
+        title = { AlertTitleText(text = title) },
         text = textComposable,
         confirmButton = { TextButton(onClick = confirmButton) { Text(text = yesButton) } },
     )

@@ -62,25 +62,17 @@ fun notificationSettingOreoLess(context: Context): Intent {
 
 @Composable
 fun Menu(navController: NavController = rememberNavController()) {
-    Screen(navController = navController, content = {
-        Column {
-            ScreenTitleText(text = "메뉴")
-            MenuContents(navController = navController)
-        }
-    })
-}
-
-@Composable
-fun MenuContents(navController: NavController = rememberNavController()) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val type = sharedAccount.getString("type", "")
     val userName = sharedAccount.getString("name", "")
 
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        UserCard(type = type!!, userName = userName!!, navController = navController)
-        MenuFunctions(type = type, navController = navController)
-    }
+    Screen(navController = navController, content = {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            UserCard(type = type!!, userName = userName!!, navController = navController)
+            MenuFunctions(type = type, navController = navController)
+        }
+    })
 }
 
 @Composable
@@ -104,8 +96,16 @@ fun UserCard(
                     modifier = Modifier.size(40.dp)
                 )
                 Column(verticalArrangement = Arrangement.Center) {
-                    UserDistinguish(type = type)
-                    UserName(userName = userName)
+                    Text(
+                        text = if (type == "manager") "관리자" else "근로자",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = userName,
+                        color = Color.Black,
+                        fontSize = 20.sp
+                    )
                 }
             }
         },
@@ -113,28 +113,6 @@ fun UserCard(
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         onClick = { navController.navigate("PrivacyScreen") },
         shape = MaterialTheme.shapes.medium
-    )
-}
-
-@Composable
-fun UserDistinguish(
-    type: String = "employee"
-) {
-    Text(
-        text = if (type == "manager") "관리자" else "근로자",
-        color = Color.Gray,
-        fontSize = 16.sp
-    )
-}
-
-@Composable
-fun UserName(
-    userName: String = "근로자"
-) {
-    Text(
-        text = userName,
-        color = Color.Black,
-        fontSize = 20.sp
     )
 }
 
@@ -242,10 +220,8 @@ fun logoutConfirm(
                     "로그아웃을 성공하였습니다.",
                     Toast.LENGTH_SHORT
                 ).show()
-                sharedAccount.edit().clear()
-                sharedAccount.edit().apply()
-                sharedConfigure.edit().clear()
-                sharedConfigure.edit().apply()
+                sharedAccount.edit().clear().apply()
+                sharedConfigure.edit().clear().apply()
                 navController.navigate("LoginScreen")
             }
 
@@ -264,10 +240,8 @@ fun logoutConfirm(
             "로그아웃을 성공하였습니다.",
             Toast.LENGTH_SHORT
         ).show()
-        sharedAccount.edit().clear()
-        sharedAccount.edit().apply()
-        sharedConfigure.edit().clear()
-        sharedConfigure.edit().apply()
+        sharedAccount.edit().clear().apply()
+        sharedConfigure.edit().clear().apply()
         navController.navigate("LoginScreen")
     }
 }

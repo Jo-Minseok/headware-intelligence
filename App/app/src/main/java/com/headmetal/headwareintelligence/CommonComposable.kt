@@ -535,7 +535,7 @@ fun IconWithLabelButton(
             Icon(
                 imageVector = leadIcon, contentDescription = null, tint = color, modifier = Modifier
                     .padding(end = 10.dp)
-                    .size(30.dp)
+                    .size(30.dp).clickable(enabled = false, onClick = {})
             )
             Text(text = text, color = color, fontSize = fontSize)
             Spacer(modifier = Modifier.weight(1f))

@@ -56,7 +56,7 @@ fun EtcAppInfoTextPreview() {
 @Preview(showBackground = true)
 @Composable
 fun EtcDevelopersAlertDialog() {
-    DevelopersAlertDialog()
+    DevelopersAlertDialog(onConfirmButton = {})
 }
 
 @Composable
@@ -69,7 +69,7 @@ fun Etc(navController: NavController) {
             var showDeveloperDialog by remember { mutableStateOf(false) }
 
             if (showDeveloperDialog) {
-                DevelopersAlertDialog { showDeveloperDialog = false }
+                DevelopersAlertDialog(onConfirmButton = {showDeveloperDialog = false})
             }
 
             LaunchedEffect(Unit) {
@@ -133,7 +133,7 @@ fun AppInfoText() {
 
 @Composable
 fun DevelopersAlertDialog(
-    dismissButton: () -> Unit = {}
+    onConfirmButton: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -155,7 +155,8 @@ fun DevelopersAlertDialog(
                 }
             }
         },
-        dismissButton = dismissButton,
+        dismissButton = {},
+        confirmButton = onConfirmButton,
         yesButton = "확인"
     )
 }

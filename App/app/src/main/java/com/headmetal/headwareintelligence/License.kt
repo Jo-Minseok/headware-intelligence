@@ -78,8 +78,9 @@ fun License(navController: NavController) {
                                     "See the License for the specific language governing permissions and\n" +
                                     "limitations under the License."
                         )
-                    }
-                ) { showApacheDialog = false }
+                    },
+                    confirmButton = { showApacheDialog = false }
+                )
             }
 
             if (showMITDialog) {
@@ -105,8 +106,9 @@ fun License(navController: NavController) {
                                     "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN" +
                                     "THE SOFTWARE."
                         )
-                    }
-                ) { showMITDialog = false }
+                    },
+                    confirmButton = { showMITDialog = false }
+                )
             }
 
             if (showGPLDialog) {
@@ -121,8 +123,9 @@ fun License(navController: NavController) {
                                     " Everyone is permitted to copy and distribute verbatim copies" +
                                     "of this license document, but changing it is not allowed."
                         )
-                    }
-                ) { showGPLDialog = false }
+                    },
+                    confirmButton = { showGPLDialog = false }
+                )
             }
             ScreenTitleText(text = "라이센스")
 

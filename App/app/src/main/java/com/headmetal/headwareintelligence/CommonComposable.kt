@@ -426,7 +426,7 @@ fun LabelAndDropdownMenu(
             onExpandedChange = { expanded.value = !expanded.value }
         ) {
             TextField(
-                modifier = modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth().menuAnchor(),
                 value = selectedItem.value,
                 onValueChange = {},
                 readOnly = true,

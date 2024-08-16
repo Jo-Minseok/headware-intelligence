@@ -12,6 +12,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.pm.PackageManager
 import android.os.Build
@@ -25,61 +26,23 @@ import androidx.navigation.compose.rememberNavController
 @Preview(showBackground = true)
 @Composable
 fun LoadingPreview() {
-    Loading()
+    Loading(navController = rememberNavController())
 }
 
 @Composable
-fun Loading(navController: NavController = rememberNavController()) {
+fun Loading(navController: NavController) {
     val sharedAlert: SharedPreferences =
         LocalContext.current.getSharedPreferences("Alert", MODE_PRIVATE)
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-    val userId = sharedAccount.getString("userid", null)
-    val userPassword = sharedAccount.getString("password", null)
-    val accessToken = sharedAccount.getString("token", null)
-    val type = sharedAccount.getString("type", null)
+    val userId = sharedAccount.getString("userid", "")
+    val userPassword = sharedAccount.getString("password", "")
+    val type = sharedAccount.getString("type", "") ?: "employee"
 
-    var autoLogin by remember { mutableStateOf(false) }
+    val autoLogin = remember { isAutoLoginAvailable(sharedAccount) }
 
-    if (userId != null && accessToken != null) {
-        autoLogin = true
-    }
-
-    val permissions = mutableListOf(
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.POST_NOTIFICATIONS
-    )
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-        permissions.add(Manifest.permission.BLUETOOTH)
-        permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
-    } else {
-        permissions.add(Manifest.permission.BLUETOOTH_SCAN)
-        permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
-        permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
-    }
-
-    val permissionsToRequest = mutableListOf<String>()
-    permissions.forEach { permission ->
-        if (ContextCompat.checkSelfPermission(
-                LocalContext.current,
-                permission
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionsToRequest.add(permission)
-        }
-    }
-
-    if (permissionsToRequest.isNotEmpty()) {
-        ActivityCompat.requestPermissions(
-            LocalContext.current as Activity, permissionsToRequest.toTypedArray(),
-            MainActivity.REQUEST_PERMISSIONS_CODE
-        )
-        Log.d("HEAD METAL", "권한을 요청하였습니다.")
-    } else {
-        Log.d("HEAD METAL", "권한이 이미 존재합니다.")
-    }
+    requestRequiredPermissions(LocalContext.current)
 
     LaunchedEffect(Unit) {
         RetrofitInstance.apiService.apiGetStatus().enqueue(object : Callback<Void> {
@@ -88,7 +51,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                     if (autoLogin) {
                         RetrofitInstance.apiService.apiLogin(
                             alertToken = sharedAlert.getString("alert_token", null).toString(),
-                            type = type.toString(),
+                            type = type,
                             id = userId,
                             pw = userPassword
                         ).enqueue(object : Callback<LoginResponse> {
@@ -100,7 +63,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                                     if (navController.currentDestination?.route != "MainScreen") {
                                         Toast.makeText(
                                             navController.context,
-                                            response.body()?.name + "님 반갑습니다",
+                                            "${response.body()?.name} 님 반갑습니다",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                         navController.navigate("MainScreen") {
@@ -117,8 +80,7 @@ fun Loading(navController: NavController = rememberNavController()) {
                                         buttonText = "확인"
                                     ) {
                                         navController.navigate("LoginScreen")
-                                        sharedAccountEdit.clear()
-                                        sharedAccountEdit.apply()
+                                        sharedAccountEdit.clear().apply()
                                     }
                                 }
                             }
@@ -167,4 +129,57 @@ fun Loading(navController: NavController = rememberNavController()) {
             AppNameText()
         }
     }
+}
+
+fun isAutoLoginAvailable(sharedAccount: SharedPreferences): Boolean {
+    val userId = sharedAccount.getString("userid", null)
+    val accessToken = sharedAccount.getString("token", null)
+    return userId != null && accessToken != null
+}
+
+fun requestRequiredPermissions(context: Context) {
+    val permissions = getRequiredPermissions()
+
+    val permissionsToRequest = mutableListOf<String>()
+    permissions.forEach { permission ->
+        if (ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add(permission)
+        }
+    }
+
+    if (permissionsToRequest.isNotEmpty()) {
+        ActivityCompat.requestPermissions(
+            context as Activity, permissionsToRequest.toTypedArray(),
+            MainActivity.REQUEST_PERMISSIONS_CODE
+        )
+        Log.d("HEAD METAL", "권한을 요청하였습니다.")
+    } else {
+        Log.d("HEAD METAL", "권한이 이미 존재합니다.")
+    }
+}
+
+fun getRequiredPermissions(): MutableList<String> {
+    val permissions = mutableListOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+        permissions.add(Manifest.permission.BLUETOOTH)
+        permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
+    } else {
+        permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+        permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+        permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+    }
+
+    return permissions
 }

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
@@ -204,9 +205,8 @@ fun IconScreen(
                 modifier = Modifier
                     .clickable { onClick() }
             )
-            Surface(
+            Column(
                 modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                color = Color.Transparent
             ) {
                 content()
             }
@@ -329,18 +329,6 @@ fun LabelAndInputComposablePreview() {
         },
         placeholder = "placeholerTest"
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HelmetImagePreview() {
-    HelmetImage()
 }
 
 @Composable
@@ -708,11 +696,24 @@ fun LabelAndRadioButtonComposable(
     }
 }
 
+/**
+ * LoginFunction Button
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun LoginFunctionButtonPreview() {
+    LoginFunctionButton(
+        buttonText = "test",
+        onClick = {}
+    )
+}
+
 @Composable
 fun LoginFunctionButton(
     modifier: Modifier = Modifier,
-    buttonText: String = "",
-    onClick: () -> Unit = {}
+    buttonText: String,
+    onClick: () -> Unit
 ) {
     Button(
         modifier = modifier,
@@ -720,6 +721,16 @@ fun LoginFunctionButton(
         colors = ButtonDefaults.buttonColors(Color(0x59000000)),
         onClick = onClick
     )
+}
+
+/**
+ * Login Screen
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen()
 }
 
 @Composable
@@ -737,12 +748,31 @@ fun LoginScreen(content: @Composable () -> Unit = {}) {
     }
 }
 
+/**
+ * Helmet Image
+ */
+@Preview(showBackground = true)
+@Composable
+fun HelmetImagePreview(){
+    HelmetImage()
+}
+
 @Composable
 fun HelmetImage() {
     Image(
         painter = painterResource(id = R.drawable.helmet),
         contentDescription = null
     )
+}
+
+/**
+ * App Name
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun AppNameTextPreview(){
+    AppNameText()
 }
 
 @Composable
@@ -807,4 +837,44 @@ fun RoundedButton(
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
         onClick = onClick
     )
+}
+
+/**
+ * IconWithLabel
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun IconWithLabelPreview() {
+    IconWithLabel(icon = Icons.Default.NewLabel,
+        iconColor = Color.Black,
+        textColor = Color.Black,
+        text = "test",
+        onClick = {})
+}
+
+@Composable
+fun IconWithLabel(
+    icon: ImageVector,
+    iconColor: Color,
+    textColor: Color,
+    text: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.clickable { onClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconColor
+        )
+        Text(
+            text = text,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = textColor
+        )
+    }
 }

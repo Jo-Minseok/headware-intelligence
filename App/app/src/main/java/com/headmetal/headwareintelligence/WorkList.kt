@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.SharedPreferences
 import android.util.Log
 import android.app.AlertDialog
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material3.Text
@@ -153,12 +153,12 @@ fun WorkList(navController: NavController) {
         content = {
             Column {
                 ScreenTitleText(text = "작업장 관리")
-                Text(
-                    text = "+ 작업장 생성",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.clickable { showWorkDataInputDialog = true }
+                IconWithLabel(
+                    icon = Icons.Filled.Add,
+                    iconColor = Color(0xFF388E3C),
+                    textColor = Color(0xFF388E3C),
+                    text = "작업자 등록",
+                    onClick = { showWorkDataInputDialog = true }
                 )
                 Surface(
                     modifier = Modifier

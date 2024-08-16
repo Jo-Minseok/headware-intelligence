@@ -96,7 +96,7 @@ fun MainFunctionButtonMenuPreview() {
 @Preview(showBackground = true)
 @Composable
 fun MainContentsHeaderPreview() {
-    MainContentsHeader()
+    MainContentsHeader(refreshState = remember { mutableStateOf(false) })
 }
 
 @Preview(showBackground = true)
@@ -338,7 +338,7 @@ fun MainContents(type: String, navController: NavController) {
 
 @Composable
 fun MainContentsHeader(
-    refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
+    refreshState: MutableState<Boolean>
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isRefreshClickable by remember { mutableStateOf(true) }

@@ -169,7 +169,7 @@ fun MenuFunctions(
         IconWithLabelButton(
             leadIcon = Icons.Outlined.Description,
             text = "참여 건설 업체",
-            onClick = { navController.navigate("CompanyInfoScreen")}
+            onClick = { navController.navigate("CompanyInfoScreen") }
         )
         if (type == "manager") {
             IconWithLabelButton(

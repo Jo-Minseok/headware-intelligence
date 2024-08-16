@@ -345,7 +345,8 @@ fun LabelAndInputComposable(
         unfocusedIndicatorColor = Color.Transparent
     ),
     leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    readOnly:Boolean = false
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(
@@ -360,6 +361,7 @@ fun LabelAndInputComposable(
             onValueChange = { inputText.value = it },
             shape = MaterialTheme.shapes.medium,
             singleLine = true,
+            readOnly = readOnly,
             colors = colors,
             visualTransformation = visualTransformation,
             placeholder = { Text(text = placeholder) },

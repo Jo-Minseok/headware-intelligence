@@ -365,7 +365,7 @@ fun InputWorkUpdateDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                updateWorkshop(
+                updateWorkshopVerify(
                     workId = workId,
                     inputWorkName = inputWorkName.value,
                     inputWorkCompany = inputWorkCompany.value,
@@ -376,7 +376,7 @@ fun InputWorkUpdateDialog(
                 )
             },
                 content = {
-                    Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
+                    Text("수정", color = Color.Black, fontWeight = FontWeight.Bold)
                 })
         },
         dismissButton = {
@@ -533,24 +533,26 @@ fun WorkerManageDialog(
                             labelText = "이름",
                             inputText = workerName,
                             colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color(255, 150, 0, 80),
-                                unfocusedContainerColor = Color(255, 150, 0, 80),
-                                disabledContainerColor = Color(255, 150, 0, 80),
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                            )
-                        )
-                        LabelAndInputComposable(
-                            labelText = "전화번호", inputText = workerPhone,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color(255, 150, 0, 80),
-                                unfocusedContainerColor = Color(255, 150, 0, 80),
-                                disabledContainerColor = Color(255, 150, 0, 80),
+                                focusedContainerColor = Color(121, 121, 121, 80),
+                                unfocusedContainerColor = Color(121, 121, 121, 80),
+                                disabledContainerColor = Color(121, 121, 121, 80),
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent,
                             ),
+                            readOnly = true
+                        )
+                        LabelAndInputComposable(
+                            labelText = "전화번호", inputText = workerPhone,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(121, 121, 121, 80),
+                                unfocusedContainerColor = Color(121, 121, 121, 80),
+                                disabledContainerColor = Color(121, 121, 121, 80),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                            ),
+                            readOnly = true
                         )
                     }
                 }
@@ -640,7 +642,47 @@ fun WorkerCard(
     }
 }
 
-fun updateWorkshop(
+fun updateWorkshopVerify(
+    workId: Int,
+    inputWorkName: String,
+    inputWorkCompany: String,
+    inputWorkStartDate: String,
+    inputWorkEndDate: String,
+    builder: AlertDialog.Builder,
+    onDismissRequest: () -> Unit
+) {
+    if (inputWorkName.length > 16) {
+        builder.setTitle("작업장 이름 길이 제한")
+            .setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
+    } else if (isInvalidStartDate(inputWorkStartDate)) {
+        builder.setTitle("시작 날짜 검증 실패")
+            .setMessage("작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
+    } else if (isInvalidEndDate(inputWorkStartDate, inputWorkEndDate)) {
+        builder.setTitle("날짜 검증 실패")
+            .setMessage("작업 종료 날짜는 시작 날짜 이후여야 하며, yyyy-mm-dd 형식이어야 합니다.")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
+    } else {
+        updateAction(
+            workId = workId,
+            inputWorkName = inputWorkName,
+            inputWorkCompany = inputWorkCompany,
+            inputWorkStartDate = inputWorkStartDate,
+            inputWorkEndDate = inputWorkEndDate,
+            builder = builder,
+            onDismissRequest = onDismissRequest
+        )
+    }
+}
+
+fun updateAction(
     workId: Int,
     inputWorkName: String,
     inputWorkCompany: String,
@@ -752,13 +794,12 @@ fun addWorker(
                 }
             } else {
                 builder.setTitle("작업자 등록 실패")
-                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                builder.setMessage(response.message())
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
                 }
             }
-            val dialog = builder.create()
-            dialog.show()
+            builder.create().show()
             LoadingState.hide()
         }
 

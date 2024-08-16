@@ -267,15 +267,14 @@ fun WorkCreateDialog(
                     Text(text = "등록", color = Color.Black, fontWeight = FontWeight.Bold)
                 },
                 onClick = {
-                    workshopVerify(
+                    enrollWorkshopVerify(
                         userId = userId,
                         inputWorkName = inputWorkName.value,
                         inputWorkCompany = inputWorkCompany.value,
                         inputWorkStartDate = inputWorkStartDate.value,
                         inputWorkEndDate = inputWorkEndDate.value,
                         builder = builder,
-                        onDismissRequest = onDismissRequest,
-                        crudFunction = ::enrollAction
+                        onDismissRequest = onDismissRequest
                     )
                 }
             )
@@ -366,7 +365,7 @@ fun WorkItem(
     }
 }
 
-fun workshopVerify(
+fun enrollWorkshopVerify(
     userId: String,
     inputWorkName: String,
     inputWorkCompany: String,
@@ -374,15 +373,6 @@ fun workshopVerify(
     inputWorkEndDate: String,
     builder: AlertDialog.Builder,
     onDismissRequest: () -> Unit,
-    crudFunction: (
-        userId: String,
-        inputWorkName: String,
-        inputWorkCompany: String,
-        inputWorkStartDate: String,
-        inputWorkEndDate: String,
-        builder: AlertDialog.Builder,
-        onDismissRequest: () -> Unit,
-    ) -> Unit
 ) {
     if (inputWorkName.length > 16) {
         builder.setTitle("작업장 이름 길이 제한")
@@ -403,14 +393,14 @@ fun workshopVerify(
                 dialog.dismiss()
             }.create().show()
     } else {
-        crudFunction(
-            userId,
-            inputWorkName,
-            inputWorkCompany,
-            inputWorkStartDate,
-            inputWorkEndDate,
-            builder,
-            onDismissRequest
+        enrollAction(
+            userId = userId,
+            inputWorkName = inputWorkName,
+            inputWorkCompany = inputWorkCompany,
+            inputWorkStartDate = inputWorkStartDate,
+            inputWorkEndDate = inputWorkEndDate,
+            builder = builder,
+            onDismissRequest = onDismissRequest
         )
     }
 }

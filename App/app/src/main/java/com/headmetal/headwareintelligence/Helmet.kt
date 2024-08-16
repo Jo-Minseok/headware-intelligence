@@ -1,7 +1,6 @@
 package com.headmetal.headwareintelligence
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
@@ -44,7 +43,6 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Icon
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -62,6 +60,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.DisposableEffect
@@ -69,9 +68,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -87,7 +88,12 @@ data class DeviceData(
     val address: String
 )
 
-@SuppressLint("MutableCollectionMutableState")
+@Preview(showBackground = true)
+@Composable
+fun HelmetPreview() {
+    Helmet(navController = rememberNavController())
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Helmet(navController: NavController) {
@@ -480,7 +486,7 @@ fun Helmet(navController: NavController) {
             },
             title = { Text(text = "WIFI 설정") },
             text = {
-                Column() {
+                Column {
                     Text(text = "WIFI ID")
                     TextField(
                         value = wifiID.value,
@@ -498,7 +504,7 @@ fun Helmet(navController: NavController) {
                 }
             },
             buttons = {
-                Row() {
+                Row {
                     TextButton(
                         onClick = {
                             wifisendID = "wi " + wifiID.value
@@ -570,7 +576,7 @@ fun Helmet(navController: NavController) {
             AlertDialog.Builder(navController.context)
                 .setTitle("블루투스 연결 실패")
                 .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
-                .setPositiveButton("확인") { dialog, which ->
+                .setPositiveButton("확인") { _, _ ->
                     navController.navigate("MainScreen")
                 }
                 .show()

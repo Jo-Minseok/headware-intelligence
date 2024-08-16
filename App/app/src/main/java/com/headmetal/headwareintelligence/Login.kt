@@ -7,18 +7,12 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,48 +41,14 @@ fun LoginPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun LoginInputComposablePreview() {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        LabelAndInputComposable(
-            labelText = "ID",
-            inputText = remember { mutableStateOf("") },
-            labelFontWeight = FontWeight.Bold,
-            labelFontSize = 18.sp
-        )
-        LabelAndInputComposable(
-            labelText = "PW",
-            inputText = remember { mutableStateOf("") },
-            labelFontWeight = FontWeight.Bold,
-            labelFontSize = 18.sp,
-            visualTransformation = PasswordVisualTransformation()
-        )
-        LabelAndRadioButtonComposable(
-            labelText = "Part",
-            labelFontWeight = FontWeight.Bold,
-            labelFontSize = 18.sp,
-            firstButtonText = "일반직",
-            secondButtonText = "관리직",
-            firstButtonSwitch = remember { mutableStateOf(true) },
-            secondButtonSwitch = remember { mutableStateOf(false) }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 fun LoginFunctionButtonComposablePreview() {
-    Row(modifier = Modifier.padding(vertical = 10.dp)) {
+    Row {
         LoginFunctionButton(
             modifier = Modifier.weight(1f),
             buttonText = "로그인"
         ) {}
         LoginFunctionButton(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 4.dp),
+            modifier = Modifier.weight(1f),
             buttonText = "회원가입"
         ) {}
         LoginFunctionButton(
@@ -112,57 +72,62 @@ fun Login(navController: NavController = rememberNavController()) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HelmetImage()
-            LabelAndInputComposable(
-                labelText = "ID",
-                inputText = id,
-                labelFontWeight = FontWeight.Bold,
-                labelFontSize = 18.sp
-            )
-            LabelAndInputComposable(
-                labelText = "PW",
-                inputText = pw,
-                labelFontWeight = FontWeight.Bold,
-                labelFontSize = 18.sp,
-                visualTransformation = PasswordVisualTransformation()
-            )
-            LabelAndRadioButtonComposable(
-                labelText = "Part",
-                labelFontWeight = FontWeight.Bold,
-                labelFontSize = 18.sp,
-                firstButtonText = "일반직",
-                secondButtonText = "관리직",
-                firstButtonSwitch = isEmployee,
-                secondButtonSwitch = isManager
-            )
-            Row(modifier = Modifier.padding(vertical = 10.dp)) {
-                LoginFunctionButton(
-                    modifier = Modifier.weight(1f),
-                    buttonText = "로그인"
-                ) {
-                    loginButton(
-                        inputId = id.value,
-                        inputPw = pw,
-                        isManager = isManager.value,
-                        navController = navController
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    LabelAndInputComposable(
+                        labelText = "ID",
+                        inputText = id,
+                        labelFontWeight = FontWeight.Bold,
+                        labelFontSize = 18.sp,
+                    )
+                    LabelAndInputComposable(
+                        labelText = "PW",
+                        inputText = pw,
+                        labelFontWeight = FontWeight.Bold,
+                        labelFontSize = 18.sp,
+                        visualTransformation = PasswordVisualTransformation()
                     )
                 }
-                LoginFunctionButton(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp),
-                    buttonText = "회원가입"
-                ) { navController.navigate("SignUpScreen") }
-                LoginFunctionButton(
-                    modifier = Modifier.weight(1f),
-                    buttonText = "계정 찾기"
-                ) { navController.navigate("FindIdScreen") }
+                LabelAndRadioButtonComposable(
+                    labelText = "Part",
+                    labelFontWeight = FontWeight.Bold,
+                    labelFontSize = 18.sp,
+                    firstButtonText = "일반직",
+                    secondButtonText = "관리직",
+                    firstButtonSwitch = isEmployee,
+                    secondButtonSwitch = isManager
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                    LoginFunctionButton(
+                        modifier = Modifier.weight(1f),
+                        buttonText = "로그인",
+                        onClick = {
+                            loginAction(
+                                inputId = id.value,
+                                inputPw = pw,
+                                isManager = isManager.value,
+                                navController = navController
+                            )
+                        }
+                    )
+                    LoginFunctionButton(
+                        modifier = Modifier.weight(1f),
+                        buttonText = "회원가입",
+                        onClick = { navController.navigate("SignUpScreen") }
+                    )
+                    LoginFunctionButton(
+                        modifier = Modifier.weight(1f),
+                        buttonText = "계정 찾기",
+                        onClick = { navController.navigate("FindIdScreen") }
+                    )
+                }
             }
             AppNameText()
         }
     }
 }
 
-fun loginButton(
+fun loginAction(
     inputId: String,
     inputPw: MutableState<String>,
     isManager: Boolean,

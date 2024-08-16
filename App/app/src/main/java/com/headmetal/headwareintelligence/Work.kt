@@ -2,7 +2,6 @@ package com.headmetal.headwareintelligence
 
 import android.app.AlertDialog
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,7 +66,7 @@ data class WorkerStatus(
 @Preview(showBackground = true)
 @Composable
 fun WorkPreview() {
-    Work(navController = rememberNavController(), workshopName="작업장 이름", workId = 1)
+    Work(navController = rememberNavController(), workshopName = "작업장 이름", workId = 1)
 }
 
 /**
@@ -75,7 +75,12 @@ fun WorkPreview() {
 @Preview(showBackground = true)
 @Composable
 fun RefixWorkshopPreview() {
-    RefixWorkshop(showWorkDataInputDialog = {})
+    IconWithLabel(
+        icon = Icons.Filled.Settings,
+        iconColor = Color.Black,
+        textColor = Color.Black,
+        text = "작업장 수정",
+        onClick = { })
 }
 
 /**
@@ -84,7 +89,12 @@ fun RefixWorkshopPreview() {
 @Preview(showBackground = true)
 @Composable
 fun RemoveWorkshopPreview() {
-    RemoveWorkshop(showDeleteDialog = {})
+    IconWithLabel(
+        icon = Icons.Default.RestoreFromTrash,
+        iconColor = Color.Red,
+        textColor = Color.Red,
+        text = "작업장 삭제",
+        onClick = { })
 }
 
 /**
@@ -93,7 +103,13 @@ fun RemoveWorkshopPreview() {
 @Preview(showBackground = true)
 @Composable
 fun AddWorkerPreview() {
-    AddWorker(showWorkerAddDialog = {})
+    IconWithLabel(
+        icon = Icons.Filled.Add,
+        iconColor = Color(0xFF388E3C),
+        textColor = Color(0xFF388E3C),
+        text = "작업자 등록",
+        onClick = {}
+    )
 }
 
 /**
@@ -227,43 +243,54 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
         content = {
-            // 화면
-            Column {
-                // 제목
-                ScreenTitleText(text = workshopName)
+            // 제목
+            ScreenTitleText(text = workshopName)
 
+            Column(verticalArrangement = Arrangement.spacedBy(30.dp)) {
                 // 작업장 수정, 삭제 부분
                 Row {
-                    RefixWorkshop { showWorkDataInputDialog = true }
+                    IconWithLabel(
+                        icon = Icons.Filled.Settings,
+                        iconColor = Color.Black,
+                        textColor = Color.Black,
+                        text = "작업장 수정",
+                        onClick = { showWorkDataInputDialog = true }
+                    )
                     Spacer(modifier = Modifier.weight(1f))
-                    RemoveWorkshop { showWorkDeleteDialog = true }
+                    IconWithLabel(icon = Icons.Default.RestoreFromTrash,
+                        iconColor = Color.Red,
+                        textColor = Color.Red,
+                        text = "작업장 삭제",
+                        onClick = { showWorkDeleteDialog = true })
                 }
-
-                // 작업장 수정 - 등록 사이 공백
-                Spacer(modifier = Modifier.height(30.dp))
-
-                // + 작업자 등록
-                AddWorker { showWorkerAddDialog = true }
-
-                // 작업자 목록
-                Surface {
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp)
-                            .padding(vertical = 16.dp)
-                    ) {
-                        // 작업자 카드 등록
-                        for (i in workerId.indices) {
-                            WorkerCard(
-                                workerId = workerId[i],
-                                workerName = workerName[i],
-                                selectedWorkerId = selectedWorkerId,
-                                showWorkerManageDialog = showWorkerManageDialog
-                            )
-                        }
-                    }
+                Row {
+                    IconWithLabel(
+                        icon = Icons.Filled.Add,
+                        iconColor = Color(0xFF388E3C),
+                        textColor = Color(0xFF388E3C),
+                        text = "작업자 등록",
+                        onClick = { showWorkerAddDialog = true }
+                    )
                 }
             }
+
+            // 작업자 목록
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .padding(vertical = 16.dp),
+            ) {
+                // 작업자 카드 등록
+                for (i in workerId.indices) {
+                    WorkerCard(
+                        workerId = workerId[i],
+                        workerName = workerName[i],
+                        selectedWorkerId = selectedWorkerId,
+                        showWorkerManageDialog = showWorkerManageDialog
+                    )
+                }
+            }
+
         }
     )
 }
@@ -560,55 +587,6 @@ fun WorkerManageDialog(
                 onClick = onDismissRequest,
                 content = { Text("해제", color = Color.Red, fontWeight = FontWeight.Bold) })
         }
-    )
-}
-
-@Composable
-fun RefixWorkshop(showWorkDataInputDialog: () -> Unit) {
-    Row(modifier = Modifier.clickable { showWorkDataInputDialog() }) {
-        Icon(
-            imageVector = Icons.Default.Settings,
-            contentDescription = null,
-            modifier = Modifier
-        )
-        Text(
-            text = "작업장 수정",
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            color = Color.Gray,
-            modifier = Modifier
-                .padding(start = 5.dp, top = 3.dp)
-        )
-    }
-}
-
-@Composable
-fun RemoveWorkshop(showDeleteDialog: () -> Unit) {
-    Row(modifier = Modifier.clickable { showDeleteDialog() }) {
-        Icon(
-            imageVector = Icons.Default.RestoreFromTrash,
-            contentDescription = "Trash",
-            tint = Color.Red
-        )
-        Text(
-            text = "작업장 삭제",
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            color = Color.Red,
-            modifier = Modifier
-                .padding(start = 5.dp, top = 3.dp)
-        )
-    }
-}
-
-@Composable
-fun AddWorker(showWorkerAddDialog: () -> Unit) {
-    Text(
-        text = "+ 작업자 등록",
-        fontWeight = FontWeight.Bold,
-        fontSize = 12.sp,
-        color = Color(0xFF388E3C),
-        modifier = Modifier.clickable { showWorkerAddDialog() }
     )
 }
 

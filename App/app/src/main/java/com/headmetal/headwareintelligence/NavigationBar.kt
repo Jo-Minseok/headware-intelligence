@@ -29,7 +29,7 @@ sealed class Destinations(val route: String) {
     data object License : Destinations("LicenseScreen")
     data object Privacy : Destinations("PrivacyScreen")
     data object WorkList : Destinations("WorkListScreen")
-    data object Work : Destinations("WorkScreen/{workId}")
+    data object Work : Destinations("WorkScreen/{workId}/{workshopName}")
 }
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -275,9 +277,8 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 
             // 작업자 목록
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 작업자 카드 등록
                 for (i in workerId.indices) {

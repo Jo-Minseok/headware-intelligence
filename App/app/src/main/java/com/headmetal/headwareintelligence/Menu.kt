@@ -101,6 +101,7 @@ fun Menu(navController: NavController) {
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
         content = {
+            ScreenTitleText(text = "메뉴")
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 UserCard(type = type!!, userName = userName!!, navController = navController)
                 MenuFunctions(type = type, navController = navController)

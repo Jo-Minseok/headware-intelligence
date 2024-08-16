@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -79,13 +80,15 @@ fun Login(navController: NavController = rememberNavController()) {
                         inputText = id,
                         labelFontWeight = FontWeight.Bold,
                         labelFontSize = 18.sp,
+                        textFieldmodifier = Modifier.alpha(0.6f)
                     )
                     LabelAndInputComposable(
                         labelText = "PW",
                         inputText = pw,
                         labelFontWeight = FontWeight.Bold,
                         labelFontSize = 18.sp,
-                        visualTransformation = PasswordVisualTransformation()
+                        visualTransformation = PasswordVisualTransformation(),
+                        textFieldmodifier = Modifier.alpha(0.6f)
                     )
                 }
                 LabelAndRadioButtonComposable(

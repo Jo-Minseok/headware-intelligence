@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.SharedPreferences
 import android.util.Log
 import android.app.AlertDialog
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -159,7 +158,7 @@ fun WorkList(navController: NavController) {
                     iconColor = Color(0xFF388E3C),
                     textColor = Color(0xFF388E3C),
                     text = "작업자 등록",
-                    onClick = {showWorkDataInputDialog = true}
+                    onClick = { showWorkDataInputDialog = true }
                 )
                 Surface(
                     modifier = Modifier

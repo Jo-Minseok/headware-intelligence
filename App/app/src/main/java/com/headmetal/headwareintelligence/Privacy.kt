@@ -124,7 +124,8 @@ fun PrivacyUser(
         Row {
             Icon(
                 imageVector = imageVector,
-                contentDescription = null)
+                contentDescription = null
+            )
             LabelText(text = text)
         }
         PrivacyUserTextField(userInfo = userInfo)

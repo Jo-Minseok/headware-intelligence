@@ -267,14 +267,15 @@ fun WorkCreateDialog(
                     Text(text = "등록", color = Color.Black, fontWeight = FontWeight.Bold)
                 },
                 onClick = {
-                    enrollWorkshopVerify(
+                    workshopVerify(
                         userId = userId,
                         inputWorkName = inputWorkName.value,
                         inputWorkCompany = inputWorkCompany.value,
                         inputWorkStartDate = inputWorkStartDate.value,
                         inputWorkEndDate = inputWorkEndDate.value,
                         builder = builder,
-                        onDismissRequest = onDismissRequest
+                        onDismissRequest = onDismissRequest,
+                        crudFunction = ::enrollAction
                     )
                 }
             )
@@ -365,7 +366,7 @@ fun WorkItem(
     }
 }
 
-fun enrollWorkshopVerify(
+fun workshopVerify(
     userId: String,
     inputWorkName: String,
     inputWorkCompany: String,
@@ -373,37 +374,43 @@ fun enrollWorkshopVerify(
     inputWorkEndDate: String,
     builder: AlertDialog.Builder,
     onDismissRequest: () -> Unit,
+    crudFunction: (
+        userId: String,
+        inputWorkName: String,
+        inputWorkCompany: String,
+        inputWorkStartDate: String,
+        inputWorkEndDate: String,
+        builder: AlertDialog.Builder,
+        onDismissRequest: () -> Unit,
+    ) -> Unit
 ) {
     if (inputWorkName.length > 16) {
         builder.setTitle("작업장 이름 길이 제한")
-        builder.setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
-        builder.setPositiveButton("확인") { dialog, _ ->
-            dialog.dismiss()
-        }
-        builder.create().show()
+            .setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
     } else if (isInvalidStartDate(inputWorkStartDate)) {
         builder.setTitle("시작 날짜 검증 실패")
-        builder.setMessage("작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.")
-        builder.setPositiveButton("확인") { dialog, _ ->
-            dialog.dismiss()
-        }
-        builder.create().show()
+            .setMessage("작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
     } else if (isInvalidEndDate(inputWorkStartDate, inputWorkEndDate)) {
         builder.setTitle("날짜 검증 실패")
-        builder.setMessage("작업 종료 날짜는 시작 날짜 이후여야 하며, yyyy-mm-dd 형식이어야 합니다.")
-        builder.setPositiveButton("확인") { dialog, _ ->
-            dialog.dismiss()
-        }
-        builder.create().show()
-    }else {
-        enrollAction(
-            userId = userId,
-            inputWorkName = inputWorkName,
-            inputWorkCompany = inputWorkCompany,
-            inputWorkStartDate = inputWorkStartDate,
-            inputWorkEndDate = inputWorkEndDate,
-            builder = builder,
-            onDismissRequest = onDismissRequest
+            .setMessage("작업 종료 날짜는 시작 날짜 이후여야 하며, yyyy-mm-dd 형식이어야 합니다.")
+            .setPositiveButton("확인") { dialog, _ ->
+                dialog.dismiss()
+            }.create().show()
+    } else {
+        crudFunction(
+            userId,
+            inputWorkName,
+            inputWorkCompany,
+            inputWorkStartDate,
+            inputWorkEndDate,
+            builder,
+            onDismissRequest
         )
     }
 }
@@ -469,17 +476,17 @@ fun enrollAction(
         ) {
             if (response.isSuccessful) {
                 builder.setTitle("작업장 생성 성공")
-                builder.setMessage("작업장 생성에 성공하였습니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    onDismissRequest()
-                }
+                    .setMessage("작업장 생성에 성공하였습니다.")
+                    .setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                        onDismissRequest()
+                    }
             } else {
                 builder.setTitle("작업장 생성 실패")
-                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                }
+                    .setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                    .setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                    }
             }
             builder.create().show()
             LoadingState.hide()

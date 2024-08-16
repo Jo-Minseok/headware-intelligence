@@ -1,13 +1,16 @@
 package com.headmetal.headwareintelligence
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,38 +27,82 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+// 프리뷰
+@Preview(showBackground = true)
+@Composable
+fun EtcPreview() {
+    Etc()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EtcLabelTextPreview() {
+    Column {
+        LabelWithNextIcon(onClick = {}, text = "개발자")
+        LabelWithNextIcon(onClick = {}, text = "라이센스")
+        LabelWithNextIcon(onClick = {}, text = "버전 정보 : 1.0.0")
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EtcAppInfoTextPreview() {
+    AppInfoText()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EtcDevelopersAlertDialog() {
+    DevelopersAlertDialog()
+}
 
 @Composable
 fun Etc(navController: NavController = rememberNavController()) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9F9F9)
-    ) { EtcComposable(navController = navController) }
-}
+    IconScreen(
+        imageVector = Icons.Default.ArrowBackIosNew,
+        onClick = { navController.navigateUp() },
+        content = {
+            var companies by remember { mutableStateOf(listOf<String>()) }
+            var showDeveloperDialog by remember { mutableStateOf(false) }
 
-@Composable
-fun EtcComposable(navController: NavController = rememberNavController()) {
-    Column {
-        BackIcon(onClick = { navController.navigateUp() })
-        ScreenTitleText(text = "기타")
-        EtcFunctions(navController = navController)
-    }
-}
+            if (showDeveloperDialog) {
+                DevelopersAlertDialog { showDeveloperDialog = false }
+            }
 
-@Composable
-fun EtcFunctions(navController: NavController = rememberNavController()) {
-    var showDeveloperDialog by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                RetrofitInstance.apiService.getCompanyList()
+                    .enqueue(object : Callback<CompanyList> {
+                        override fun onResponse(
+                            call: Call<CompanyList>,
+                            response: Response<CompanyList>
+                        ) {
+                            if (response.isSuccessful) {
+                                response.body()?.let { companies = it.companies }
+                            }
+                        }
 
-    if (showDeveloperDialog) {
-        DevelopersAlertDialog { showDeveloperDialog = false }
-    }
+                        override fun onFailure(call: Call<CompanyList>, t: Throwable) {
+                            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                        }
+                    })
+            }
 
-    Column(modifier = Modifier.padding(horizontal = 30.dp)) {
-        LabelWithNextIcon(onClick = { showDeveloperDialog = true}, text = "개발자")
-        LabelWithNextIcon(onClick = { navController.navigate("LicenseScreen")}, text = "라이센스")
-        LabelWithNextIcon(onClick = {}, text = "버전 정보\n1.0.0")
-        AppInfoText()
-    }
+            Column {
+                ScreenTitleText(text = "기타")
+                Column(modifier = Modifier.padding(horizontal = 10.dp)) {
+                    LabelWithNextIcon(onClick = { showDeveloperDialog = true }, text = "개발자")
+                    LabelWithNextIcon(onClick = { navController.navigate("LicenseScreen") }, text = "라이센스")
+                    LabelWithNextIcon(onClick = {}, text = "버전 정보 : 1.0.0")
+                    Spacer(modifier = Modifier.padding(bottom = 20.dp))
+                    AppInfoText()
+                }
+            }
+        }
+    )
 }
 
 @Composable
@@ -67,7 +114,7 @@ fun AppInfoText() {
             text = "App Info",
             color = Color.Black,
             fontSize = 12.sp,
-            modifier = Modifier.padding(top = 20.dp, bottom = 10.dp)
+            modifier = Modifier.padding(bottom = 10.dp)
         )
         Text(
             text = "Team : Head-Metal",
@@ -126,53 +173,4 @@ fun HyperlinkText(
     }
 
     ClickableText(text = annotatedString, onClick = { onClick() })
-}
-
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun EtcPreview() {
-    Etc()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcComposablePreview() {
-    EtcComposable()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcInfoBackIconPreview() {
-    BackIcon()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcInfoTitleTextPreview() {
-    ScreenTitleText(text = "기타")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcFunctionsPreview() {
-    EtcFunctions()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcLabelTextPreview() {
-    LabelText(text = "개발자")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcAppInfoTextPreview() {
-    AppInfoText()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EtcDevelopersAlertDialog() {
-    DevelopersAlertDialog()
 }

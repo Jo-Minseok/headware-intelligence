@@ -12,6 +12,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -344,8 +346,9 @@ fun HelmetImagePreview() {
 @Composable
 fun LabelAndInputComposable(
     labelText: String,
+    labelFontWeight: FontWeight? = null,
+    labelFontSize: TextUnit = 16.sp,
     textFieldmodifier: Modifier = Modifier,
-    textmodifier: Modifier = Modifier,
     inputText: MutableState<String>,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     placeholder: String = "",
@@ -357,7 +360,12 @@ fun LabelAndInputComposable(
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Text(text = labelText, modifier = textmodifier.fillMaxWidth())
+        Text(
+            text = labelText,
+            modifier = Modifier.fillMaxWidth(),
+            fontWeight = labelFontWeight,
+            fontSize = labelFontSize
+        )
         TextField(
             modifier = textFieldmodifier.fillMaxWidth(),
             value = inputText.value,
@@ -664,13 +672,20 @@ fun LabelAndRadioButtonPreview() {
 @Composable
 fun LabelAndRadioButtonComposable(
     labelText: String,
+    labelFontWeight: FontWeight? = null,
+    labelFontSize: TextUnit = 16.sp,
     firstButtonSwitch: MutableState<Boolean>,
     secondButtonSwitch: MutableState<Boolean>,
     firstButtonText: String,
     secondButtonText: String
 ) {
     Column {
-        Text(text = labelText, modifier = Modifier.fillMaxWidth())
+        Text(
+            text = labelText,
+            modifier = Modifier.fillMaxWidth(),
+            fontWeight = labelFontWeight,
+            fontSize = labelFontSize
+        )
         Row {
             RadioButtonSingle(
                 modifier = Modifier
@@ -753,10 +768,14 @@ fun LabelWithNextIconPreview() {
 @Composable
 fun LabelWithNextIcon(
     onClick: () -> Unit,
-    text: String
+    text: String,
+    modifier: Modifier = Modifier
 ) {
-    Row(modifier = Modifier.clickable { onClick() }) {
-        Text(text = text)
+    Row(
+        modifier = Modifier.clickable { onClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = text, modifier = Modifier.weight(1f), fontSize = 24.sp)
         NextIcon()
     }
 }

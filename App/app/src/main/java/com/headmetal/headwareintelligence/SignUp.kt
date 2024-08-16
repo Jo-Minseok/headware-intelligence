@@ -90,7 +90,7 @@ fun SignUpComposable(navController: NavController) {
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
-                    response.body()?.let { selectableCompany = it.companies }
+                    response.body()?.let { selectableCompany = listOf("없음") + it.companies }
                 }
             }
 

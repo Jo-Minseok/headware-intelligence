@@ -17,9 +17,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.material3.Text
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -167,10 +164,7 @@ fun Loading(navController: NavController = rememberNavController()) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HelmetImage()
-            Text(
-                text = stringResource(id = R.string.app_name),
-                fontWeight = FontWeight.Bold
-            )
+            AppNameText()
         }
     }
 }

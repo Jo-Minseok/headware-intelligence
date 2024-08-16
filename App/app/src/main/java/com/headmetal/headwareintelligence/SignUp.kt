@@ -136,6 +136,7 @@ fun SignUpComposable(navController: NavController) {
             LabelAndInputComposable(
                 labelText = "전화번호",
                 inputText = phone,
+                placeholder = "XXX-XXXX-XXXX",
                 textFieldmodifier = Modifier.alpha(0.6f)
             )
             LabelAndInputComposable(
@@ -160,26 +161,17 @@ fun SignUpComposable(navController: NavController) {
             )
             Button(
                 onClick = {
-                    if (pw.value != rePw.value) {
-                        showAlertDialog(
-                            context = navController.context,
-                            title = "비밀번호 불일치",
-                            message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-                            buttonText = "확인"
-                        )
-                    } else {
-                        register(
-                            id = id.value,
-                            pw = pw.value,
-                            rePw = rePw.value,
-                            name = name.value,
-                            email = email.value,
-                            phone = phone.value,
-                            selectCompany = selectCompany.value,
-                            isManager = isManager.value,
-                            navController = navController
-                        )
-                    }
+                    passwordVerify(
+                        id = id.value,
+                        pw = pw.value,
+                        rePw = rePw.value,
+                        name = name.value,
+                        email = email.value,
+                        phone = phone.value,
+                        selectCompany = selectCompany.value,
+                        isManager = isManager.value,
+                        navController = navController
+                    )
                 },
                 shape = MaterialTheme.shapes.small,
                 content = { Text("회원가입") },
@@ -243,4 +235,72 @@ fun register(
             Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
         }
     })
+}
+
+fun passwordVerify(
+    id: String,
+    pw: String,
+    rePw: String,
+    name: String,
+    email: String,
+    phone: String,
+    selectCompany: String,
+    isManager: Boolean,
+    navController: NavController
+) {
+    if (!id.matches("^(?=.*[A-Za-z])[A-Za-z0-9]{6,16}$".toRegex())) { // 아이디 검증
+        showAlertDialog(
+            context = navController.context,
+            title = "아이디 형식 불일치",
+            message = "아이디는 최소 1개의 알파벳이 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다. 특수문자는 포함될 수 없습니다.",
+            buttonText = "확인"
+        )
+    } else if (!pw.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{6,16}$".toRegex())) { // 비밀번호 검증
+        showAlertDialog(
+            context = navController.context,
+            title = "비밀번호 형식 불일치",
+            message = "비밀번호는 최소 1개의 알파벳, 1개의 숫자, 1개의 특수문자가 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다.",
+            buttonText = "확인"
+        )
+    } else if (pw != rePw) { // 비밀번호 확인 검증
+        showAlertDialog(
+            context = navController.context,
+            title = "비밀번호 불일치",
+            message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+            buttonText = "확인"
+        )
+    } else if (name.length > 4) { // 이름 검증
+        showAlertDialog(
+            context = navController.context,
+            title = "이름 글자 수 불일치",
+            message = "이름을 4자리 이하로 작성바랍니다.",
+            buttonText = "확인"
+        )
+    } else if (!phone.matches("^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$".toRegex())) { // 전화번호 검증
+        showAlertDialog(
+            context = navController.context,
+            title = "전화번호 형식 불일치",
+            message = "전화번호 형식이 일치하지 않습니다.\nex)XXX-XXXX-XXXX",
+            buttonText = "확인"
+        )
+    } else if (!email.matches("^\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$".toRegex())) { // 이메일 검증
+        showAlertDialog(
+            context = navController.context,
+            title = "이메일 형식 불일치",
+            message = "이메일 형식이 일치하지 않습니다.\nex)XXX@XXX.XXX(공백 제외)",
+            buttonText = "확인"
+        )
+    } else {
+        register(
+            id = id,
+            pw = pw,
+            rePw = rePw,
+            name = name,
+            email = email,
+            phone = phone,
+            selectCompany = selectCompany,
+            isManager = isManager,
+            navController = navController
+        )
+    }
 }

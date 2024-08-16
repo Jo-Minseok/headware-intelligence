@@ -37,7 +37,7 @@ data class LoginResponse(
 @Preview(showBackground = true)
 @Composable
 fun LoginPreview() {
-    Login()
+    Login(navController = rememberNavController())
 }
 
 @Preview(showBackground = true)
@@ -60,7 +60,7 @@ fun LoginFunctionButtonComposablePreview() {
 }
 
 @Composable
-fun Login(navController: NavController = rememberNavController()) {
+fun Login(navController: NavController) {
     val id: MutableState<String> = remember { mutableStateOf("") }
     val pw: MutableState<String> = remember { mutableStateOf("") }
     val isEmployee: MutableState<Boolean> = remember { mutableStateOf(true) }

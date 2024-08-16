@@ -26,11 +26,11 @@ import androidx.navigation.compose.rememberNavController
 @Preview(showBackground = true)
 @Composable
 fun LoadingPreview() {
-    Loading()
+    Loading(navController = rememberNavController())
 }
 
 @Composable
-fun Loading(navController: NavController = rememberNavController()) {
+fun Loading(navController: NavController) {
     val sharedAlert: SharedPreferences =
         LocalContext.current.getSharedPreferences("Alert", MODE_PRIVATE)
     val sharedAccount: SharedPreferences =

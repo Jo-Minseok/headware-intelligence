@@ -331,18 +331,6 @@ fun LabelAndInputComposablePreview() {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HelmetImagePreview() {
-    HelmetImage()
-}
-
 @Composable
 fun LabelAndInputComposable(
     labelText: String,
@@ -708,11 +696,24 @@ fun LabelAndRadioButtonComposable(
     }
 }
 
+/**
+ * LoginFunction Button
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun LoginFunctionButtonPreview() {
+    LoginFunctionButton(
+        buttonText = "test",
+        onClick = {}
+    )
+}
+
 @Composable
 fun LoginFunctionButton(
     modifier: Modifier = Modifier,
-    buttonText: String = "",
-    onClick: () -> Unit = {}
+    buttonText: String,
+    onClick: () -> Unit
 ) {
     Button(
         modifier = modifier,
@@ -720,6 +721,16 @@ fun LoginFunctionButton(
         colors = ButtonDefaults.buttonColors(Color(0x59000000)),
         onClick = onClick
     )
+}
+
+/**
+ * Login Screen
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen()
 }
 
 @Composable
@@ -737,12 +748,31 @@ fun LoginScreen(content: @Composable () -> Unit = {}) {
     }
 }
 
+/**
+ * Helmet Image
+ */
+@Preview(showBackground = true)
+@Composable
+fun HelmetImagePreview(){
+    HelmetImage()
+}
+
 @Composable
 fun HelmetImage() {
     Image(
         painter = painterResource(id = R.drawable.helmet),
         contentDescription = null
     )
+}
+
+/**
+ * App Name
+ */
+
+@Preview(showBackground = true)
+@Composable
+fun AppNameTextPreview(){
+    AppNameText()
 }
 
 @Composable

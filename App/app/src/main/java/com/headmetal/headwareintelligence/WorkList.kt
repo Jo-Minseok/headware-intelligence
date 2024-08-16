@@ -45,6 +45,8 @@ import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class WorkShopInputData(
     val name: String,
@@ -157,7 +159,7 @@ fun WorkList(navController: NavController) {
                     icon = Icons.Filled.Add,
                     iconColor = Color(0xFF388E3C),
                     textColor = Color(0xFF388E3C),
-                    text = "작업자 등록",
+                    text = "작업장 등록",
                     onClick = { showWorkDataInputDialog = true }
                 )
                 Surface(
@@ -192,7 +194,7 @@ fun WorkCreateDialog(
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userId = sharedAccount.getString("userid", null)
+    val userId = sharedAccount.getString("userid", "") ?: ""
 
     var selectableCompany by remember { mutableStateOf(listOf<String>()) }
     val inputWorkName = remember { mutableStateOf("") }
@@ -265,7 +267,7 @@ fun WorkCreateDialog(
                     Text(text = "등록", color = Color.Black, fontWeight = FontWeight.Bold)
                 },
                 onClick = {
-                    enrollButton(
+                    enrollWorkshopVerify(
                         userId = userId,
                         inputWorkName = inputWorkName.value,
                         inputWorkCompany = inputWorkCompany.value,
@@ -363,11 +365,87 @@ fun WorkItem(
     }
 }
 
+fun enrollWorkshopVerify(
+    userId: String,
+    inputWorkName: String,
+    inputWorkCompany: String,
+    inputWorkStartDate: String,
+    inputWorkEndDate: String,
+    builder: AlertDialog.Builder,
+    onDismissRequest: () -> Unit,
+) {
+    if (inputWorkName.length > 16) {
+        builder.setTitle("작업장 이름 길이 제한")
+        builder.setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
+        builder.setPositiveButton("확인") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.create().show()
+    } else if (isInvalidStartDate(inputWorkStartDate)) {
+        builder.setTitle("시작 날짜 검증 실패")
+        builder.setMessage("작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.")
+        builder.setPositiveButton("확인") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.create().show()
+    } else if (isInvalidEndDate(inputWorkStartDate, inputWorkEndDate)) {
+        builder.setTitle("날짜 검증 실패")
+        builder.setMessage("작업 종료 날짜는 시작 날짜 이후여야 하며, yyyy-mm-dd 형식이어야 합니다.")
+        builder.setPositiveButton("확인") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.create().show()
+    }else {
+        enrollAction(
+            userId = userId,
+            inputWorkName = inputWorkName,
+            inputWorkCompany = inputWorkCompany,
+            inputWorkStartDate = inputWorkStartDate,
+            inputWorkEndDate = inputWorkEndDate,
+            builder = builder,
+            onDismissRequest = onDismissRequest
+        )
+    }
+}
+
+fun isInvalidStartDate(inputWorkStartDate: String): Boolean {
+    return try {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        dateFormat.isLenient = false // 날짜 엄격 검증
+
+        val startDate = dateFormat.parse(inputWorkStartDate)
+        val minDate = dateFormat.parse("1970-01-01")
+
+        startDate == null || startDate.before(minDate)
+    } catch (e: Exception) {
+        true // 날짜 형식이 잘못된 경우
+    }
+}
+
+fun isInvalidEndDate(inputWorkStartDate: String, inputWorkEndDate: String): Boolean {
+    // 종료 날짜가 비어 있는 경우 검증을 하지 않음
+    if (inputWorkEndDate.isEmpty()) {
+        return false
+    }
+
+    return try {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        dateFormat.isLenient = false // 날짜 엄격 검증
+
+        val startDate = dateFormat.parse(inputWorkStartDate)
+        val endDate = dateFormat.parse(inputWorkEndDate)
+
+        endDate == null || endDate.before(startDate) // 종료 날짜가 시작 날짜보다 이전이면 오류
+    } catch (e: Exception) {
+        true // 날짜 형식이 잘못된 경우
+    }
+}
+
 /**
  * 작업장 생성 등록 버튼 기능
  */
-fun enrollButton(
-    userId: String?,
+fun enrollAction(
+    userId: String,
     inputWorkName: String,
     inputWorkCompany: String,
     inputWorkStartDate: String,
@@ -376,43 +454,40 @@ fun enrollButton(
     onDismissRequest: () -> Unit
 ) {
     LoadingState.show()
-    if (userId != null) {
-        RetrofitInstance.apiService.createWork(
-            userId,
-            WorkShopInputData(
-                inputWorkName,
-                inputWorkCompany,
-                inputWorkStartDate,
-                inputWorkEndDate
-            )
-        ).enqueue(object : Callback<WorkShopInputData> {
-            override fun onResponse(
-                call: Call<WorkShopInputData>,
-                response: Response<WorkShopInputData>
-            ) {
-                if (response.isSuccessful) {
-                    builder.setTitle("작업장 생성 성공")
-                    builder.setMessage("작업장 생성에 성공하였습니다.")
-                    builder.setPositiveButton("확인") { dialog, _ ->
-                        dialog.dismiss()
-                        onDismissRequest()
-                    }
-                } else {
-                    builder.setTitle("작업장 생성 실패")
-                    builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                    builder.setPositiveButton("확인") { dialog, _ ->
-                        dialog.dismiss()
-                    }
+    RetrofitInstance.apiService.createWork(
+        userId,
+        WorkShopInputData(
+            inputWorkName,
+            inputWorkCompany,
+            inputWorkStartDate,
+            inputWorkEndDate
+        )
+    ).enqueue(object : Callback<WorkShopInputData> {
+        override fun onResponse(
+            call: Call<WorkShopInputData>,
+            response: Response<WorkShopInputData>
+        ) {
+            if (response.isSuccessful) {
+                builder.setTitle("작업장 생성 성공")
+                builder.setMessage("작업장 생성에 성공하였습니다.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                    onDismissRequest()
                 }
-                val dialog = builder.create()
-                dialog.show()
-                LoadingState.hide()
+            } else {
+                builder.setTitle("작업장 생성 실패")
+                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                builder.setPositiveButton("확인") { dialog, _ ->
+                    dialog.dismiss()
+                }
             }
+            builder.create().show()
+            LoadingState.hide()
+        }
 
-            override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-                Log.e("HEAD METAL", t.message.toString())
-                LoadingState.hide()
-            }
-        })
-    }
+        override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
+            Log.e("HEAD METAL", t.message.toString())
+            LoadingState.hide()
+        }
+    })
 }

@@ -862,7 +862,8 @@ fun IconWithLabel(
 ) {
     Row(
         modifier = Modifier.clickable { onClick() },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         Icon(
             imageVector = icon,

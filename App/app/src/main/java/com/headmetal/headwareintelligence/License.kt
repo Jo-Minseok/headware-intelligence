@@ -1,5 +1,6 @@
 package com.headmetal.headwareintelligence
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,7 +21,7 @@ import androidx.navigation.compose.rememberNavController
 @Preview(showBackground = true)
 @Composable
 fun LicensePreview() {
-    License()
+    License(navController = rememberNavController())
 }
 
 @Preview(showBackground = true)
@@ -49,7 +50,7 @@ fun LicenseOnlyYesAlertDialogPreview() {
 }
 
 @Composable
-fun License(navController: NavController = rememberNavController()) {
+fun License(navController: NavController) {
     IconScreen(
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
@@ -123,14 +124,17 @@ fun License(navController: NavController = rememberNavController()) {
                     }
                 ) { showGPLDialog = false }
             }
+            ScreenTitleText(text = "라이센스")
 
-            Column {
-                ScreenTitleText(text = "라이센스")
-                Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-                    LabelWithNextIcon(text = "Apache License 2.0", onClick = { showApacheDialog = true })
-                    LabelWithNextIcon(text = "MIT License", onClick = { showMITDialog = true })
-                    LabelWithNextIcon(text = "The GPL License 2.0", onClick = { showGPLDialog = true })
-                }
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(40.dp)
+            ) {
+                LabelWithNextIcon(
+                    text = "Apache License 2.0",
+                    onClick = { showApacheDialog = true })
+                LabelWithNextIcon(text = "MIT License", onClick = { showMITDialog = true })
+                LabelWithNextIcon(text = "The GPL License 2.0", onClick = { showGPLDialog = true })
             }
         }
     )

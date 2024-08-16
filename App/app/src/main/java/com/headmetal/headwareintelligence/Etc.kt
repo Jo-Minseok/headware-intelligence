@@ -1,9 +1,8 @@
 package com.headmetal.headwareintelligence
 
 import android.util.Log
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
@@ -35,13 +34,13 @@ import retrofit2.Response
 @Preview(showBackground = true)
 @Composable
 fun EtcPreview() {
-    Etc()
+    Etc(navController = rememberNavController())
 }
 
 @Preview(showBackground = true)
 @Composable
 fun EtcLabelTextPreview() {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(30.dp)) {
         LabelWithNextIcon(onClick = {}, text = "개발자")
         LabelWithNextIcon(onClick = {}, text = "라이센스")
         LabelWithNextIcon(onClick = {}, text = "버전 정보 : 1.0.0")
@@ -61,7 +60,7 @@ fun EtcDevelopersAlertDialog() {
 }
 
 @Composable
-fun Etc(navController: NavController = rememberNavController()) {
+fun Etc(navController: NavController) {
     IconScreen(
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
@@ -90,16 +89,21 @@ fun Etc(navController: NavController = rememberNavController()) {
                         }
                     })
             }
-
-            Column {
-                ScreenTitleText(text = "기타")
-                Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-                    LabelWithNextIcon(onClick = { showDeveloperDialog = true }, text = "개발자")
-                    LabelWithNextIcon(onClick = { navController.navigate("LicenseScreen") }, text = "라이센스")
-                    LabelWithNextIcon(onClick = {}, text = "버전 정보 : 1.0.0")
-                    Spacer(modifier = Modifier.padding(bottom = 20.dp))
-                    AppInfoText()
-                }
+            ScreenTitleText(text = "기타")
+            Column(verticalArrangement = Arrangement.spacedBy(30.dp)) {
+                LabelWithNextIcon(
+                    onClick = { showDeveloperDialog = true },
+                    text = "개발자"
+                )
+                LabelWithNextIcon(
+                    onClick = { navController.navigate("LicenseScreen") },
+                    text = "라이센스"
+                )
+                LabelWithNextIcon(
+                    onClick = {},
+                    text = "버전 정보 : 1.0.0"
+                )
+                AppInfoText()
             }
         }
     )
@@ -121,14 +125,9 @@ fun AppInfoText() {
             color = Color.Black,
             fontSize = 12.sp
         )
-        Text(
-            modifier = Modifier.clickable {
-                uriHandler.openUri("https://github.com/Jo-Minseok/headware-intelligence")
-            },
-            text = "Site : https://github.com/Jo-Minseok/headware-intelligence",
-            color = Color.Black,
-            fontSize = 12.sp
-        )
+        HyperlinkText(text = "https://github.com/Jo-Minseok/headware-intelligence") {
+            uriHandler.openUri("https://github.com/Jo-Minseok/headware-intelligence")
+        }
     }
 }
 
@@ -163,7 +162,7 @@ fun DevelopersAlertDialog(
 
 @Composable
 fun HyperlinkText(
-    text: String = "",
+    text: String,
     onClick: () -> Unit
 ) {
     val annotatedString = buildAnnotatedString {

@@ -674,7 +674,7 @@ fun LabelAndRadioButtonComposable(
             fontWeight = labelFontWeight,
             fontSize = labelFontSize
         )
-        Row {
+        Row (horizontalArrangement = Arrangement.spacedBy(20.dp)){
             RadioButtonSingle(
                 modifier = Modifier
                     .weight(1f)
@@ -683,7 +683,6 @@ fun LabelAndRadioButtonComposable(
                 firstButtonSwitch = firstButtonSwitch,
                 secondButtonSwitch = secondButtonSwitch,
             )
-            Spacer(modifier = Modifier.width(20.dp))
             RadioButtonSingle(
                 modifier = Modifier
                     .weight(1f)

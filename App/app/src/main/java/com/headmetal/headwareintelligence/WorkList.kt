@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -169,11 +170,10 @@ fun WorkList(navController: NavController) {
                         .padding(horizontal = 10.dp)
                         .padding(vertical = 16.dp)
                 ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.verticalScroll(rememberScrollState())
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        for (i in workshopId.indices) {
+                        items(workshopId.size) { i ->
                             WorkItem(
                                 workshopId = workshopId[i],
                                 workshopName = workshopName[i],

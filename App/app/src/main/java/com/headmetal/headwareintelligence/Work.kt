@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
@@ -276,12 +278,12 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
             }
 
             // 작업자 목록
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(), // fillMaxSize()를 사용해 LazyColumn이 가능한 공간을 모두 차지하도록 설정
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 작업자 카드 등록
-                for (i in workerId.indices) {
+                items(workerId.size) { i ->
                     WorkerCard(
                         workerId = workerId[i],
                         workerName = workerName[i],
@@ -290,7 +292,6 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
                     )
                 }
             }
-
         }
     )
 }

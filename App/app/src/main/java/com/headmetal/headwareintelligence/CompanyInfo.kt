@@ -1,8 +1,9 @@
 package com.headmetal.headwareintelligence
 
-import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -51,8 +52,7 @@ fun CompanyCardListPreview() {
     val companies by remember { mutableStateOf(listOf("부산 건설", "동의 건설")) }
 
     LazyColumn(
-        modifier = Modifier.padding(top = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(companies) { company ->
             CompanyCard(company)
@@ -88,8 +88,8 @@ fun CompanyInfo(navController: NavController = rememberNavController()) {
 
             ScreenTitleText(text = "참여 건설 업체")
             LazyColumn(
-                modifier = Modifier.padding(top = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.padding(top = 10.dp).fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(companies) { company ->
                     CompanyCard(company)
@@ -105,14 +105,16 @@ fun CompanyCard(company: String) {
         modifier = Modifier
             .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = Color(255, 190, 0, 150)
-        )
+        elevation = CardDefaults.elevatedCardElevation(6.dp)
     ) {
         Box(
             modifier = Modifier
                 .height(50.dp)
-                .fillMaxWidth(), // 카드 전체 너비에 맞추기
+                .fillMaxWidth()
+                .background(
+                    color = Color(0xFFFFFFFF)
+                ), // 카드 전체 너비에 맞추기
+
             contentAlignment = Alignment.Center // 가운데 정렬
         ) {
             Text(

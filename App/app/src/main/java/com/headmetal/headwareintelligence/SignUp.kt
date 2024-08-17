@@ -161,7 +161,7 @@ fun SignUpComposable(navController: NavController) {
             )
             Button(
                 onClick = {
-                    passwordVerify(
+                    registerVerify(
                         id = id.value,
                         pw = pw.value,
                         rePw = rePw.value,
@@ -237,7 +237,7 @@ fun register(
     })
 }
 
-fun passwordVerify(
+fun registerVerify(
     id: String,
     pw: String,
     rePw: String,
@@ -248,50 +248,50 @@ fun passwordVerify(
     isManager: Boolean,
     navController: NavController
 ) {
-    if (!id.matches("^(?=.*[A-Za-z])[A-Za-z0-9]{6,16}$".toRegex())) { // 아이디 검증
-        showAlertDialog(
+    when {
+        !isIdValid(id) -> showAlertDialog(
             context = navController.context,
             title = "아이디 형식 불일치",
             message = "아이디는 최소 1개의 알파벳이 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다. 특수문자는 포함될 수 없습니다.",
             buttonText = "확인"
         )
-    } else if (!pw.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{6,16}$".toRegex())) { // 비밀번호 검증
-        showAlertDialog(
+
+        !isPasswordValid(pw) -> showAlertDialog(
             context = navController.context,
             title = "비밀번호 형식 불일치",
             message = "비밀번호는 최소 1개의 알파벳, 1개의 숫자, 1개의 특수문자가 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다.",
             buttonText = "확인"
         )
-    } else if (pw != rePw) { // 비밀번호 확인 검증
-        showAlertDialog(
+
+        !arePasswordsMatching(pw, rePw) -> showAlertDialog(
             context = navController.context,
             title = "비밀번호 불일치",
             message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
             buttonText = "확인"
         )
-    } else if (name.length > 4) { // 이름 검증
-        showAlertDialog(
+
+        !isNameValid(name) -> showAlertDialog(
             context = navController.context,
             title = "이름 글자 수 불일치",
             message = "이름을 4자리 이하로 작성바랍니다.",
             buttonText = "확인"
         )
-    } else if (!phone.matches("^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$".toRegex())) { // 전화번호 검증
-        showAlertDialog(
+
+        !isPhoneValid(phone) -> showAlertDialog(
             context = navController.context,
             title = "전화번호 형식 불일치",
             message = "전화번호 형식이 일치하지 않습니다.\nex)XXX-XXXX-XXXX",
             buttonText = "확인"
         )
-    } else if (!email.matches("^\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$".toRegex())) { // 이메일 검증
-        showAlertDialog(
+
+        !isEmailValid(email) -> showAlertDialog(
             context = navController.context,
             title = "이메일 형식 불일치",
             message = "이메일 형식이 일치하지 않습니다.\nex)XXX@XXX.XXX(공백 제외)",
             buttonText = "확인"
         )
-    } else {
-        register(
+
+        else -> register(
             id = id,
             pw = pw,
             rePw = rePw,

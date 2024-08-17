@@ -154,7 +154,6 @@ fun Main(navController: NavController) {
             val userName: String = sharedAccount.getString("name", "") ?: ""
 
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(30.dp)
             ) {
                 WelcomeUserComposable(userName = userName)
@@ -267,7 +266,10 @@ fun MainContents(type: String, navController: NavController) {
             locationPermissionRequest = locationPermissionRequest,
             navController = navController
         )
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
             ContentsBox(
                 imageVector = weatherIcon,
                 iconColor = weatherColor,

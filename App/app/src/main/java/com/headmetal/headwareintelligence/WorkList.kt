@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -186,24 +186,19 @@ fun WorkList(navController: NavController) {
                     text = "작업장 등록",
                     onClick = { showWorkDataInputDialog = true }
                 )
-                Surface(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .padding(vertical = 16.dp)
+                LazyColumn(
+                    modifier = Modifier.padding(top = 16.dp).fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(workshopId.size) { i ->
-                            WorkItem(
-                                workshopId = workshopId[i],
-                                workshopName = workshopName[i],
-                                workshopCompany = workshopCompany[i],
-                                workshopStartDate = workshopStartDate[i],
-                                workshopEndDate = workshopEndDate[i],
-                                navController = navController
-                            )
-                        }
+                    items(workshopId.size) { i ->
+                        WorkItem(
+                            workshopId = workshopId[i],
+                            workshopName = workshopName[i],
+                            workshopCompany = workshopCompany[i],
+                            workshopStartDate = workshopStartDate[i],
+                            workshopEndDate = workshopEndDate[i],
+                            navController = navController
+                        )
                     }
                 }
             }
@@ -350,9 +345,9 @@ fun WorkItem(
         onClick = { navController.navigate("WorkScreen/${workshopId}/${workshopName}") },
         shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
-            Color(255, 150, 0, 80)
+            Color(0xFFFFEDD9)
         ),
-        elevation = ButtonDefaults.elevatedButtonElevation(1.dp)
+        elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
     ) {
         Row {
             Icon(
@@ -360,7 +355,8 @@ fun WorkItem(
                 contentDescription = null,
                 modifier = Modifier
                     .size(50.dp)
-                    .align(Alignment.CenterVertically)
+                    .align(Alignment.CenterVertically),
+                tint = Color.Black
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -301,7 +302,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 
             // 작업자 목록
             LazyColumn(
-                modifier = Modifier.fillMaxSize(), // fillMaxSize()를 사용해 LazyColumn이 가능한 공간을 모두 차지하도록 설정
+                modifier = Modifier.fillMaxHeight(), // fillMaxSize()를 사용해 LazyColumn이 가능한 공간을 모두 차지하도록 설정
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 작업자 카드 등록
@@ -665,10 +666,8 @@ fun WorkerCard(
         },
         shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
-            Color(255, 150, 0, 80)
+            Color(0xFFFBDFBE)
         ),
-        modifier = Modifier
-            .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.fillMaxWidth()

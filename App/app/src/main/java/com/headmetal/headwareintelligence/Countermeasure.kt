@@ -1,6 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,9 +59,9 @@ fun Countermeasure(navController: NavController = rememberNavController()) {
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
         content = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column {
                 ScreenTitleText(text = "안전 행동 요령")
-                Column {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     CountermeasureCard(
                         title = "평상시 행동 요령",
                         weatherInfo = "평상시",

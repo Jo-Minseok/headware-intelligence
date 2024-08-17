@@ -161,16 +161,4 @@ fun DevelopersAlertDialog(
     )
 }
 
-@Composable
-fun HyperlinkText(
-    text: String,
-    onClick: () -> Unit
-) {
-    val annotatedString = buildAnnotatedString {
-        pushStringAnnotation("URL", "clickable")
-        withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) { append(text) }
-        pop()
-    }
 
-    ClickableText(text = annotatedString, onClick = { onClick() })
-}

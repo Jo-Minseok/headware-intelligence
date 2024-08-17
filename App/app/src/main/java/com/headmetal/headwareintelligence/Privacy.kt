@@ -22,7 +22,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,10 +58,11 @@ fun PrivacyUserPreview() {
 fun Privacy(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userId = sharedAccount.getString("userid", "")
-    val userName = sharedAccount.getString("name", "")
-    val userPhone = sharedAccount.getString("phone", "")
-    val userEmail = sharedAccount.getString("email", "")
+    val userId: String = sharedAccount.getString("userid", "") ?: ""
+    val userName: String = sharedAccount.getString("name", "") ?: ""
+    val userPhone: String = sharedAccount.getString("phone", "") ?: ""
+    val userEmail: String = sharedAccount.getString("email", "") ?: ""
+    val password: MutableState<String> = remember { mutableStateOf("") }
 
     IconScreen(
         imageVector = Icons.Default.ArrowBackIosNew,
@@ -70,34 +76,44 @@ fun Privacy(navController: NavController) {
                 ) {
                     PrivacyUser(
                         text = "아이디",
-                        userInfo = userId!!,
-                        imageVector = Icons.Outlined.Person
+                        userInfo = userId,
+                        imageVector = Icons.Outlined.Person,
+                        readOnly = true,
+                        textFieldColor = TextFieldDefaults.colors(
+                            focusedContainerColor = Color(121, 121, 121, 80),
+                            unfocusedContainerColor = Color(121, 121, 121, 80),
+                            disabledContainerColor = Color(121, 121, 121, 80),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        )
                     )
                     PrivacyUser(
                         text = "이름",
-                        userInfo = userName!!,
+                        userInfo = userName,
                         imageVector = Icons.Outlined.PermContactCalendar
                     )
                     PrivacyUser(
                         text = "전화번호",
-                        userInfo = userPhone!!,
+                        userInfo = userPhone,
                         imageVector = Icons.Outlined.Call
                     )
                     PrivacyUser(
                         text = "이메일",
-                        userInfo = userEmail!!,
+                        userInfo = userEmail,
                         imageVector = Icons.Outlined.Mail
                     )
                     PrivacyUser(
                         text = "비밀번호",
-                        userInfo = "****",
+                        userInfo = password.value,
+                        placeholder = "****",
                         imageVector = Icons.Outlined.Lock
                     )
                     PrivacyUser(
                         text = "건설업체",
                         userInfo = "없음",
                         imageVector = Icons.Outlined.Business
-                    ) // 추후 구현 필요
+                    )
                     Button(
                         onClick = { /**TODO**/ },
                         content = {
@@ -116,7 +132,16 @@ fun Privacy(navController: NavController) {
 fun PrivacyUser(
     text: String,
     userInfo: String,
-    imageVector: ImageVector
+    imageVector: ImageVector,
+    placeholder: String = "",
+    readOnly: Boolean = false,
+    textFieldColor: TextFieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = Color(255, 190, 0, 150),
+        unfocusedContainerColor = Color(255, 190, 0, 150),
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent,
+        disabledIndicatorColor = Color.Transparent
+    )
 ) {
     Column(
         modifier = Modifier
@@ -128,13 +153,16 @@ fun PrivacyUser(
             )
             LabelText(text = text)
         }
-        PrivacyUserTextField(userInfo = userInfo)
+        PrivacyUserTextField(userInfo = userInfo, placeholder = placeholder, readOnly = readOnly,color = textFieldColor)
     }
 }
 
 @Composable
 fun PrivacyUserTextField(
-    userInfo: String
+    userInfo: String,
+    placeholder: String,
+    readOnly: Boolean,
+    color: TextFieldColors
 ) {
     TextField(
         modifier = Modifier
@@ -145,13 +173,8 @@ fun PrivacyUserTextField(
         textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
         shape = RoundedCornerShape(8.dp),
         singleLine = true,
-        readOnly = true,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(255, 190, 0, 150),
-            unfocusedContainerColor = Color(255, 190, 0, 150),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent
-        )
+        readOnly = readOnly,
+        colors = color,
+        placeholder = { Text(text = placeholder) }
     )
 }

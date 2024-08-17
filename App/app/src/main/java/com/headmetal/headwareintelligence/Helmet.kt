@@ -3,7 +3,6 @@ package com.headmetal.headwareintelligence
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -585,13 +584,15 @@ fun Helmet(navController: NavController) {
         // 기능이 없다면
         if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Log.e("HEAD METAL", "NO FEATURE_BLUETOOTH_LE")
-            AlertDialog.Builder(navController.context)
-                .setTitle("블루투스 연결 실패")
-                .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
-                .setPositiveButton("확인") { _, _ ->
+            showAlertDialog(
+                context = navController.context,
+                title = "블루투스 연결 실패",
+                message = "본 기기는 블루투스를 지원하지 않습니다.",
+                buttonText = "확인",
+                onButtonClick = {
                     navController.navigate("MainScreen")
                 }
-                .show()
+            )
             // 기능이 있다면
         } else {
             // 블루투스 권한 체크

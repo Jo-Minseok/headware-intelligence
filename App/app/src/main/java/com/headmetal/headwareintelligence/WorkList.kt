@@ -1,8 +1,6 @@
 package com.headmetal.headwareintelligence
 
 import android.app.Activity
-import android.app.AlertDialog
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,13 +16,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Construction
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -187,7 +182,9 @@ fun WorkList(navController: NavController) {
                     onClick = { showWorkDataInputDialog = true }
                 )
                 LazyColumn(
-                    modifier = Modifier.padding(top = 16.dp).fillMaxHeight(),
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(workshopId.size) { i ->
@@ -224,8 +221,6 @@ fun WorkCreateDialog(
     val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
     val inputWorkEndDate: MutableState<String> = remember { mutableStateOf("") }
     val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val context: Context = LocalContext.current
-    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     LaunchedEffect(Unit) {
         LoadingState.show()
@@ -259,13 +254,8 @@ fun WorkCreateDialog(
             }
         })
     }
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            AlertTitleText("작업장 생성")
-        },
-        text = {
+    YesNoAlertDialog(
+        title = "작업장 생성", yesButton = "등록", noButton = "취소", textComposable = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -300,32 +290,17 @@ fun WorkCreateDialog(
             }
         },
         confirmButton = {
-            TextButton(
-                content = {
-                    Text(text = "등록", color = Color.Black, fontWeight = FontWeight.Bold)
-                },
-                onClick = {
-                    enrollWorkshopVerify(
-                        userId = userId,
-                        inputWorkName = inputWorkName.value,
-                        inputWorkCompany = inputWorkCompany.value,
-                        inputWorkStartDate = inputWorkStartDate.value,
-                        inputWorkEndDate = inputWorkEndDate.value,
-                        builder = builder,
-                        navController = navController,
-                        onDismissRequest = onDismissRequest
-                    )
-                }
+            enrollWorkshopVerify(
+                userId = userId,
+                inputWorkName = inputWorkName.value,
+                inputWorkCompany = inputWorkCompany.value,
+                inputWorkStartDate = inputWorkStartDate.value,
+                inputWorkEndDate = inputWorkEndDate.value,
+                navController = navController,
+                onDismissRequest = onDismissRequest
             )
         },
-        dismissButton = {
-            TextButton(
-                content = {
-                    Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
-                },
-                onClick = onDismissRequest
-            )
-        }
+        dismissButton = onDismissRequest
     )
 }
 
@@ -412,28 +387,33 @@ fun enrollWorkshopVerify(
     inputWorkCompany: String,
     inputWorkStartDate: String,
     inputWorkEndDate: String,
-    builder: AlertDialog.Builder,
     navController: NavController,
     onDismissRequest: () -> Unit,
 ) {
     if (isInvalidWorkName(inputWorkName)) {
-        builder.setTitle("작업장 이름 길이 제한")
-            .setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss()
-            }.create().show()
+        showAlertDialog(
+            context = navController.context,
+            title = "작업장 이름 길이 제한",
+            message = "작업장 이름은 최대 16자 입력 가능합니다.",
+            buttonText = "확인",
+            onButtonClick = {}
+        )
     } else if (isInvalidStartDate(inputWorkStartDate)) {
-        builder.setTitle("시작 날짜 검증 실패")
-            .setMessage("작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss()
-            }.create().show()
+        showAlertDialog(
+            context = navController.context,
+            title = "시작 날짜 검증 실패",
+            message = "작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.",
+            buttonText = "확인",
+            onButtonClick = {}
+        )
     } else if (isInvalidEndDate(inputWorkStartDate, inputWorkEndDate)) {
-        builder.setTitle("날짜 검증 실패")
-            .setMessage("작업 종료 날짜는 시작 날짜 이후여야 하며, yyyy-mm-dd 형식이어야 합니다.")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss()
-            }.create().show()
+        showAlertDialog(
+            context = navController.context,
+            title = "날짜 검증 실패",
+            message = "작업 종료 날짜는 yyyy-mm-dd 형식이어야 하며, 시작 날짜 이후여야 합니다.",
+            buttonText = "확인",
+            onButtonClick = {}
+        )
     } else {
         enrollAction(
             userId = userId,
@@ -441,7 +421,6 @@ fun enrollWorkshopVerify(
             inputWorkCompany = inputWorkCompany,
             inputWorkStartDate = inputWorkStartDate,
             inputWorkEndDate = inputWorkEndDate,
-            builder = builder,
             navController = navController,
             onDismissRequest = onDismissRequest
         )
@@ -457,7 +436,6 @@ fun enrollAction(
     inputWorkCompany: String,
     inputWorkStartDate: String,
     inputWorkEndDate: String,
-    builder: AlertDialog.Builder,
     navController: NavController,
     onDismissRequest: () -> Unit
 ) {
@@ -476,20 +454,24 @@ fun enrollAction(
             response: Response<WorkShopInputData>
         ) {
             if (response.isSuccessful) {
-                builder.setTitle("작업장 생성 성공")
-                    .setMessage("작업장 생성에 성공하였습니다.")
-                    .setPositiveButton("확인") { dialog, _ ->
-                        dialog.dismiss()
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업장 생성 성공",
+                    message = "작성장 생성에 성공하였습니다.",
+                    buttonText = "확인",
+                    onButtonClick = {
                         onDismissRequest()
                     }
+                )
             } else {
-                builder.setTitle("작업장 생성 실패")
-                    .setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                    .setPositiveButton("확인") { dialog, _ ->
-                        dialog.dismiss()
-                    }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업장 생성 실패",
+                    message = "입력한 내용을 다시 한 번 확인해주세요.",
+                    buttonText = "확인",
+                    onButtonClick = {}
+                )
             }
-            builder.create().show()
             LoadingState.hide()
         }
 

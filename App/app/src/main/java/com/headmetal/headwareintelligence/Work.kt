@@ -1,7 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.app.AlertDialog
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,12 +20,10 @@ import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Engineering
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,8 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -332,8 +326,6 @@ fun WorkUpdateDialog(
     val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
     val inputWorkEndDate: MutableState<String> = remember { mutableStateOf("") }
     val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
-    val context: Context = LocalContext.current
-    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     // 다이얼 로그 시작
     LaunchedEffect(Unit) {
@@ -371,12 +363,23 @@ fun WorkUpdateDialog(
     }
 
     // 다이얼 로그 띄우기
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            AlertTitleText(text = "작업장 수정")
+    YesNoAlertDialog(
+        title = "작업장 수정",
+        yesButton = "수정",
+        noButton = "취소",
+        confirmButton = {
+            updateWorkshopVerify(
+                workId = workId,
+                inputWorkName = inputWorkName.value,
+                inputWorkCompany = inputWorkCompany.value,
+                inputWorkStartDate = inputWorkStartDate.value,
+                inputWorkEndDate = inputWorkEndDate.value,
+                onDismissRequest = onDismissRequest,
+                navController = navController
+            )
         },
-        text = {
+        dismissButton = onDismissRequest,
+        textComposable = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabelAndInputComposable(
                     labelText = "작업장", inputText = inputWorkName, colors = TextFieldDefaults.colors(
@@ -405,31 +408,6 @@ fun WorkUpdateDialog(
                 Date(labelText = "시작일", inputText = inputWorkStartDate)
                 Date(labelText = "종료일", inputText = inputWorkEndDate)
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                updateWorkshopVerify(
-                    workId = workId,
-                    inputWorkName = inputWorkName.value,
-                    inputWorkCompany = inputWorkCompany.value,
-                    inputWorkStartDate = inputWorkStartDate.value,
-                    inputWorkEndDate = inputWorkEndDate.value,
-                    builder = builder,
-                    onDismissRequest = onDismissRequest,
-                    navController = navController
-                )
-            },
-                content = {
-                    Text("수정", color = Color.Black, fontWeight = FontWeight.Bold)
-                })
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismissRequest,
-                content = {
-                    Text(text = "취소", color = Color.Black, fontWeight = FontWeight.Bold)
-                }
-            )
         }
     )
 }
@@ -440,39 +418,23 @@ fun WorkDeleteDialog(
     workId: Int,
     navController: NavController
 ) {
-    val context: Context = LocalContext.current
-    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text(text = "작업장 삭제") },
-        text = {
+    YesNoAlertDialog(
+        title = "작업장 삭제",
+        yesButton = "예",
+        noButton = "아니오",
+        confirmButton = {
+            removeWorkshop(
+                workId = workId,
+                navController = navController,
+                onDismissRequest = onDismissRequest
+            )
+        },
+        dismissButton = onDismissRequest,
+        textComposable = {
             Column {
                 Text("작업장을 삭제하시겠습니까?")
                 Text("※ 한 번 삭제하면 되돌릴 수 없습니다.", color = Color.Red)
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    removeWorkshop(
-                        workId = workId,
-                        builder = builder,
-                        navController = navController,
-                        onDismissRequest = onDismissRequest
-                    )
-                },
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("예", color = Color.Black, fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = onDismissRequest,
-                colors = ButtonDefaults.buttonColors(Color.Transparent)
-            ) {
-                Text("아니오", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
     )
@@ -485,15 +447,11 @@ fun WorkerAddDialog(
     navController: NavController
 ) {
     val workerId: MutableState<String> = remember { mutableStateOf("") }
-    val context: Context = LocalContext.current
-    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            Text(text = "작업자 등록")
-        },
-        text = {
+    YesNoAlertDialog(
+        title = "작업자 등록",
+        yesButton = "등록",
+        noButton = "취소",
+        textComposable = {
             LabelAndInputComposable(
                 labelText = "아이디", inputText = workerId, colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(255, 150, 0, 80),
@@ -506,25 +464,14 @@ fun WorkerAddDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = {
-                addWorker(
-                    workId = workId,
-                    workerId = workerId.value,
-                    builder = builder,
-                    navController = navController,
-                    onDismissRequest = onDismissRequest
-                )
-            },
-                content = {
-                    Text("등록", color = Color.Black, fontWeight = FontWeight.Bold)
-                })
+            addWorker(
+                workId = workId,
+                workerId = workerId.value,
+                navController = navController,
+                onDismissRequest = onDismissRequest
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest,
-                content = {
-                    Text("취소", color = Color.Black, fontWeight = FontWeight.Bold)
-                })
-        }
+        dismissButton = onDismissRequest
     )
 }
 
@@ -573,13 +520,11 @@ fun WorkerManageDialog(
                 }
             })
     }
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = {
-            Text(text = "작업자 관리")
-        },
-        text = {
+    YesNoAlertDialog(
+        title = "작업자 관리",
+        yesButton = "확인",
+        noButton = "삭제",
+        textComposable = {
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -644,15 +589,9 @@ fun WorkerManageDialog(
                 }
             }
         },
-        confirmButton = {
-            TextButton(
-                onClick = onDismissRequest,
-                content = { Text("확인", color = Color.Black, fontWeight = FontWeight.Bold) })
-        },
+        confirmButton = onDismissRequest,
         dismissButton = {
-            TextButton(
-                onClick = onDismissRequest,
-                content = { Text("삭제", color = Color.Red, fontWeight = FontWeight.Bold) })
+            /**TODO*/
         }
     )
 }
@@ -712,28 +651,33 @@ fun updateWorkshopVerify(
     inputWorkCompany: String,
     inputWorkStartDate: String,
     inputWorkEndDate: String,
-    builder: AlertDialog.Builder,
     onDismissRequest: () -> Unit,
     navController: NavController
 ) {
     if (isInvalidWorkName(inputWorkName)) {
-        builder.setTitle("작업장 이름 길이 제한")
-            .setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss()
-            }.create().show()
+        showAlertDialog(
+            context = navController.context,
+            title = "작업장 이름 길이 제한",
+            message = "작업장 이름은 최대 16자 입력 가능합니다.",
+            buttonText = "확인",
+            onButtonClick = {}
+        )
     } else if (isInvalidStartDate(inputWorkStartDate)) {
-        builder.setTitle("시작 날짜 검증 실패")
-            .setMessage("작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss()
-            }.create().show()
+        showAlertDialog(
+            context = navController.context,
+            title = "시작 날짜 검증 실패",
+            message = "작업 시작 날짜는 yyyy-mm-dd 형식이어야 하며, 1970-01-01 이후여야 합니다.",
+            buttonText = "확인",
+            onButtonClick = {}
+        )
     } else if (isInvalidEndDate(inputWorkStartDate, inputWorkEndDate)) {
-        builder.setTitle("날짜 검증 실패")
-            .setMessage("작업 종료 날짜는 시작 날짜 이후여야 하며, yyyy-mm-dd 형식이어야 합니다.")
-            .setPositiveButton("확인") { dialog, _ ->
-                dialog.dismiss()
-            }.create().show()
+        showAlertDialog(
+            context = navController.context,
+            title = "날짜 검증 실패",
+            message = "작업 종료 날짜는 yyyy-mm-dd 형식이어야 하며, 시작 날짜 이후여야 합니다.",
+            buttonText = "확인",
+            onButtonClick = {}
+        )
     } else {
         updateAction(
             workId = workId,
@@ -741,7 +685,6 @@ fun updateWorkshopVerify(
             inputWorkCompany = inputWorkCompany,
             inputWorkStartDate = inputWorkStartDate,
             inputWorkEndDate = inputWorkEndDate,
-            builder = builder,
             onDismissRequest = onDismissRequest,
             navController = navController
         )
@@ -754,7 +697,6 @@ fun updateAction(
     inputWorkCompany: String,
     inputWorkStartDate: String,
     inputWorkEndDate: String,
-    builder: AlertDialog.Builder,
     navController: NavController,
     onDismissRequest: () -> Unit
 ) {
@@ -773,20 +715,22 @@ fun updateAction(
             response: Response<WorkShopInputData>
         ) {
             if (response.isSuccessful) {
-                builder.setTitle("작업장 수정 성공")
-                builder.setMessage("작업장 수정에 성공하였습니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    onDismissRequest()
-                }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업장 수정 성공",
+                    message = "작업장 수정에 성공하였습니다.",
+                    buttonText = "확인",
+                    onButtonClick = onDismissRequest
+                )
             } else {
-                builder.setTitle("작업장 수정 실패")
-                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업장 수정 실패",
+                    message = "입력한 내용을 다시 한 번 확인해주세요.",
+                    buttonText = "확인",
+                    onButtonClick = {}
+                )
             }
-            builder.create().show()
             LoadingState.hide()
         }
 
@@ -803,7 +747,6 @@ fun updateAction(
 
 fun removeWorkshop(
     workId: Int,
-    builder: AlertDialog.Builder,
     navController: NavController,
     onDismissRequest: () -> Unit
 ) {
@@ -816,22 +759,25 @@ fun removeWorkshop(
             response: Response<Void>
         ) {
             if (response.isSuccessful) {
-                builder.setTitle("작업장 삭제 성공")
-                builder.setMessage("작업장 삭제에 성공하였습니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    onDismissRequest()
-                }
-                navController.navigateUp()
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업장 삭제 성공",
+                    message = "작업장 삭제에 성공하였습니다.",
+                    buttonText = "확인",
+                    onButtonClick = {
+                        onDismissRequest()
+                        navController.navigateUp()
+                    }
+                )
             } else {
-                builder.setTitle("작업장 삭제 실패")
-                builder.setMessage("작업장 삭제를 실패했습니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    onDismissRequest()
-                }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업장 삭제 실패",
+                    message = "작업장 삭제를 실패했습니다",
+                    buttonText = "확인",
+                    onButtonClick = onDismissRequest
+                )
             }
-            builder.create().show()
             LoadingState.hide()
         }
 
@@ -850,7 +796,6 @@ fun removeWorkshop(
 fun addWorker(
     workId: Int,
     workerId: String,
-    builder: AlertDialog.Builder,
     navController: NavController,
     onDismissRequest: () -> Unit
 ) {
@@ -864,21 +809,22 @@ fun addWorker(
             response: Response<Void>
         ) {
             if (response.isSuccessful) {
-                builder.setTitle("작업자 등록 성공")
-                builder.setMessage("작업자 등록에 성공하였습니다.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    onDismissRequest()
-                }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업자 등록 성공",
+                    message = "작업자 등록에 성공하였습니다.",
+                    buttonText = "확인",
+                    onButtonClick = onDismissRequest
+                )
             } else {
-                builder.setTitle("작업자 등록 실패")
-                builder.setMessage(response.message())
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    onDismissRequest()
-                }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업자 등록 실패",
+                    message = response.message(),
+                    buttonText = "확인",
+                    onButtonClick = {}
+                )
             }
-            builder.create().show()
             LoadingState.hide()
         }
 

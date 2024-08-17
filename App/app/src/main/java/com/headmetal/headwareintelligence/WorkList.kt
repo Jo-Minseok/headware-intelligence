@@ -1,9 +1,9 @@
 package com.headmetal.headwareintelligence
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.SharedPreferences
 import android.util.Log
-import android.app.AlertDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,43 +13,39 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Construction
-import androidx.compose.material3.Text
-import androidx.compose.material3.Surface
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 data class WorkShopInputData(
     val name: String,
@@ -407,39 +403,6 @@ fun enrollWorkshopVerify(
             builder = builder,
             onDismissRequest = onDismissRequest
         )
-    }
-}
-
-fun isInvalidStartDate(inputWorkStartDate: String): Boolean {
-    return try {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        dateFormat.isLenient = false // 날짜 엄격 검증
-
-        val startDate = dateFormat.parse(inputWorkStartDate)
-        val minDate = dateFormat.parse("1970-01-01")
-
-        startDate == null || startDate.before(minDate)
-    } catch (e: Exception) {
-        true // 날짜 형식이 잘못된 경우
-    }
-}
-
-fun isInvalidEndDate(inputWorkStartDate: String, inputWorkEndDate: String): Boolean {
-    // 종료 날짜가 비어 있는 경우 검증을 하지 않음
-    if (inputWorkEndDate.isEmpty()) {
-        return false
-    }
-
-    return try {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        dateFormat.isLenient = false // 날짜 엄격 검증
-
-        val startDate = dateFormat.parse(inputWorkStartDate)
-        val endDate = dateFormat.parse(inputWorkEndDate)
-
-        endDate == null || endDate.before(startDate) // 종료 날짜가 시작 날짜보다 이전이면 오류
-    } catch (e: Exception) {
-        true // 날짜 형식이 잘못된 경우
     }
 }
 

@@ -259,7 +259,8 @@ fun registerVerify(
         !isPasswordValid(pw) -> showAlertDialog(
             context = navController.context,
             title = "비밀번호 형식 불일치",
-            message = "비밀번호는 최소 1개의 알파벳, 1개의 숫자, 1개의 특수문자가 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다.",
+            message = "비밀번호는 최소 1개의 알파벳, 1개의 숫자, 1개의 특수문자가 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다.\n" +
+                    "사용가능 특수 문자: @\$!%*?&",
             buttonText = "확인"
         )
 

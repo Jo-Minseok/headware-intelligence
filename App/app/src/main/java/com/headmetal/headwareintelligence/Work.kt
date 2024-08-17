@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -217,7 +216,8 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
         WorkerAddDialog(
             onDismissRequest = { showWorkerAddDialog = false },
             workId = workId,
-            navController = navController)
+            navController = navController
+        )
     }
 
     // 작업자 관리 다이얼 로그

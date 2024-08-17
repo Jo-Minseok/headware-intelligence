@@ -1,6 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.app.AlertDialog
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,7 +40,12 @@ data class AccidentProcessingUpdateRequest(
 )
 
 // Accident_Processing 테이블의 사고 상황과 세부 처리 내역 데이터를 업데이트
-fun updateAccidentSituation(no: Int, situationCode: String, detail: String?,navController:NavController) {
+fun updateAccidentSituation(
+    no: Int,
+    situationCode: String,
+    detail: String?,
+    navController: NavController
+) {
     val call = RetrofitInstance.apiService.updateAccidentSituation(
         no, situationCode, AccidentProcessingUpdateRequest(detail)
     )
@@ -65,7 +69,7 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String?,navC
 
 @Preview(showBackground = true)
 @Composable
-fun AlertDialogPreview(){
+fun AlertDialogPreview() {
     AlertDialog(onClose = { /*TODO*/ }, content = "test")
 }
 

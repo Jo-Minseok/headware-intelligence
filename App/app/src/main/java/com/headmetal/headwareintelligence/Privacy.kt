@@ -16,16 +16,15 @@ import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.PermContactCalendar
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -153,7 +152,12 @@ fun PrivacyUser(
             )
             LabelText(text = text)
         }
-        PrivacyUserTextField(userInfo = userInfo, placeholder = placeholder, readOnly = readOnly,color = textFieldColor)
+        PrivacyUserTextField(
+            userInfo = userInfo,
+            placeholder = placeholder,
+            readOnly = readOnly,
+            color = textFieldColor
+        )
     }
 }
 

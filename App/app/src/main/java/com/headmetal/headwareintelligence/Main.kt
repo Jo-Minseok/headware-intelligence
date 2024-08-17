@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,9 +29,9 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -455,7 +453,6 @@ suspend fun getWeatherInformation(
                                 precipitation.value = it.precipitation
                                 humidity.value = it.humidity
                             }
-                            Log.d("HEAD METAL", "날씨 정보 로딩 성공")
                         }
                     }
 
@@ -471,6 +468,5 @@ suspend fun getWeatherInformation(
                 Manifest.permission.ACCESS_COARSE_LOCATION
             )
         )
-        Log.e("HEAD METAL", "위치 권한이 필요함")
     }
 }

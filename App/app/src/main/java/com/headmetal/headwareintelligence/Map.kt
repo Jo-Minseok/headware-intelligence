@@ -816,7 +816,6 @@ fun BottomSheetScreen(
 }
 
 // 사고 처리 세부 내역 입력창 Composable
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailInputDialog(
     onClose: () -> Unit,

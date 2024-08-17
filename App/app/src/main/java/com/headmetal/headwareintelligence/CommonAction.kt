@@ -77,7 +77,7 @@ fun isInvalidEndDate(inputWorkStartDate: String, inputWorkEndDate: String): Bool
  * 작업 이름
  */
 
-fun isInvalidWorkName(workName: String): Boolean{
+fun isInvalidWorkName(workName: String): Boolean {
     return workName.length > 16
 }
 

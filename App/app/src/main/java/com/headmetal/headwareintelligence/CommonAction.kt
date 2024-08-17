@@ -1,2 +1,67 @@
 package com.headmetal.headwareintelligence
 
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+/**
+ * 계정
+ */
+fun isIdValid(id: String): Boolean {
+    return id.matches("^(?=.*[A-Za-z])[A-Za-z0-9]{6,16}$".toRegex())
+}
+
+fun isPasswordValid(pw: String): Boolean {
+    return pw.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@\$!%*?&])[A-Za-z\\d@\$!%*?&]{6,16}$".toRegex())
+}
+
+fun arePasswordsMatching(pw: String, rePw: String): Boolean {
+    return pw == rePw
+}
+
+fun isNameValid(name: String): Boolean {
+    return name.length <= 4
+}
+
+fun isPhoneValid(phone: String): Boolean {
+    return phone.matches("^[0-9]{2,3}-[0-9]{3,4}-[0-9]{4}$".toRegex())
+}
+
+fun isEmailValid(email: String): Boolean {
+    return email.matches("^\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*$".toRegex())
+}
+
+/**
+ * 작업 날짜
+ */
+fun isInvalidStartDate(inputWorkStartDate: String): Boolean {
+    return try {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        dateFormat.isLenient = false // 날짜 엄격 검증
+
+        val startDate = dateFormat.parse(inputWorkStartDate)
+        val minDate = dateFormat.parse("1970-01-01")
+
+        startDate == null || startDate.before(minDate)
+    } catch (e: Exception) {
+        true // 날짜 형식이 잘못된 경우
+    }
+}
+
+fun isInvalidEndDate(inputWorkStartDate: String, inputWorkEndDate: String): Boolean {
+    // 종료 날짜가 비어 있는 경우 검증을 하지 않음
+    if (inputWorkEndDate.isEmpty()) {
+        return false
+    }
+
+    return try {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        dateFormat.isLenient = false // 날짜 엄격 검증
+
+        val startDate = dateFormat.parse(inputWorkStartDate)
+        val endDate = dateFormat.parse(inputWorkEndDate)
+
+        endDate == null || endDate.before(startDate) // 종료 날짜가 시작 날짜보다 이전이면 오류
+    } catch (e: Exception) {
+        true // 날짜 형식이 잘못된 경우
+    }
+}

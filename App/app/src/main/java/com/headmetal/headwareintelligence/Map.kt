@@ -222,7 +222,7 @@ fun Map(
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            Log.e("HEAD METAL", "Error: ${t.message}")
+            networkErrorFinishApp(navController = navController, error = t)
         }
     }
 
@@ -261,7 +261,8 @@ fun Map(
             imageUrl,
             webSocketSendData,
             imageDataReception,
-            soundDataReception
+            soundDataReception,
+            navController = navController
         )
     }
 }
@@ -506,7 +507,8 @@ fun BottomSheetScreen(
     imageUrl: MutableState<String?>,
     webSocketSendData: MutableState<String?>,
     imageDataReception: MutableState<Boolean>,
-    soundDataReception: MutableState<Boolean>
+    soundDataReception: MutableState<Boolean>,
+    navController: NavController
 ) {
     val isDetailInputDialogVisible: MutableState<Boolean> =
         remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
@@ -518,7 +520,8 @@ fun BottomSheetScreen(
             accidentNo = accidentNo,
             selectedMarker = selectedMarker,
             situationCode = situationCode,
-            listIdx = listIdx
+            listIdx = listIdx,
+            navController = navController
         )
     }
 
@@ -721,7 +724,8 @@ fun BottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.PROCESSING.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
@@ -751,7 +755,8 @@ fun BottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.MALFUNCTION.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
@@ -780,7 +785,8 @@ fun BottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.REPORT119.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
@@ -818,7 +824,8 @@ fun DetailInputDialog(
     accidentNo: MutableState<Int>,
     selectedMarker: MutableState<Marker?>,
     situationCode: MutableList<Int>,
-    listIdx: MutableState<Int>
+    listIdx: MutableState<Int>,
+    navController: NavController
 ) {
     val detail = remember { mutableStateOf("") } // 사고 처리 세부 내역(입력)
 
@@ -865,7 +872,8 @@ fun DetailInputDialog(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.COMPLETE.ordinal.toString(),
-                                    detail.value
+                                    detail.value,
+                                    navController = navController
                                 ) // 처리 상황을 '처리 완료'로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.COMPLETE.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 COMPLETE로 갱신

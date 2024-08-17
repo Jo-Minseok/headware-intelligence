@@ -86,13 +86,7 @@ fun Loading(navController: NavController) {
                             }
 
                             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                                showAlertDialog(
-                                    context = navController.context,
-                                    title = "로그인 실패",
-                                    message = "서버 상태 및 네트워크 접속 불안정",
-                                    buttonText = "확인"
-                                ) { (navController.context as Activity).finish() }
-                                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                                networkErrorFinishApp(navController = navController, error = t)
                             }
                         })
                     } else {
@@ -109,13 +103,7 @@ fun Loading(navController: NavController) {
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "서버 접속 실패",
-                    message = "서버 상태 및 네트워크 접속 불안정",
-                    buttonText = "확인"
-                ) { (navController.context as Activity).finish() }
-                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                networkErrorFinishApp(navController = navController, error = t)
             }
         })
     }

@@ -190,8 +190,7 @@ fun idSearch(name: String, email: String, isManager: Boolean, navController: Nav
         }
 
         override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
-            LoadingState.hide()
-            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 }

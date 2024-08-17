@@ -119,7 +119,8 @@ fun MainContentsHeaderPreview() {
         humidity = humidity,
         context = context,
         fusedLocationClient = fusedLocationClient,
-        locationPermissionRequest = locationPermissionRequest
+        locationPermissionRequest = locationPermissionRequest,
+        navController = rememberNavController()
     )
 }
 
@@ -246,7 +247,8 @@ fun MainContents(type: String, navController: NavController) {
             humidity = humidity,
             context = context,
             fusedLocationClient = fusedLocationClient,
-            locationPermissionRequest = locationPermissionRequest
+            locationPermissionRequest = locationPermissionRequest,
+            navController = navController
         )
     }
 
@@ -262,7 +264,8 @@ fun MainContents(type: String, navController: NavController) {
             humidity = humidity,
             context = context,
             fusedLocationClient = fusedLocationClient,
-            locationPermissionRequest = locationPermissionRequest
+            locationPermissionRequest = locationPermissionRequest,
+            navController = navController
         )
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             ContentsBox(
@@ -322,7 +325,8 @@ fun MainContentsHeader(
     humidity: MutableState<Float>,
     context: Context,
     fusedLocationClient: FusedLocationProviderClient,
-    locationPermissionRequest: ActivityResultLauncher<Array<String>>
+    locationPermissionRequest: ActivityResultLauncher<Array<String>>,
+    navController: NavController
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var isRefreshClickable by remember { mutableStateOf(true) }
@@ -342,7 +346,8 @@ fun MainContentsHeader(
                             humidity = humidity,
                             context = context,
                             fusedLocationClient = fusedLocationClient,
-                            locationPermissionRequest = locationPermissionRequest
+                            locationPermissionRequest = locationPermissionRequest,
+                            navController = navController
                         )
                         delay(3000) // 3초 대기
                         isRefreshClickable = true
@@ -425,7 +430,8 @@ suspend fun getWeatherInformation(
     humidity: MutableState<Float>,
     context: Context,
     fusedLocationClient: FusedLocationProviderClient,
-    locationPermissionRequest: ActivityResultLauncher<Array<String>>
+    locationPermissionRequest: ActivityResultLauncher<Array<String>>,
+    navController: NavController
 ) {
     if (hasLocationPermissions(context)) {
         val location = fusedLocationClient.lastLocation.await()
@@ -450,7 +456,7 @@ suspend fun getWeatherInformation(
                     }
 
                     override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                        Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                        networkErrorFinishApp(navController = navController, error = t)
                     }
                 })
         }

@@ -81,7 +81,7 @@ fun CompanyInfo(navController: NavController = rememberNavController()) {
                         }
 
                         override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                            networkErrorFinishApp(navController = navController, error = t)
                         }
                     })
             }

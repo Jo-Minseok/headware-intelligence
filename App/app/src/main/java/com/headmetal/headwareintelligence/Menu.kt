@@ -260,12 +260,8 @@ fun logoutConfirm(
                 navController.navigate("LoginScreen")
             }
 
-            override fun onFailure(p0: Call<Void>, p1: Throwable) {
-                Toast.makeText(
-                    navController.context,
-                    "로그아웃을 실패하였습니다. 인터넷을 확인하세요.",
-                    Toast.LENGTH_SHORT
-                ).show()
+            override fun onFailure(p0: Call<Void>, t: Throwable) {
+                networkErrorFinishApp(navController = navController, error = t)
             }
         })
     } else {

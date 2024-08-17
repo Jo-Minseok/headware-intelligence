@@ -3,9 +3,12 @@ package com.headmetal.headwareintelligence
 import java.text.SimpleDateFormat
 import java.util.Locale
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 
 /**
  * 계정
@@ -92,4 +95,19 @@ fun hasLocationPermissions(context: Context): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 
     return fineLocationPermission || coarseLocationPermission
+}
+
+/**
+ * 애플리케이션 네트워크 및 서버 접속 오류 종료
+ */
+
+fun networkErrorFinishApp(navController: NavController, error: Throwable) {
+    Log.e("HEAD METAL", "서버 통신 실패: ${error.message}")
+    showAlertDialog(
+        context = navController.context,
+        title = "서버 접속 실패",
+        message = "서버 상태 및 네트워크 접속 불안정",
+        buttonText = "확인",
+        onButtonClick = { (navController.context as Activity).finish() }
+    )
 }

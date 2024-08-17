@@ -190,8 +190,7 @@ fun changePassword(
             }
 
             override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
-                LoadingState.hide()
-                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                networkErrorFinishApp(navController = navController, error = t)
             }
         })
     } else {

@@ -79,7 +79,7 @@ fun WorkListPreview() {
 @Preview(showBackground = true)
 @Composable
 fun WorkCreateDialogPreview() {
-    WorkCreateDialog(onDismissRequest = {})
+    WorkCreateDialog(onDismissRequest = {}, navController = rememberNavController())
 }
 
 /**
@@ -134,7 +134,7 @@ fun WorkList(navController: NavController) {
                 }
 
                 override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
-                    Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                    networkErrorFinishApp(navController = navController, error = t)
                 }
             })
         }
@@ -144,7 +144,10 @@ fun WorkList(navController: NavController) {
      * 작업장 생성 다이얼로그 띄우기
      */
     if (showWorkDataInputDialog) {
-        WorkCreateDialog(onDismissRequest = { showWorkDataInputDialog = false })
+        WorkCreateDialog(
+            onDismissRequest = { showWorkDataInputDialog = false },
+            navController = navController
+        )
     }
 
     /**
@@ -193,7 +196,8 @@ fun WorkList(navController: NavController) {
  */
 @Composable
 fun WorkCreateDialog(
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    navController: NavController
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
@@ -220,7 +224,7 @@ fun WorkCreateDialog(
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                println("서버 통신 실패: ${t.message}")
+                networkErrorFinishApp(navController = navController, error = t)
             }
         })
     }
@@ -277,6 +281,7 @@ fun WorkCreateDialog(
                         inputWorkStartDate = inputWorkStartDate.value,
                         inputWorkEndDate = inputWorkEndDate.value,
                         builder = builder,
+                        navController = navController,
                         onDismissRequest = onDismissRequest
                     )
                 }
@@ -375,6 +380,7 @@ fun enrollWorkshopVerify(
     inputWorkStartDate: String,
     inputWorkEndDate: String,
     builder: AlertDialog.Builder,
+    navController: NavController,
     onDismissRequest: () -> Unit,
 ) {
     if (isInvalidWorkName(inputWorkName)) {
@@ -403,6 +409,7 @@ fun enrollWorkshopVerify(
             inputWorkStartDate = inputWorkStartDate,
             inputWorkEndDate = inputWorkEndDate,
             builder = builder,
+            navController = navController,
             onDismissRequest = onDismissRequest
         )
     }
@@ -418,6 +425,7 @@ fun enrollAction(
     inputWorkStartDate: String,
     inputWorkEndDate: String,
     builder: AlertDialog.Builder,
+    navController: NavController,
     onDismissRequest: () -> Unit
 ) {
     LoadingState.show()
@@ -453,8 +461,7 @@ fun enrollAction(
         }
 
         override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-            Log.e("HEAD METAL", t.message.toString())
-            LoadingState.hide()
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 }

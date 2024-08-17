@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,7 +41,7 @@ data class AccidentProcessingUpdateRequest(
 )
 
 // Accident_Processing 테이블의 사고 상황과 세부 처리 내역 데이터를 업데이트
-fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
+fun updateAccidentSituation(no: Int, situationCode: String, detail: String?,navController:NavController) {
     val call = RetrofitInstance.apiService.updateAccidentSituation(
         no, situationCode, AccidentProcessingUpdateRequest(detail)
     )
@@ -57,7 +58,7 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
         }
 
         override fun onFailure(call: Call<AccidentProcessingUpdateRequest>, t: Throwable) {
-            Log.e("HEAD METAL", "네트워크 오류 또는 예외 발생: ${t.message}")
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 }

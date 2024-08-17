@@ -124,7 +124,7 @@ fun Helmet(navController: NavController) {
         }
 
         override fun onFailure(call: Call<WorkListResponse>, t: Throwable) {
-            Log.e("HEAD METAL", "Failed to fetch work list")
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 

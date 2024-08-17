@@ -134,7 +134,11 @@ fun WorkerCardPreview() {
 @Preview(showBackground = true)
 @Composable
 fun InputWorkUpdateDialogPreview() {
-    InputWorkUpdateDialog(onDismissRequest = {}, workId = 0)
+    InputWorkUpdateDialog(
+        onDismissRequest = {},
+        workId = 0,
+        navController = rememberNavController()
+    )
 }
 
 /**
@@ -158,7 +162,8 @@ fun WorkDeleteDialogPreview() {
 fun WorkerAddDialogPreview() {
     WorkerAddDialog(
         onDismissRequest = {},
-        workId = 0
+        workId = 0,
+        navController = rememberNavController()
     )
 }
 
@@ -170,7 +175,8 @@ fun WorkerAddDialogPreview() {
 fun WorkerManageDialogPreview() {
     WorkerManageDialog(
         onDismissRequest = {},
-        workerId = "0"
+        workerId = "0",
+        navController = rememberNavController()
     )
 }
 
@@ -192,7 +198,8 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
     if (showWorkDataInputDialog) {
         InputWorkUpdateDialog(
             onDismissRequest = { showWorkDataInputDialog = false },
-            workId = workId
+            workId = workId,
+            navController = navController
         )
     }
 
@@ -207,14 +214,18 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 
     // 작업자 등록 다이얼 로그
     if (showWorkerAddDialog) {
-        WorkerAddDialog(onDismissRequest = { showWorkerAddDialog = false }, workId = workId)
+        WorkerAddDialog(
+            onDismissRequest = { showWorkerAddDialog = false },
+            workId = workId,
+            navController = navController)
     }
 
     // 작업자 관리 다이얼 로그
     if (showWorkerManageDialog.value) {
         WorkerManageDialog(
             onDismissRequest = { showWorkerManageDialog.value = false },
-            workerId = selectedWorkerId.value
+            workerId = selectedWorkerId.value,
+            navController = rememberNavController()
         )
     }
 
@@ -235,7 +246,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
             }
 
             override fun onFailure(call: Call<Worker>, t: Throwable) {
-                Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                networkErrorFinishApp(navController = navController, error = t)
             }
         })
     }
@@ -298,7 +309,8 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 @Composable
 fun InputWorkUpdateDialog(
     onDismissRequest: () -> Unit,
-    workId: Int
+    workId: Int,
+    navController: NavController
 ) {
     // UI 변수 초기화
     var selectableCompanyList by remember { mutableStateOf(listOf<String>()) }
@@ -323,7 +335,7 @@ fun InputWorkUpdateDialog(
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                println("서버 통신 실패: ${t.message}")
+                networkErrorFinishApp(navController = navController, error = t)
             }
         })
     }
@@ -373,7 +385,8 @@ fun InputWorkUpdateDialog(
                     inputWorkStartDate = inputWorkStartDate.value,
                     inputWorkEndDate = inputWorkEndDate.value,
                     builder = builder,
-                    onDismissRequest = onDismissRequest
+                    onDismissRequest = onDismissRequest,
+                    navController = navController
                 )
             },
                 content = {
@@ -433,7 +446,8 @@ fun WorkDeleteDialog(
 @Composable
 fun WorkerAddDialog(
     onDismissRequest: () -> Unit,
-    workId: Int
+    workId: Int,
+    navController: NavController
 ) {
     val workerId: MutableState<String> = remember { mutableStateOf("") }
     val context: Context = LocalContext.current
@@ -461,7 +475,8 @@ fun WorkerAddDialog(
                 addWorker(
                     workId = workId,
                     workerId = workerId.value,
-                    builder = builder
+                    builder = builder,
+                    navController = navController
                 )
             },
                 content = {
@@ -480,7 +495,8 @@ fun WorkerAddDialog(
 @Composable
 fun WorkerManageDialog(
     onDismissRequest: () -> Unit,
-    workerId: String
+    workerId: String,
+    navController: NavController
 ) {
     val workerName: MutableState<String> = remember { mutableStateOf("") }
     val workerPhone: MutableState<String> = remember { mutableStateOf("") }
@@ -504,7 +520,7 @@ fun WorkerManageDialog(
                 }
 
                 override fun onFailure(call: Call<WorkerStatus>, t: Throwable) {
-                    Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                    networkErrorFinishApp(navController = navController, error = t)
                 }
             })
     }
@@ -650,7 +666,8 @@ fun updateWorkshopVerify(
     inputWorkStartDate: String,
     inputWorkEndDate: String,
     builder: AlertDialog.Builder,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    navController: NavController
 ) {
     if (isInvalidWorkName(inputWorkName)) {
         builder.setTitle("작업장 이름 길이 제한")
@@ -678,7 +695,8 @@ fun updateWorkshopVerify(
             inputWorkStartDate = inputWorkStartDate,
             inputWorkEndDate = inputWorkEndDate,
             builder = builder,
-            onDismissRequest = onDismissRequest
+            onDismissRequest = onDismissRequest,
+            navController = navController
         )
     }
 }
@@ -690,6 +708,7 @@ fun updateAction(
     inputWorkStartDate: String,
     inputWorkEndDate: String,
     builder: AlertDialog.Builder,
+    navController: NavController,
     onDismissRequest: () -> Unit
 ) {
     LoadingState.show()
@@ -726,8 +745,7 @@ fun updateAction(
         }
 
         override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-            Log.e("HEAD METAL", t.message.toString())
-            LoadingState.hide()
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 }
@@ -767,8 +785,7 @@ fun removeWorkshop(
         }
 
         override fun onFailure(call: Call<Void>, t: Throwable) {
-            Log.e("HEAD METAL", t.message.toString())
-            LoadingState.hide()
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 }
@@ -776,7 +793,8 @@ fun removeWorkshop(
 fun addWorker(
     workId: Int,
     workerId: String,
-    builder: AlertDialog.Builder
+    builder: AlertDialog.Builder,
+    navController: NavController
 ) {
     LoadingState.show()
     RetrofitInstance.apiService.assignWork(
@@ -805,8 +823,7 @@ fun addWorker(
         }
 
         override fun onFailure(call: Call<Void>, t: Throwable) {
-            Log.e("HEAD METAL", t.message.toString())
-            LoadingState.hide()
+            networkErrorFinishApp(navController = navController, error = t)
         }
     })
 }

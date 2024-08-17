@@ -446,7 +446,12 @@ fun WorkDeleteDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(text = "작업장 삭제") },
-        text = { Text("작업장을 삭제하시겠습니까?\n※ 한 번 삭제하면 되돌릴 수 없습니다.") },
+        text = {
+            Column {
+                Text("작업장을 삭제하시겠습니까?")
+                Text("※ 한 번 삭제하면 되돌릴 수 없습니다.", color = Color.Red)
+            }
+        },
         confirmButton = {
             Button(
                 onClick = {
@@ -647,7 +652,7 @@ fun WorkerManageDialog(
         dismissButton = {
             TextButton(
                 onClick = onDismissRequest,
-                content = { Text("해제", color = Color.Red, fontWeight = FontWeight.Bold) })
+                content = { Text("삭제", color = Color.Red, fontWeight = FontWeight.Bold) })
         }
     )
 }

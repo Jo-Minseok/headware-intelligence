@@ -325,13 +325,7 @@ fun Processing(
                     LoadingState.hide()
                     refreshState = false
 
-                    Toast
-                        .makeText(
-                            navController.context,
-                            "새로고침 되었습니다.",
-                            Toast.LENGTH_SHORT
-                        )
-                        .show()
+                    Toast.makeText(navController.context, "새로고침 되었습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
 

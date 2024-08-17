@@ -162,21 +162,12 @@ fun idSearch(name: String, email: String, isManager: Boolean, navController: Nav
         ) {
             if (response.isSuccessful) {
                 val id = response.body()?.id
-                if (!id.isNullOrEmpty()) {
-                    showAlertDialog(
-                        context = navController.context,
-                        title = "아이디 찾기 성공",
-                        message = "ID: $id",
-                        buttonText = "확인"
-                    )
-                } else {
-                    showAlertDialog(
-                        context = navController.context,
-                        title = "서버 응답 실패",
-                        message = "서버 응답에 실패 하였습니다.",
-                        buttonText = "확인"
-                    )
-                }
+                showAlertDialog(
+                    context = navController.context,
+                    title = "아이디 찾기 성공",
+                    message = "ID: $id",
+                    buttonText = "확인"
+                )
             } else {
                 showAlertDialog(
                     context = navController.context,
@@ -189,7 +180,12 @@ fun idSearch(name: String, email: String, isManager: Boolean, navController: Nav
         }
 
         override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "네트워크 오류",
+                message = "네트워크 문제로 ID를 찾을 수 없습니다."
+            )
         }
     })
 }

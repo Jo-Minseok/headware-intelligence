@@ -2,7 +2,6 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -189,8 +188,9 @@ fun loginAction(
                     context = navController.context,
                     title = "로그인 실패",
                     message = "아이디 및 비밀번호를 확인하세요.",
-                    buttonText = "확인"
-                ) { inputPw.value = "" }
+                    buttonText = "확인",
+                    onButtonClick = { inputPw.value = "" }
+                )
             }
             LoadingState.hide()
         }

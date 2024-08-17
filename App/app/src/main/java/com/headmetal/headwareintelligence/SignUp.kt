@@ -1,6 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -92,12 +91,24 @@ fun SignUpComposable(navController: NavController) {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
                     response.body()?.let { selectableCompany = listOf("없음") + it.companies }
+                } else {
+                    errorBackApp(
+                        navController = navController,
+                        error = response.message(),
+                        title = "회사 목록 로드 오류",
+                        message = "회사 목록을 로드 할 수 없습니다."
+                    )
                 }
                 LoadingState.hide()
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                networkErrorFinishApp(navController = navController, error = t)
+                errorBackApp(
+                    navController = navController,
+                    error = t.toString(),
+                    title = "네트워크 오류",
+                    message = "네트워크 문제로 회사 목록 로드를 할 수 없습니다."
+                )
             }
         })
     }
@@ -233,7 +244,12 @@ fun register(
             call: Call<RegisterInputModel>,
             t: Throwable
         ) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "네트워크 오류",
+                message = "네트워크 문제로 회원 가입을 할 수 없습니다."
+            )
         }
     })
 }

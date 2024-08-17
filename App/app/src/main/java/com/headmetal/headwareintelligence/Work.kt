@@ -2,7 +2,6 @@ package com.headmetal.headwareintelligence
 
 import android.app.AlertDialog
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -133,8 +132,8 @@ fun WorkerCardPreview() {
  */
 @Preview(showBackground = true)
 @Composable
-fun InputWorkUpdateDialogPreview() {
-    InputWorkUpdateDialog(
+fun WorkUpdateDialogPreview() {
+    WorkUpdateDialog(
         onDismissRequest = {},
         workId = 0,
         navController = rememberNavController()
@@ -196,7 +195,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 
     // 작업장 수정 다이얼 로그
     if (showWorkDataInputDialog) {
-        InputWorkUpdateDialog(
+        WorkUpdateDialog(
             onDismissRequest = { showWorkDataInputDialog = false },
             workId = workId,
             navController = navController
@@ -229,8 +228,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
         )
     }
 
-    // UI 변수 값이 바꼈을 때
-    LaunchedEffect(showWorkerAddDialog) {
+    LaunchedEffect(Unit) {
         LoadingState.show()
         RetrofitInstance.apiService.searchWorker(workId).enqueue(object : Callback<Worker> {
             override fun onResponse(
@@ -243,12 +241,24 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
                         workerId = it.workerId
                         workerName = it.name
                     }
+                } else {
+                    errorBackApp(
+                        navController = navController,
+                        error = response.message(),
+                        title = "작업장 검색 오류",
+                        message = "작업장에 대한 정보를 찾을 수 없습니다."
+                    )
                 }
                 LoadingState.hide()
             }
 
             override fun onFailure(call: Call<Worker>, t: Throwable) {
-                networkErrorFinishApp(navController = navController, error = t)
+                errorBackApp(
+                    navController = navController,
+                    error = t.toString(),
+                    title = "작업장 검색 오류",
+                    message = "네트워크 문제로 작업장에 대한 정보를 찾을 수 없습니다."
+                )
             }
         })
     }
@@ -309,7 +319,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 }
 
 @Composable
-fun InputWorkUpdateDialog(
+fun WorkUpdateDialog(
     onDismissRequest: () -> Unit,
     workId: Int,
     navController: NavController
@@ -327,6 +337,7 @@ fun InputWorkUpdateDialog(
     // 다이얼 로그 시작
     LaunchedEffect(Unit) {
         LoadingState.show()
+        // 담당회사 API
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
@@ -334,12 +345,26 @@ fun InputWorkUpdateDialog(
                     companyList?.let {
                         selectableCompanyList = it.companies
                     }
+                } else {
+                    errorBackApp(
+                        navController = navController,
+                        error = response.message(),
+                        title = "회사 목록 로드 오류",
+                        message = "회사 목록을 로드 할 수 없습니다.",
+                        action = onDismissRequest
+                    )
                 }
                 LoadingState.hide()
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                networkErrorFinishApp(navController = navController, error = t)
+                errorBackApp(
+                    navController = navController,
+                    error = t.toString(),
+                    title = "회사 목록 로드 오류",
+                    message = "회사 목록을 로드 할 수 없습니다.",
+                    action = onDismissRequest
+                )
             }
         })
     }
@@ -480,7 +505,8 @@ fun WorkerAddDialog(
                     workId = workId,
                     workerId = workerId.value,
                     builder = builder,
-                    navController = navController
+                    navController = navController,
+                    onDismissRequest = onDismissRequest
                 )
             },
                 content = {
@@ -518,15 +544,26 @@ fun WorkerManageDialog(
                         workerStatus?.let {
                             workerName.value = it.name
                             workerPhone.value = it.phoneNo
-                            Log.d("HEAD METAL", workerName.value)
-                            Log.d("HEAD METAL", workerPhone.value)
                         }
+                    } else {
+                        errorBackApp(
+                            navController = navController,
+                            error = response.message(),
+                            title = "작업자 검색 오류",
+                            message = "작업자에 대한 정보를 찾을 수 없습니다.",
+                            action = onDismissRequest
+                        )
                     }
                     LoadingState.hide()
                 }
 
                 override fun onFailure(call: Call<WorkerStatus>, t: Throwable) {
-                    networkErrorFinishApp(navController = navController, error = t)
+                    errorBackApp(
+                        navController = navController,
+                        error = t.toString(),
+                        title = "작업자 검색 오류",
+                        message = "네트워크 문제로 인해 작업자에 대한 정보를 찾을 수 없습니다."
+                    )
                 }
             })
     }
@@ -750,7 +787,12 @@ fun updateAction(
         }
 
         override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "작업장 수정 오류",
+                message = "네트워크 문제로 작업장 수정을 할 수 없습니다."
+            )
         }
     })
 }
@@ -779,9 +821,10 @@ fun removeWorkshop(
                 navController.navigateUp()
             } else {
                 builder.setTitle("작업장 삭제 실패")
-                builder.setMessage("입력한 내용을 다시 한 번 확인해주세요.")
+                builder.setMessage("작업장 삭제를 실패했습니다.")
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
+                    onDismissRequest()
                 }
             }
             builder.create().show()
@@ -789,7 +832,13 @@ fun removeWorkshop(
         }
 
         override fun onFailure(call: Call<Void>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "작업장 삭제 오류",
+                message = "네트워크 문제로 인해 작업장에 대한 정보를 찾을 수 없습니다.",
+                action = onDismissRequest
+            )
         }
     })
 }
@@ -798,7 +847,8 @@ fun addWorker(
     workId: Int,
     workerId: String,
     builder: AlertDialog.Builder,
-    navController: NavController
+    navController: NavController,
+    onDismissRequest: () -> Unit
 ) {
     LoadingState.show()
     RetrofitInstance.apiService.assignWork(
@@ -814,12 +864,14 @@ fun addWorker(
                 builder.setMessage("작업자 등록에 성공하였습니다.")
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
+                    onDismissRequest()
                 }
             } else {
                 builder.setTitle("작업자 등록 실패")
                 builder.setMessage(response.message())
                 builder.setPositiveButton("확인") { dialog, _ ->
                     dialog.dismiss()
+                    onDismissRequest()
                 }
             }
             builder.create().show()
@@ -827,7 +879,13 @@ fun addWorker(
         }
 
         override fun onFailure(call: Call<Void>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "작업자 추가 오류",
+                message = "네트워크 오류로 인해 작업자를 추가할 수 없습니다.",
+                action = onDismissRequest
+            )
         }
     })
 }

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -114,7 +113,7 @@ fun WorkList(navController: NavController) {
     var workshopStartDate by remember { mutableStateOf(listOf<String>()) }
     var workshopEndDate by remember { mutableStateOf(listOf<String?>()) }
 
-    LaunchedEffect(showWorkDataInputDialog) {
+    LaunchedEffect(Unit) {
         if (userId != "null") {
             LoadingState.show()
             RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
@@ -131,14 +130,33 @@ fun WorkList(navController: NavController) {
                             workshopStartDate = it.startDate
                             workshopEndDate = it.endDate
                         }
+                    } else {
+                        errorBackApp(
+                            navController = navController,
+                            error = response.message(),
+                            title = "작업장 목록 오류",
+                            message = "작업장 목록을 불러올 수 없습니다.",
+                        )
                     }
                     LoadingState.hide()
                 }
 
                 override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
-                    networkErrorFinishApp(navController = navController, error = t)
+                    errorBackApp(
+                        navController = navController,
+                        error = t.toString(),
+                        title = "작업장 목록 오류",
+                        message = "네트워크 문제로 인해 작업장 목록을 불러올 수 없습니다.",
+                    )
                 }
             })
+        } else {
+            errorBackApp(
+                navController = navController,
+                error = "Not Id",
+                title = "작업장 목록 오류",
+                message = "작업장 목록을 불러올 수 없습니다.",
+            )
         }
     }
 
@@ -223,12 +241,26 @@ fun WorkCreateDialog(
                     companyList?.let {
                         selectableCompany = it.companies
                     }
+                } else {
+                    errorBackApp(
+                        navController = navController,
+                        error = response.message(),
+                        title = "회사 목록 로드 오류",
+                        message = "회사 목록을 불러오지 못 했습니다.",
+                        action = onDismissRequest
+                    )
                 }
                 LoadingState.hide()
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                networkErrorFinishApp(navController = navController, error = t)
+                errorBackApp(
+                    navController = navController,
+                    error = t.toString(),
+                    title = "회사 목록 로드 오류",
+                    message = "네트워크 문제로 인해 회사 목록을 불러오지 못 했습니다.",
+                    action = onDismissRequest
+                )
             }
         })
     }
@@ -319,7 +351,8 @@ fun WorkItem(
         shape = MaterialTheme.shapes.medium,
         colors = ButtonDefaults.buttonColors(
             Color(255, 150, 0, 80)
-        )
+        ),
+        elevation = ButtonDefaults.elevatedButtonElevation(1.dp)
     ) {
         Row {
             Icon(
@@ -465,7 +498,13 @@ fun enrollAction(
         }
 
         override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "작업장 등록 오류",
+                message = "네트워크 오류로 작업장 등록을 못 했습니다.",
+                action = onDismissRequest
+            )
         }
     })
 }

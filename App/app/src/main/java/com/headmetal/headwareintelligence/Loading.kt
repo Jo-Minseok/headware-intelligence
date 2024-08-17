@@ -76,7 +76,7 @@ fun Loading(navController: NavController) {
                                     showAlertDialog(
                                         context = navController.context,
                                         title = "자동 로그인 실패",
-                                        message = "변경된 비밀번호를 확인하세요.",
+                                        message = "계정의 정보가 변경되었습니다.",
                                         buttonText = "확인"
                                     ) {
                                         navController.navigate("LoginScreen")
@@ -93,12 +93,10 @@ fun Loading(navController: NavController) {
                         navController.navigate("LoginScreen")
                     }
                 } else {
-                    showAlertDialog(
-                        context = navController.context,
-                        title = "서버 접속 실패",
-                        message = "서버 상태 및 네트워크 접속 불안정",
-                        buttonText = "확인"
-                    ) { (navController.context as Activity).finish() }
+                    networkErrorFinishApp(
+                        navController = navController,
+                        error = Throwable("Wrong Response")
+                    )
                 }
             }
 

@@ -1,6 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -154,51 +153,46 @@ fun changePassword(
     isManager: Boolean,
     navController: NavController
 ) {
-    if (pw != rePw && pw.isEmpty()) {
-        LoadingState.show()
-        RetrofitInstance.apiService.apiChangePw(
-            ForgotPw(
-                id,
-                phone,
-                pw,
-                rePw,
-                if (isManager) "manager" else "employee"
-            )
-        ).enqueue(object : Callback<ForgotPw> {
-            override fun onResponse(
-                call: Call<ForgotPw>,
-                response: Response<ForgotPw>
-            ) {
-                if (response.isSuccessful) {
-                    showAlertDialog(
-                        context = navController.context,
-                        title = "비밀번호 변경 성공",
-                        message = "로그인 화면으로 이동합니다.",
-                        buttonText = "확인",
-                        onButtonClick = { navController.navigate("LoginScreen") }
-                    )
-                } else {
-                    showAlertDialog(
-                        context = navController.context,
-                        title = "비밀번호 변경 실패",
-                        message = "존재하지 않는 계정입니다.",
-                        buttonText = "확인"
-                    )
-                    Log.e("HEAD METAL", "비밀번호 변경 요청 실패: ${response.code()}")
-                }
-                LoadingState.hide()
-            }
-
-            override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
-                networkErrorFinishApp(navController = navController, error = t)
-            }
-        })
-    } else {
-        showAlertDialog(
-            context = navController.context,
-            title = "비밀번호 변경 실패",
-            message = "입력한 정보를 다시 확인하세요!",
-            buttonText = "확인"
+    LoadingState.show()
+    RetrofitInstance.apiService.apiChangePw(
+        ForgotPw(
+            id,
+            phone,
+            pw,
+            rePw,
+            if (isManager) "manager" else "employee"
         )
-    }
+    ).enqueue(object : Callback<ForgotPw> {
+        override fun onResponse(
+            call: Call<ForgotPw>,
+            response: Response<ForgotPw>
+        ) {
+            if (response.isSuccessful) {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "비밀번호 변경 성공",
+                    message = "로그인 화면으로 이동합니다.",
+                    buttonText = "확인",
+                    onButtonClick = { navController.navigate("LoginScreen") }
+                )
+            } else {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "비밀번호 변경 실패",
+                    message = "존재하지 않는 계정입니다.",
+                    buttonText = "확인"
+                )
+            }
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "네트워크 오류",
+                message = "네트워크 문제로 비밀번호를 찾을 수 없습니다."
+            )
+        }
+    })
 }

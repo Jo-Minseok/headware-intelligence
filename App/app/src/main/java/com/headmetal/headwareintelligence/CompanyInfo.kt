@@ -105,7 +105,7 @@ fun CompanyCard(company: String) {
         modifier = Modifier
             .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.elevatedCardElevation(6.dp)
+        elevation = CardDefaults.elevatedCardElevation(4.dp)
     ) {
         Box(
             modifier = Modifier

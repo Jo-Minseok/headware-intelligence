@@ -111,3 +111,20 @@ fun networkErrorFinishApp(navController: NavController, error: Throwable) {
         onButtonClick = { (navController.context as Activity).finish() }
     )
 }
+
+fun errorBackApp(
+    navController: NavController,
+    error: String,
+    title: String,
+    message: String,
+    action: () -> Unit = { navController.navigateUp() }
+) {
+    Log.e("HEAD METAL", "HTTP Request 실패: $error")
+    showAlertDialog(
+        context = navController.context,
+        title = title,
+        message = message,
+        buttonText = "확인",
+        onButtonClick = action
+    )
+}

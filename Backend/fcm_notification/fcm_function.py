@@ -12,19 +12,16 @@ firebase_admin.initialize_app(cred)
 def fcm_subscribe_all_topic(managerId: str, alertToken: str, db: Session):
     workListRows = db.query(WorkList.workId).filter(
         WorkList.managerId == managerId).all()
-    for workRow in workListRows:
-        # workRow는 튜플이 아니라 WorkList의 workId 속성을 가진 객체
-        workId = workRow.workId
-        firebase_admin.messaging.subscribe_to_topic(alertToken, workId)
+    for workId, in workListRows:
+        firebase_admin.messaging.subscribe_to_topic(alertToken, str(workId))
 
 
 def fcm_unsubscribe_all_topic(managerId: str, alertToken: str, db: Session):
     workListRows = db.query(WorkList.workId).filter(
         WorkList.managerId == managerId).all()
-    for workRow in workListRows:
-        # workRow는 튜플이 아니라 WorkList의 workId 속성을 가진 객체
-        workId = workRow.workId
-        firebase_admin.messaging.unsubscribe_from_topic(alertToken, workId)
+    for workId, in workListRows:
+        firebase_admin.messaging.unsubscribe_from_topic(
+            alertToken, str(workId))
 
 
 def fcm_subscribe_one_topic(alertToken: str, workId: str):

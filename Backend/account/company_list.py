@@ -24,7 +24,7 @@ class CompanyRepository:
 
     def get_work_list_by_user_id(self, userId: str) -> List[str]:
         workRows = self.db.query(Work).filter(Work.workerId == userId).all()
-        return [workRow.workId for workRow in workRows]
+        return [str(workRow.workId) for workRow in workRows]
 
 
 # 서비스 클래스 정의
@@ -37,7 +37,7 @@ class CompanyService:
 
     def get_work_list(self, userId: str) -> WorkList:
         workIds = self.repository.get_work_list_by_user_id(userId)
-        return WorkList(work_list=workIds)
+        return WorkList(workList=workIds)
 
 
 # 의존성 주입을 위한 함수

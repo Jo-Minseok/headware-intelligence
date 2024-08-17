@@ -1,14 +1,14 @@
 package com.headmetal.headwareintelligence
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,7 +52,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -100,7 +99,28 @@ fun MainFunctionButtonMenuPreview() {
 @Preview(showBackground = true)
 @Composable
 fun MainContentsHeaderPreview() {
-    MainContentsHeader(refreshState = remember { mutableStateOf(false) })
+    // Initialize state values with `remember` inside the body of the composable function
+    val temperature = remember { mutableFloatStateOf(0.0f) }
+    val airVelocity = remember { mutableFloatStateOf(0.0f) }
+    val precipitation = remember { mutableFloatStateOf(0.0f) }
+    val humidity = remember { mutableFloatStateOf(0.0f) }
+
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    val locationPermissionRequest = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {}
+
+    // Pass the state values as parameters to MainContentsHeader
+    MainContentsHeader(
+        temperature = temperature,
+        airVelocity = airVelocity,
+        precipitation = precipitation,
+        humidity = humidity,
+        context = context,
+        fusedLocationClient = fusedLocationClient,
+        locationPermissionRequest = locationPermissionRequest
+    )
 }
 
 @Preview(showBackground = true)
@@ -210,102 +230,52 @@ fun MainContents(type: String, navController: NavController) {
     val context: Context = LocalContext.current
     val fusedLocationClient: FusedLocationProviderClient =
         remember { LocationServices.getFusedLocationProviderClient(context) }
-    var hasLocationPermission by remember { mutableStateOf(false) }
+    val temperature: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val airVelocity: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val precipitation: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val humidity: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val locationPermissionRequest = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {}
 
-    val locationPermissionRequest: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>> =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissions ->
-            hasLocationPermission =
-                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-        }
-
-    var temperature by remember { mutableFloatStateOf(0.0f) }
-    var airVelocity by remember { mutableFloatStateOf(0.0f) }
-    var precipitation by remember { mutableFloatStateOf(0.0f) }
-    var humidity by remember { mutableFloatStateOf(0.0f) }
-
-    val refreshState: MutableState<Boolean> = remember { mutableStateOf(false) }
-
-    LaunchedEffect(refreshState.value) {
-        when {
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                hasLocationPermission = true
-            }
-
-            else -> {
-                locationPermissionRequest.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-            }
-        }
-
-        if (hasLocationPermission) {
-            val location = fusedLocationClient.lastLocation.await()
-            location?.let { pos ->
-                RetrofitInstance.retryApiService.getWeather(pos.latitude, pos.longitude)
-                    .enqueue(object : Callback<WeatherResponse> {
-                        override fun onResponse(
-                            call: Call<WeatherResponse>,
-                            response: Response<WeatherResponse>
-                        ) {
-                            if (response.isSuccessful) {
-                                val weather: WeatherResponse? = response.body()
-                                weather?.let {
-                                    temperature = it.temperature
-                                    airVelocity = it.airVelocity
-                                    precipitation = it.precipitation
-                                    humidity = it.humidity
-                                }
-
-                                if (refreshState.value) {
-                                    Toast
-                                        .makeText(
-                                            context,
-                                            "새로고침 되었습니다.",
-                                            Toast.LENGTH_SHORT
-                                        )
-                                        .show()
-                                    refreshState.value = false
-                                }
-
-                                Log.d("HEAD METAL", "날씨 정보 로딩 성공")
-                            }
-                        }
-
-                        override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                            Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
-                        }
-                    })
-            }
-        } else {
-            Log.e("HEAD METAL", "위치 권한이 필요함")
-        }
+    LaunchedEffect(Unit) {
+        getWeatherInformation(
+            temperature = temperature,
+            airVelocity = airVelocity,
+            precipitation = precipitation,
+            humidity = humidity,
+            context = context,
+            fusedLocationClient = fusedLocationClient,
+            locationPermissionRequest = locationPermissionRequest
+        )
     }
 
-    val (weatherInfo: String, weatherIcon: ImageVector, weatherColor: Color) = getWeatherInfo(
-        precipitation
+    val (weatherInfo: String, weatherIcon: ImageVector, weatherColor: Color) = getWeatherStatus(
+        precipitation.value
     )
 
     Column {
-        MainContentsHeader(refreshState = refreshState)
+        MainContentsHeader(
+            temperature = temperature,
+            airVelocity = airVelocity,
+            precipitation = precipitation,
+            humidity = humidity,
+            context = context,
+            fusedLocationClient = fusedLocationClient,
+            locationPermissionRequest = locationPermissionRequest
+        )
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             ContentsBox(
                 imageVector = weatherIcon,
                 iconColor = weatherColor,
                 contentsTexts = arrayOf(
                     { MainContentsBoxText(text = "기상 정보 : $weatherInfo") },
-                    { MainContentsBoxText(text = "1시간 강수량 : ${precipitation}mm") },
+                    { MainContentsBoxText(text = "1시간 강수량 : ${precipitation.value}mm") },
                     {
                         MainContentsBoxText(
-                            text = "기온 : ${temperature}ºC" + if (temperature > 35) {
+                            text = "기온 : ${temperature.value}ºC" + if (temperature.value > 35) {
                                 "(폭염 경보)"
-                            } else if (temperature > 33) {
+                            } else if (temperature.value > 33) {
                                 "(폭염 주의보)"
                             } else {
                                 ""
@@ -314,16 +284,16 @@ fun MainContents(type: String, navController: NavController) {
                     },
                     {
                         MainContentsBoxText(
-                            text = "풍속 : ${airVelocity}m/s" + if (airVelocity > 21) {
+                            text = "풍속 : ${airVelocity.value}m/s" + if (airVelocity.value > 21) {
                                 "(강풍 경보)"
-                            } else if (airVelocity > 14) {
+                            } else if (airVelocity.value > 14) {
                                 "(강풍 주의보)"
                             } else {
                                 ""
                             }
                         )
                     },
-                    { MainContentsBoxText(text = "습도 : $humidity%") }
+                    { MainContentsBoxText(text = "습도 : ${humidity.value}%") }
                 )
             )
             ContentsBox(
@@ -346,7 +316,13 @@ fun MainContents(type: String, navController: NavController) {
 
 @Composable
 fun MainContentsHeader(
-    refreshState: MutableState<Boolean>
+    temperature: MutableState<Float>,
+    airVelocity: MutableState<Float>,
+    precipitation: MutableState<Float>,
+    humidity: MutableState<Float>,
+    context: Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    locationPermissionRequest: ActivityResultLauncher<Array<String>>
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var isRefreshClickable by remember { mutableStateOf(true) }
@@ -356,11 +332,21 @@ fun MainContentsHeader(
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             modifier = Modifier.clickable(enabled = isRefreshClickable) {
-                refreshState.value = true
-                isRefreshClickable = false
-                coroutineScope.launch {
-                    delay(3000)
-                    isRefreshClickable = true
+                if (isRefreshClickable) {
+                    isRefreshClickable = false
+                    coroutineScope.launch {
+                        getWeatherInformation(
+                            temperature = temperature,
+                            airVelocity = airVelocity,
+                            precipitation = precipitation,
+                            humidity = humidity,
+                            context = context,
+                            fusedLocationClient = fusedLocationClient,
+                            locationPermissionRequest = locationPermissionRequest
+                        )
+                        delay(3000) // 3초 대기
+                        isRefreshClickable = true
+                    }
                 }
             },
             imageVector = Icons.Default.Update,
@@ -422,11 +408,59 @@ fun MainContentsBoxText(
     )
 }
 
-fun getWeatherInfo(precipitation: Float): Triple<String, ImageVector, Color> {
+fun getWeatherStatus(precipitation: Float): Triple<String, ImageVector, Color> {
     return when {
         precipitation > 30 -> Triple("호우 경보", Icons.Default.Water, Color(0xFF00BFFF))
         precipitation > 20 -> Triple("호우 주의보", Icons.Default.Water, Color(0xFF00BFFF))
         precipitation > 0 -> Triple("비", Icons.Default.WaterDrop, Color(0xFF00BFFF))
         else -> Triple("맑음", Icons.Default.WbSunny, Color(0xFFFF7F00))
+    }
+}
+
+@SuppressLint("MissingPermission")
+suspend fun getWeatherInformation(
+    temperature: MutableState<Float>,
+    airVelocity: MutableState<Float>,
+    precipitation: MutableState<Float>,
+    humidity: MutableState<Float>,
+    context: Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    locationPermissionRequest: ActivityResultLauncher<Array<String>>
+) {
+    if (hasLocationPermissions(context)) {
+        val location = fusedLocationClient.lastLocation.await()
+        location?.let { pos ->
+            RetrofitInstance.retryApiService.getWeather(pos.latitude, pos.longitude)
+                .enqueue(object : Callback<WeatherResponse> {
+                    override fun onResponse(
+                        call: Call<WeatherResponse>,
+                        response: Response<WeatherResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            val weather: WeatherResponse? = response.body()
+                            weather?.let {
+                                temperature.value = it.temperature
+                                airVelocity.value = it.airVelocity
+                                precipitation.value = it.precipitation
+                                humidity.value = it.humidity
+                            }
+                            Toast.makeText(context, "새로고침 되었습니다.", Toast.LENGTH_SHORT).show()
+                            Log.d("HEAD METAL", "날씨 정보 로딩 성공")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
+                        Log.e("HEAD METAL", "서버 통신 실패: ${t.message}")
+                    }
+                })
+        }
+    } else {
+        locationPermissionRequest.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+        Log.e("HEAD METAL", "위치 권한이 필요함")
     }
 }

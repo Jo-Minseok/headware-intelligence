@@ -2,6 +2,10 @@ package com.headmetal.headwareintelligence
 
 import java.text.SimpleDateFormat
 import java.util.Locale
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 
 /**
  * 계정
@@ -72,4 +76,20 @@ fun isInvalidEndDate(inputWorkStartDate: String, inputWorkEndDate: String): Bool
 
 fun isInvalidWorkName(workName: String): Boolean{
     return workName.length > 16
+}
+
+/**
+ * 위치 정보 권한 확인
+ */
+
+fun hasLocationPermissions(context: Context): Boolean {
+    val fineLocationPermission = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    val coarseLocationPermission = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+
+    return fineLocationPermission || coarseLocationPermission
 }

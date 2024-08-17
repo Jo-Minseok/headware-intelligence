@@ -1,12 +1,10 @@
 package com.headmetal.headwareintelligence
 
 import android.util.Log
-import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +29,39 @@ data class ForgotIdRequest(
 data class ForgotIdResult(
     val id: String
 )
+
+// 프리뷰
+@Preview(showBackground = true)
+@Composable
+fun FindIdPreview() {
+    FindId()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindIdHelmetImagePreview() {
+    HelmetImage()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindIdTextFieldComposablePreview() {
+    LabelAndInputComposable(labelText = "이름", inputText = remember {
+        mutableStateOf("")
+    })
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindIdFunctionButtonPreview() {
+    LoginFunctionButton(buttonText = "아이디 찾기", onClick = {})
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FindIdAppNameTextPreview() {
+    AppNameText()
+}
 
 @Composable
 fun FindId(navController: NavController = rememberNavController()) {
@@ -95,38 +126,8 @@ fun FindId(navController: NavController = rememberNavController()) {
     )
 }
 
-
-// 프리뷰
-@Preview(showBackground = true)
-@Composable
-fun FindIdPreview() {
-    FindId()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdHelmetImagePreview() {
-    HelmetImage()
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdTextFieldComposablePreview() {
-    LabelAndInputComposable(labelText = "이름", inputText = remember {
-        mutableStateOf("")
-    })
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdFunctionButtonPreview() {
-    LoginFunctionButton(buttonText = "아이디 찾기", onClick = {})
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FindIdAppNameTextPreview() {
-    AppNameText()
+fun idSearchVerify(name: String, email: String, isManager: Boolean, navController: NavController){
+    
 }
 
 fun idSearch(name: String, email: String, isManager: Boolean, navController: NavController) {

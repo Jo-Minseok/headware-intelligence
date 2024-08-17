@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Business
@@ -24,6 +23,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,19 +50,31 @@ fun PrivacyPreview() {
 @Preview(showBackground = true)
 @Composable
 fun PrivacyUserPreview() {
-    PrivacyUser(text = "아이디", userInfo = "id", imageVector = Icons.Outlined.Person)
+    PrivacyUser(text = "아이디", userInfo = remember {
+        mutableStateOf("회사")
+    }, imageVector = Icons.Outlined.Person)
 }
 
 @Composable
 fun Privacy(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userId: String = sharedAccount.getString("userid", "") ?: ""
-    val userName: String = sharedAccount.getString("name", "") ?: ""
-    val userPhone: String = sharedAccount.getString("phone", "") ?: ""
-    val userEmail: String = sharedAccount.getString("email", "") ?: ""
-    val password: MutableState<String> = remember { mutableStateOf("") }
+    val userId: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("userid", "") ?: "") }
+    val userName: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("name", "") ?: "") }
+    val userPhone: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("phone", "") ?: "") }
+    val userEmail: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("email", "") ?: "") }
+    val password: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("password", "") ?: "") }
+    val rePassword: MutableState<String> = remember { mutableStateOf("") }
+    val company: MutableState<String> = remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        /**TODO*/ // 회사 리스트, 유저 회사 이름 받아오기
+    }
     IconScreen(
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
@@ -103,18 +115,35 @@ fun Privacy(navController: NavController) {
                         imageVector = Icons.Outlined.Mail
                     )
                     PrivacyUser(
-                        text = "비밀번호",
-                        userInfo = password.value,
+                        text = "새 비밀번호",
+                        userInfo = password,
+                        placeholder = "****",
+                        imageVector = Icons.Outlined.Lock
+                    )
+                    PrivacyUser(
+                        text = "새 비밀번호 확인",
+                        userInfo = rePassword,
                         placeholder = "****",
                         imageVector = Icons.Outlined.Lock
                     )
                     PrivacyUser(
                         text = "건설업체",
-                        userInfo = "없음",
+                        userInfo = remember { mutableStateOf("없음") }, // 선택한 건설 회사 이름이 들어와야함.
                         imageVector = Icons.Outlined.Business
                     )
                     Button(
-                        onClick = { /**TODO**/ },
+                        onClick = {
+                            updatePrivacyVerify(
+                                userId = userId.value,
+                                userName = userName.value,
+                                userPhone = userPhone.value,
+                                userEmail = userEmail.value,
+                                userPassword = password.value,
+                                userRePassword = rePassword.value,
+                                company = company.value,
+                                navController = navController
+                            )
+                        },
                         content = {
                             Text(text = "개인 정보 변경")
                         },
@@ -130,7 +159,7 @@ fun Privacy(navController: NavController) {
 @Composable
 fun PrivacyUser(
     text: String,
-    userInfo: String,
+    userInfo: MutableState<String>,
     imageVector: ImageVector,
     placeholder: String = "",
     readOnly: Boolean = false,
@@ -152,33 +181,91 @@ fun PrivacyUser(
             )
             LabelText(text = text)
         }
-        PrivacyUserTextField(
-            userInfo = userInfo,
-            placeholder = placeholder,
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(0.6f),
+            value = userInfo.value,
+            onValueChange = { userInfo.value = it },
+            textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+            shape = MaterialTheme.shapes.medium,
+            singleLine = true,
             readOnly = readOnly,
-            color = textFieldColor
+            colors = textFieldColor,
+            placeholder = { Text(text = placeholder) }
         )
     }
 }
 
-@Composable
-fun PrivacyUserTextField(
-    userInfo: String,
-    placeholder: String,
-    readOnly: Boolean,
-    color: TextFieldColors
+fun updatePrivacyVerify(
+    userId: String,
+    userName: String,
+    userPhone: String,
+    userEmail: String,
+    userPassword: String,
+    userRePassword: String,
+    company: String,
+    navController: NavController
 ) {
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .alpha(0.6f),
-        value = userInfo,
-        onValueChange = {},
-        textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
-        shape = RoundedCornerShape(8.dp),
-        singleLine = true,
-        readOnly = readOnly,
-        colors = color,
-        placeholder = { Text(text = placeholder) }
-    )
+    when {
+        !isPasswordValid(userPassword) -> showAlertDialog(
+            context = navController.context,
+            title = "비밀번호 형식 불일치",
+            message = "비밀번호는 최소 1개의 알파벳, 1개의 숫자, 1개의 특수문자가 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다.\n" +
+                    "사용가능 특수 문자: @\$!%*?&",
+            buttonText = "확인"
+        )
+
+        !arePasswordsMatching(userPassword, userRePassword) -> showAlertDialog(
+            context = navController.context,
+            title = "비밀번호 불일치",
+            message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+            buttonText = "확인"
+        )
+
+        !isNameValid(userName) -> showAlertDialog(
+            context = navController.context,
+            title = "이름 글자 수 불일치",
+            message = "이름을 4자리 이하로 작성바랍니다.",
+            buttonText = "확인"
+        )
+
+        !isPhoneValid(userPhone) -> showAlertDialog(
+            context = navController.context,
+            title = "전화번호 형식 불일치",
+            message = "전화번호 형식이 일치하지 않습니다.\nex)XXX-XXXX-XXXX",
+            buttonText = "확인"
+        )
+
+        !isEmailValid(userEmail) -> showAlertDialog(
+            context = navController.context,
+            title = "이메일 형식 불일치",
+            message = "이메일 형식이 일치하지 않습니다.\nex)XXX@XXX.XXX(공백 제외)",
+            buttonText = "확인"
+        )
+
+        else -> updatePrivacy(
+            userId = userId,
+            userName = userName,
+            userPhone = userPhone,
+            userEmail = userEmail,
+            userPassword = userPassword,
+            userRePassword = userRePassword,
+            company = company,
+            navController = navController
+        )
+    }
+}
+
+fun updatePrivacy(
+    userId: String,
+    userName: String,
+    userPhone: String,
+    userEmail: String,
+    userPassword: String,
+    userRePassword: String,
+    company: String,
+    navController: NavController
+) {
+    /** TODO*/ // API 호출
 }

@@ -2,10 +2,12 @@ package com.headmetal.headwareintelligence
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -53,7 +55,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -125,15 +129,15 @@ fun Main(navController: NavController) {
         content = {
             val sharedAccount: SharedPreferences =
                 LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-            val type = sharedAccount.getString("type", "")
-            val userName = sharedAccount.getString("name", "")
+            val type: String = sharedAccount.getString("type", "") ?: ""
+            val userName: String = sharedAccount.getString("name", "") ?: ""
 
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(30.dp)
             ) {
-                WelcomeUserComposable(userName = userName!!)
-                MainFunctionButtonMenu(type = type!!, navController = navController)
+                WelcomeUserComposable(userName = userName)
+                MainFunctionButtonMenu(type = type, navController = navController)
                 MainContents(type = type, navController = navController)
             }
         }
@@ -203,16 +207,18 @@ fun MainFunctionButtonMenu(type: String, navController: NavController) {
  */
 @Composable
 fun MainContents(type: String, navController: NavController) {
-    val context = LocalContext.current
-    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    val context: Context = LocalContext.current
+    val fusedLocationClient: FusedLocationProviderClient =
+        remember { LocationServices.getFusedLocationProviderClient(context) }
     var hasLocationPermission by remember { mutableStateOf(false) }
 
-    val locationPermissionRequest = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        hasLocationPermission =
-            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-    }
+    val locationPermissionRequest: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>> =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            hasLocationPermission =
+                permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        }
 
     var temperature by remember { mutableFloatStateOf(0.0f) }
     var airVelocity by remember { mutableFloatStateOf(0.0f) }
@@ -282,7 +288,9 @@ fun MainContents(type: String, navController: NavController) {
         }
     }
 
-    val (weatherInfo, weatherIcon, weatherColor) = getWeatherInfo(precipitation)
+    val (weatherInfo: String, weatherIcon: ImageVector, weatherColor: Color) = getWeatherInfo(
+        precipitation
+    )
 
     Column {
         MainContentsHeader(refreshState = refreshState)
@@ -340,7 +348,7 @@ fun MainContents(type: String, navController: NavController) {
 fun MainContentsHeader(
     refreshState: MutableState<Boolean>
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var isRefreshClickable by remember { mutableStateOf(true) }
 
     Row {

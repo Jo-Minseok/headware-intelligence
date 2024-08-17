@@ -65,3 +65,11 @@ fun isInvalidEndDate(inputWorkStartDate: String, inputWorkEndDate: String): Bool
         true // 날짜 형식이 잘못된 경우
     }
 }
+
+/**
+ * 작업 이름
+ */
+
+fun isInvalidWorkName(workName: String): Boolean{
+    return workName.length > 16
+}

@@ -221,7 +221,7 @@ fun Processing(
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     var refreshState by remember { mutableStateOf(false) }
@@ -295,7 +295,7 @@ fun Processing(
             LaunchedEffect(selectedTabIndex) {
                 LoadingState.show()
                 CoroutineScope(Dispatchers.IO).async {
-                    val state = accidentProcessingViewModel.state
+                    val state: Boolean = accidentProcessingViewModel.state
                     accidentProcessingViewModel.getAllAccidentProcessingData(
                         sharedAccount.getString(
                             "userid", null
@@ -312,7 +312,7 @@ fun Processing(
                 LaunchedEffect(Unit) {
                     LoadingState.show()
                     CoroutineScope(Dispatchers.IO).async {
-                        val state = accidentProcessingViewModel.state
+                        val state: Boolean = accidentProcessingViewModel.state
                         accidentProcessingViewModel.getAllAccidentProcessingData(
                             sharedAccount.getString(
                                 "userid", null

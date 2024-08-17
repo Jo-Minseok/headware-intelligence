@@ -12,7 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-class MyFirebaseMessagingService:FirebaseMessagingService(){
+class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
@@ -22,15 +22,19 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
         val channelId: String = remoteMessage.messageId.toString()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (notificationManager.getNotificationChannel(channelId) == null) {
-                val channel = NotificationChannel(channelId,"channel",NotificationManager.IMPORTANCE_DEFAULT)
+                val channel = NotificationChannel(
+                    channelId,
+                    "channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+                )
                 notificationManager.createNotificationChannel(channel)
             }
-            builder = NotificationCompat.Builder(applicationContext,channelId)
+            builder = NotificationCompat.Builder(applicationContext, channelId)
         } else {
             builder = NotificationCompat.Builder(applicationContext)
         }
-        val title:String = remoteMessage.notification?.title.toString()
-        val message:String = remoteMessage.notification?.body.toString()
+        val title: String = remoteMessage.notification?.title.toString()
+        val message: String = remoteMessage.notification?.body.toString()
         builder.setSmallIcon(R.drawable.helmet).setContentTitle(title).setContentText(message)
         val notification = builder.build()
         if (ActivityCompat.checkSelfPermission(
@@ -47,21 +51,21 @@ class MyFirebaseMessagingService:FirebaseMessagingService(){
             // for ActivityCompat#requestPermissions for more details.
             return
         }
-        notificationManager.notify((System.currentTimeMillis()/1000).toInt(),notification)
+        notificationManager.notify((System.currentTimeMillis() / 1000).toInt(), notification)
 
         // 수신한 데이터 처리
-        remoteMessage.data.isNotEmpty().let{
-            Log.d("FCM MESSAGE","data: ${remoteMessage.data}")
+        remoteMessage.data.isNotEmpty().let {
+            Log.d("FCM MESSAGE", "data: ${remoteMessage.data}")
         }
 
-        remoteMessage.notification?.let{
+        remoteMessage.notification?.let {
             Log.d("FCM MESSAGE", "notification: ${it.body}")
         }
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d("FCM MESSAGE","Token: $token")
+        Log.d("FCM MESSAGE", "Token: $token")
         // token을 서버로 전송
     }
 }

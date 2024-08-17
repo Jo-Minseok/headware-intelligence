@@ -3,10 +3,6 @@ package com.headmetal.headwareintelligence
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -21,33 +17,35 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.NewLabel
-import androidx.compose.material3.Icon
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -339,10 +338,10 @@ fun LabelAndInputComposablePreview() {
 
 @Composable
 fun LabelAndInputComposable(
+    textFieldmodifier: Modifier = Modifier,
     labelText: String,
     labelFontWeight: FontWeight? = null,
     labelFontSize: TextUnit = 16.sp,
-    textFieldmodifier: Modifier = Modifier,
     inputText: MutableState<String>,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     placeholder: String = "",
@@ -352,7 +351,7 @@ fun LabelAndInputComposable(
     ),
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    readOnly:Boolean = false
+    readOnly: Boolean = false
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(
@@ -521,7 +520,7 @@ fun IconWithLabelButtonPreview() {
     IconWithLabelButton(
         leadIcon = Icons.Default.Description,
         text = "테스트용",
-        trailingIcon = Icons.Default.ArrowForwardIos,
+        trailingIcon = Icons.AutoMirrored.Filled.ArrowForwardIos,
         onClick = {})
 }
 
@@ -529,7 +528,7 @@ fun IconWithLabelButtonPreview() {
 fun IconWithLabelButton(
     leadIcon: ImageVector,
     text: String,
-    trailingIcon: ImageVector = Icons.Default.ArrowForwardIos,
+    trailingIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
     color: Color = Color.Black,
     onClick: () -> Unit,
     fontSize: TextUnit = 20.sp
@@ -760,7 +759,7 @@ fun LoginScreen(content: @Composable () -> Unit = {}) {
  */
 @Preview(showBackground = true)
 @Composable
-fun HelmetImagePreview(){
+fun HelmetImagePreview() {
     HelmetImage()
 }
 
@@ -778,7 +777,7 @@ fun HelmetImage() {
 
 @Preview(showBackground = true)
 @Composable
-fun AppNameTextPreview(){
+fun AppNameTextPreview() {
     AppNameText()
 }
 
@@ -806,7 +805,6 @@ fun LabelWithNextIconPreview() {
 fun LabelWithNextIcon(
     onClick: () -> Unit,
     text: String,
-    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = Modifier.clickable { onClick() },
@@ -893,7 +891,7 @@ fun IconWithLabel(
 
 @Preview(showBackground = true)
 @Composable
-fun HyperlinkTextPreview(){
+fun HyperlinkTextPreview() {
     val uriHandler = LocalUriHandler.current
     HyperlinkText(text = "https://github.com/Jo-Minseok\n") {
         uriHandler.openUri("https://github.com/Jo-Minseok")

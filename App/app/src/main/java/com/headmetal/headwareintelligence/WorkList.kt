@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,7 +105,7 @@ fun WorkItemPreview() {
 fun WorkList(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userId = sharedAccount.getString("userid", null)
+    val userId: String = sharedAccount.getString("userid", "null") ?: "null"
 
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var workshopId by remember { mutableStateOf(listOf<Int>()) }
@@ -113,7 +115,7 @@ fun WorkList(navController: NavController) {
     var workshopEndDate by remember { mutableStateOf(listOf<String?>()) }
 
     LaunchedEffect(showWorkDataInputDialog) {
-        if (userId != null) {
+        if (userId != "null") {
             RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
                 override fun onResponse(
                     call: Call<WorkShopList>,
@@ -195,16 +197,16 @@ fun WorkCreateDialog(
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userId = sharedAccount.getString("userid", "") ?: ""
+    val userId: String = sharedAccount.getString("userid", "") ?: ""
 
     var selectableCompany by remember { mutableStateOf(listOf<String>()) }
-    val inputWorkName = remember { mutableStateOf("") }
-    val inputWorkCompany = remember { mutableStateOf("") }
-    val inputWorkStartDate = remember { mutableStateOf("") }
-    val inputWorkEndDate = remember { mutableStateOf("") }
-    val expanded = remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val builder = AlertDialog.Builder(context)
+    val inputWorkName: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkCompany: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkEndDate: MutableState<String> = remember { mutableStateOf("") }
+    val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val context: Context = LocalContext.current
+    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     LaunchedEffect(Unit) {
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
@@ -375,7 +377,7 @@ fun enrollWorkshopVerify(
     builder: AlertDialog.Builder,
     onDismissRequest: () -> Unit,
 ) {
-    if (inputWorkName.length > 16) {
+    if (isInvalidWorkName(inputWorkName)) {
         builder.setTitle("작업장 이름 길이 제한")
             .setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
             .setPositiveButton("확인") { dialog, _ ->

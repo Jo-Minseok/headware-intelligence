@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Text
@@ -19,10 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -69,7 +65,7 @@ fun Etc(navController: NavController) {
             var showDeveloperDialog by remember { mutableStateOf(false) }
 
             if (showDeveloperDialog) {
-                DevelopersAlertDialog(onConfirmButton = {showDeveloperDialog = false})
+                DevelopersAlertDialog(onConfirmButton = { showDeveloperDialog = false })
             }
 
             LaunchedEffect(Unit) {
@@ -111,7 +107,7 @@ fun Etc(navController: NavController) {
 
 @Composable
 fun AppInfoText() {
-    val uriHandler = LocalUriHandler.current
+    val uriHandler: UriHandler = LocalUriHandler.current
 
     Column {
         Text(
@@ -135,7 +131,7 @@ fun AppInfoText() {
 fun DevelopersAlertDialog(
     onConfirmButton: () -> Unit,
 ) {
-    val uriHandler = LocalUriHandler.current
+    val uriHandler: UriHandler = LocalUriHandler.current
 
     OnlyYesAlertDialog(
         title = "Developers",

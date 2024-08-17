@@ -94,8 +94,8 @@ fun notificationSettingOreoLess(context: Context): Intent {
 fun Menu(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val type = sharedAccount.getString("type", "")
-    val userName = sharedAccount.getString("name", "")
+    val type: String = sharedAccount.getString("type", "") ?: ""
+    val userName: String = sharedAccount.getString("name", "") ?: ""
 
     IconScreen(
         imageVector = Icons.Default.ArrowBackIosNew,
@@ -103,7 +103,7 @@ fun Menu(navController: NavController) {
         content = {
             ScreenTitleText(text = "메뉴")
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                UserCard(type = type!!, userName = userName!!, navController = navController)
+                UserCard(type = type, userName = userName, navController = navController)
                 MenuFunctions(type = type, navController = navController)
             }
         }

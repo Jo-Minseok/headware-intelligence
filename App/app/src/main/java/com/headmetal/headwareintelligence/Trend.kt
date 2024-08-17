@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import java.util.Calendar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -102,7 +103,7 @@ fun Trend(
     val intercept by trendViewModel.intercept
 
     var expanded by remember { mutableStateOf(false) }
-    val options = generateOptions()
+    val options: List<String> = generateOptions()
     var selectedOption by remember { mutableStateOf("선택") }
 
     Surface(
@@ -194,17 +195,17 @@ fun Trend(
             monthData?.let {
                 val veryHighDangerLine = 3
                 val highDangerLine = 0
-                val dangerColor = when {
+                val dangerColor: Color = when {
                     inclination!! > veryHighDangerLine -> Color(0xD0FFCCC7)
                     inclination!! > highDangerLine -> Color(0xD0FFC832)
                     else -> Color(0xD0D9F7BE)
                 }
-                val dangerText = when {
+                val dangerText: String = when {
                     inclination!! > veryHighDangerLine -> "매우 높음"
                     inclination!! > highDangerLine -> "높음"
                     else -> "보통"
                 }
-                val dangerTextDetail = when {
+                val dangerTextDetail: String = when {
                     inclination!! > veryHighDangerLine -> "각별한 안전 사고 주의가 필요해요"
                     inclination!! > highDangerLine -> "안전 사고 주의가 필요해요"
                     else -> "안전 관심은 항상 필요해요"
@@ -271,7 +272,7 @@ fun ChartPrint(
     selectedOption: String,
     dangerColor: Color
 ) {
-    val trendData = mutableListOf<Double>()
+    val trendData: MutableList<Double> = mutableListOf()
     for (x in monthData.indices) {
         trendData.add(x * inclination + intercept)
     }
@@ -337,7 +338,7 @@ fun ChartPrint(
 
 @Composable
 fun rememberLegend(colors: List<Color>): VerticalLegend {
-    val labelTextList = listOf("월별 사고 건수", "사고 추세")
+    val labelTextList: List<String> = listOf("월별 사고 건수", "사고 추세")
 
     return VerticalLegend(
         items = List(labelTextList.size) { index ->
@@ -356,22 +357,22 @@ fun rememberLegend(colors: List<Color>): VerticalLegend {
 }
 
 fun getMonthsFromOption(option: String): Pair<String, String> {
-    val year = option.substringBefore("년").toInt()
-    val half = option.substringAfter("년 ").substringBefore("반기")
-    val startMonth = if (half == "상") "01" else "07"
-    val endMonth = if (half == "상") "06" else "12"
+    val year: Int = option.substringBefore("년").toInt()
+    val half: String = option.substringAfter("년 ").substringBefore("반기")
+    val startMonth: String = if (half == "상") "01" else "07"
+    val endMonth: String = if (half == "상") "06" else "12"
     return Pair("$year-${startMonth.padStart(2, '0')}", "$year-${endMonth.padStart(2, '0')}")
 }
 
 fun generateOptions(): List<String> {
-    val startDate = Calendar.getInstance()
+    val startDate: Calendar = Calendar.getInstance()
     startDate.set(2023, Calendar.JANUARY, 1)
-    val endDate = Calendar.getInstance()
-    val options = mutableListOf<String>()
-    val currentDate = startDate.clone() as Calendar
+    val endDate: Calendar = Calendar.getInstance()
+    val options: MutableList<String> = mutableListOf()
+    val currentDate: Calendar = startDate.clone() as Calendar
 
     while (currentDate.before(endDate) || currentDate == endDate) {
-        val halfYear = if (currentDate.get(Calendar.MONTH) < Calendar.JUNE) "상반기" else "하반기"
+        val halfYear: String = if (currentDate.get(Calendar.MONTH) < Calendar.JUNE) "상반기" else "하반기"
         options.add("${currentDate.get(Calendar.YEAR)}년 $halfYear")
         if (currentDate.get(Calendar.MONTH) < Calendar.JUNE) {
             currentDate.set(currentDate.get(Calendar.YEAR), Calendar.JULY, 1)

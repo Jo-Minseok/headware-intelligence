@@ -36,11 +36,11 @@ fun Loading(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", MODE_PRIVATE)
     val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-    val userId = sharedAccount.getString("userid", "")
-    val userPassword = sharedAccount.getString("password", "")
-    val type = sharedAccount.getString("type", "") ?: "employee"
+    val userId: String = sharedAccount.getString("userid", "") ?: ""
+    val userPassword: String = sharedAccount.getString("password", "") ?: ""
+    val type: String = sharedAccount.getString("type", "") ?: ""
 
-    val autoLogin = remember { isAutoLoginAvailable(sharedAccount) }
+    val autoLogin: Boolean = remember { isAutoLoginAvailable(sharedAccount) }
 
     requestRequiredPermissions(LocalContext.current)
 
@@ -132,15 +132,15 @@ fun Loading(navController: NavController) {
 }
 
 fun isAutoLoginAvailable(sharedAccount: SharedPreferences): Boolean {
-    val userId = sharedAccount.getString("userid", null)
-    val accessToken = sharedAccount.getString("token", null)
+    val userId: String? = sharedAccount.getString("userid", null)
+    val accessToken: String? = sharedAccount.getString("token", null)
     return userId != null && accessToken != null
 }
 
 fun requestRequiredPermissions(context: Context) {
-    val permissions = getRequiredPermissions()
+    val permissions: MutableList<String> = getRequiredPermissions()
 
-    val permissionsToRequest = mutableListOf<String>()
+    val permissionsToRequest: MutableList<String> = mutableListOf()
     permissions.forEach { permission ->
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -163,7 +163,7 @@ fun requestRequiredPermissions(context: Context) {
 }
 
 fun getRequiredPermissions(): MutableList<String> {
-    val permissions = mutableListOf(
+    val permissions: MutableList<String> = mutableListOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION
     )

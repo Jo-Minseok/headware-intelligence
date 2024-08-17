@@ -1,6 +1,7 @@
 package com.headmetal.headwareintelligence
 
 import android.app.AlertDialog
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,40 +14,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material.icons.outlined.Engineering
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import retrofit2.Call
@@ -186,8 +185,8 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
     var showWorkerAddDialog by remember { mutableStateOf(false) }
     var workerId by remember { mutableStateOf(listOf<String>()) }
     var workerName by remember { mutableStateOf(listOf<String>()) }
-    val selectedWorkerId = remember { mutableStateOf("") }
-    val showWorkerManageDialog = remember { mutableStateOf(false) }
+    val selectedWorkerId: MutableState<String> = remember { mutableStateOf("") }
+    val showWorkerManageDialog: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     // 작업장 수정 다이얼 로그
     if (showWorkDataInputDialog) {
@@ -303,13 +302,13 @@ fun InputWorkUpdateDialog(
 ) {
     // UI 변수 초기화
     var selectableCompanyList by remember { mutableStateOf(listOf<String>()) }
-    val inputWorkName = remember { mutableStateOf("") }
-    val inputWorkCompany = remember { mutableStateOf("") }
-    val inputWorkStartDate = remember { mutableStateOf("") }
-    val inputWorkEndDate = remember { mutableStateOf("") }
-    val expanded = remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val builder = AlertDialog.Builder(context)
+    val inputWorkName: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkCompany: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkEndDate: MutableState<String> = remember { mutableStateOf("") }
+    val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val context: Context = LocalContext.current
+    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     // 다이얼 로그 시작
     LaunchedEffect(Unit) {
@@ -398,8 +397,8 @@ fun WorkDeleteDialog(
     workId: Int,
     navController: NavController
 ) {
-    val context = LocalContext.current
-    val builder = AlertDialog.Builder(context)
+    val context: Context = LocalContext.current
+    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -436,9 +435,9 @@ fun WorkerAddDialog(
     onDismissRequest: () -> Unit,
     workId: Int
 ) {
-    val workerId = remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val builder = AlertDialog.Builder(context)
+    val workerId: MutableState<String> = remember { mutableStateOf("") }
+    val context: Context = LocalContext.current
+    val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -483,8 +482,8 @@ fun WorkerManageDialog(
     onDismissRequest: () -> Unit,
     workerId: String
 ) {
-    val workerName = remember { mutableStateOf("") }
-    val workerPhone = remember { mutableStateOf("") }
+    val workerName: MutableState<String> = remember { mutableStateOf("") }
+    val workerPhone: MutableState<String> = remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         RetrofitInstance.apiService.searchWorkerStatus(workerId)
@@ -653,7 +652,7 @@ fun updateWorkshopVerify(
     builder: AlertDialog.Builder,
     onDismissRequest: () -> Unit
 ) {
-    if (inputWorkName.length > 16) {
+    if (isInvalidWorkName(inputWorkName)) {
         builder.setTitle("작업장 이름 길이 제한")
             .setMessage("작업장 이름은 최대 16자 입력 가능합니다.")
             .setPositiveButton("확인") { dialog, _ ->

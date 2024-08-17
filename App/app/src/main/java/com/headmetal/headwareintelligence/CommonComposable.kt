@@ -59,9 +59,11 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -352,7 +354,8 @@ fun LabelAndInputComposable(
     ),
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    textStyle: TextStyle = TextStyle(textAlign = TextAlign.Left)
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(
@@ -371,6 +374,7 @@ fun LabelAndInputComposable(
             colors = colors,
             visualTransformation = visualTransformation,
             placeholder = { Text(text = placeholder) },
+            textStyle = textStyle,
             leadingIcon = leadingIcon,  // leadingIcon이 null이 아니면 추가
             trailingIcon = trailingIcon  // trailingIcon이 null이 아니면 추가
         )
@@ -821,11 +825,13 @@ fun RoundedButtonPreview() {
 fun RoundedButton(
     buttonText: String,
     colors: Color,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    enabled: Boolean = true
 ) {
     Button(
         modifier = Modifier
             .fillMaxWidth(),
+        enabled = enabled,
         content = { Text(text = buttonText) },
         colors = ButtonDefaults.buttonColors(colors),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),

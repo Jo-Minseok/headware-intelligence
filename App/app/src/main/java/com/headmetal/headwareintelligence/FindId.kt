@@ -81,12 +81,14 @@ fun FindId(navController: NavController = rememberNavController()) {
                     LabelAndInputComposable(
                         labelText = "이름",
                         inputText = name,
-                        textFieldmodifier = Modifier.alpha(0.6f)
+                        textFieldmodifier = Modifier.alpha(0.6f),
+                        placeholder = "4글자 이내"
                     )
                     LabelAndInputComposable(
                         labelText = "이메일",
                         inputText = email,
-                        textFieldmodifier = Modifier.alpha(0.6f)
+                        textFieldmodifier = Modifier.alpha(0.6f),
+                        placeholder = "'@' 를 포함한 이메일 형식"
                     )
                 }
                 LabelAndRadioButtonComposable(
@@ -104,7 +106,7 @@ fun FindId(navController: NavController = rememberNavController()) {
                         LoginFunctionButton(
                             buttonText = "아이디 찾기",
                             onClick = {
-                                idSearch(
+                                idSearchVerify(
                                     name = name.value,
                                     email = email.value,
                                     isManager = isManager.value,
@@ -126,8 +128,24 @@ fun FindId(navController: NavController = rememberNavController()) {
     )
 }
 
-fun idSearchVerify(name: String, email: String, isManager: Boolean, navController: NavController){
-    
+fun idSearchVerify(name: String, email: String, isManager: Boolean, navController: NavController) {
+    when {
+        !isNameValid(name) -> showAlertDialog(
+            context = navController.context,
+            title = "이름 글자 수 불일치",
+            message = "이름을 4자리 이하로 작성바랍니다.",
+            buttonText = "확인"
+        )
+
+        !isEmailValid(email) -> showAlertDialog(
+            context = navController.context,
+            title = "이메일 형식 불일치",
+            message = "이메일 형식이 일치하지 않습니다.\nex)XXX@XXX.XXX(공백 제외)",
+            buttonText = "확인"
+        )
+
+        else -> idSearch(name, email, isManager, navController)
+    }
 }
 
 fun idSearch(name: String, email: String, isManager: Boolean, navController: NavController) {

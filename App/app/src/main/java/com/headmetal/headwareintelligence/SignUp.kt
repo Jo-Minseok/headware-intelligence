@@ -87,11 +87,13 @@ fun SignUpComposable(navController: NavController) {
     var selectableCompany by remember { mutableStateOf(listOf<String>()) }
 
     LaunchedEffect(Unit) {
+        LoadingState.show()
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
                     response.body()?.let { selectableCompany = listOf("없음") + it.companies }
                 }
+                LoadingState.hide()
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {

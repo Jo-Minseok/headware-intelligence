@@ -19,11 +19,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,9 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 // 프리뷰
 @Preview(showBackground = true)
@@ -68,26 +60,6 @@ fun Countermeasure(navController: NavController = rememberNavController()) {
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
         content = {
-            var companies by remember { mutableStateOf(listOf<String>()) }
-
-            LaunchedEffect(Unit) {
-                RetrofitInstance.apiService.getCompanyList()
-                    .enqueue(object : Callback<CompanyList> {
-                        override fun onResponse(
-                            call: Call<CompanyList>,
-                            response: Response<CompanyList>
-                        ) {
-                            if (response.isSuccessful) {
-                                response.body()?.let { companies = it.companies }
-                            }
-                        }
-
-                        override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                            networkErrorFinishApp(navController = navController, error = t)
-                        }
-                    })
-            }
-
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 ScreenTitleText(text = "안전 행동 요령")
                 Column {

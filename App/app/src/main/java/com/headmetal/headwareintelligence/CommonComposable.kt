@@ -199,6 +199,7 @@ fun IconScreen(
     imageVector: ImageVector,
     onClick: () -> Unit = {}
 ) {
+    LoadingScreen()
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9F9F9)
@@ -431,7 +432,9 @@ fun LabelAndDropdownMenu(
             onExpandedChange = { expanded.value = !expanded.value }
         ) {
             TextField(
-                modifier = modifier.fillMaxWidth().menuAnchor(),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
                 value = selectedItem.value,
                 onValueChange = {},
                 readOnly = true,
@@ -540,7 +543,8 @@ fun IconWithLabelButton(
             Icon(
                 imageVector = leadIcon, contentDescription = null, tint = color, modifier = Modifier
                     .padding(end = 10.dp)
-                    .size(30.dp).clickable(enabled = false, onClick = {})
+                    .size(30.dp)
+                    .clickable(enabled = false, onClick = {})
             )
             Text(text = text, color = color, fontSize = fontSize)
             Spacer(modifier = Modifier.weight(1f))
@@ -587,26 +591,6 @@ fun BackIcon(
     Icon(
         contentDescription = null,
         imageVector = Icons.Default.ArrowBackIosNew,
-        modifier = Modifier.clickable { onClick() }
-    )
-}
-
-/**
- * 다음 아이콘
- */
-@Preview(showBackground = true)
-@Composable
-fun NextIconPreview() {
-    NextIcon()
-}
-
-@Composable
-fun NextIcon(
-    onClick: () -> Unit = {}
-) {
-    Icon(
-        imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-        contentDescription = null,
         modifier = Modifier.clickable { onClick() }
     )
 }
@@ -741,6 +725,7 @@ fun LoginScreenPreview() {
 
 @Composable
 fun LoginScreen(content: @Composable () -> Unit = {}) {
+    LoadingScreen()
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF9C94C)
@@ -811,7 +796,11 @@ fun LabelWithNextIcon(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = text, modifier = Modifier.weight(1f), fontSize = 24.sp)
-        NextIcon()
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
+            contentDescription = null,
+            modifier = Modifier.clickable(enabled = false, onClick = {})
+        )
     }
 }
 

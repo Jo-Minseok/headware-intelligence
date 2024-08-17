@@ -330,7 +330,7 @@ fun MainContentsHeader(
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var isRefreshClickable by remember { mutableStateOf(true) }
-
+    var iconColor by remember { mutableStateOf(Color.Black) }
     Row {
         BoldTextField(text = "정보", fontSize = 18.sp)
         Spacer(modifier = Modifier.weight(1f))
@@ -349,13 +349,16 @@ fun MainContentsHeader(
                             locationPermissionRequest = locationPermissionRequest,
                             navController = navController
                         )
-                        delay(3000) // 3초 대기
+                        iconColor = Color(121, 121, 121, 80)
+                        delay(3000)
+                        iconColor = Color.Black
                         isRefreshClickable = true
                     }
                 }
             },
             imageVector = Icons.Default.Update,
-            contentDescription = null
+            contentDescription = null,
+            tint = iconColor
         )
     }
 }
@@ -450,7 +453,6 @@ suspend fun getWeatherInformation(
                                 precipitation.value = it.precipitation
                                 humidity.value = it.humidity
                             }
-                            Toast.makeText(context, "새로고침 되었습니다.", Toast.LENGTH_SHORT).show()
                             Log.d("HEAD METAL", "날씨 정보 로딩 성공")
                         }
                     }

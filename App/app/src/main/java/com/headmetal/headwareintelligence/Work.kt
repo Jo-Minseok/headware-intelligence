@@ -231,6 +231,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 
     // UI 변수 값이 바꼈을 때
     LaunchedEffect(showWorkerAddDialog) {
+        LoadingState.show()
         RetrofitInstance.apiService.searchWorker(workId).enqueue(object : Callback<Worker> {
             override fun onResponse(
                 call: Call<Worker>,
@@ -243,6 +244,7 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
                         workerName = it.name
                     }
                 }
+                LoadingState.hide()
             }
 
             override fun onFailure(call: Call<Worker>, t: Throwable) {
@@ -324,6 +326,7 @@ fun InputWorkUpdateDialog(
 
     // 다이얼 로그 시작
     LaunchedEffect(Unit) {
+        LoadingState.show()
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
@@ -332,6 +335,7 @@ fun InputWorkUpdateDialog(
                         selectableCompanyList = it.companies
                     }
                 }
+                LoadingState.hide()
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {
@@ -502,6 +506,7 @@ fun WorkerManageDialog(
     val workerPhone: MutableState<String> = remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
+        LoadingState.show()
         RetrofitInstance.apiService.searchWorkerStatus(workerId)
             .enqueue(object : Callback<WorkerStatus> {
                 override fun onResponse(
@@ -517,6 +522,7 @@ fun WorkerManageDialog(
                             Log.d("HEAD METAL", workerPhone.value)
                         }
                     }
+                    LoadingState.hide()
                 }
 
                 override fun onFailure(call: Call<WorkerStatus>, t: Throwable) {
@@ -739,8 +745,7 @@ fun updateAction(
                     dialog.dismiss()
                 }
             }
-            val dialog = builder.create()
-            dialog.show()
+            builder.create().show()
             LoadingState.hide()
         }
 
@@ -779,8 +784,7 @@ fun removeWorkshop(
                     dialog.dismiss()
                 }
             }
-            val dialog = builder.create()
-            dialog.show()
+            builder.create().show()
             LoadingState.hide()
         }
 

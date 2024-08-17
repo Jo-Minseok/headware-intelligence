@@ -244,11 +244,13 @@ fun logoutConfirm(
     showAlertDialog: MutableState<Boolean>
 ) {
     if (sharedAccount.getString("type", null) == "manager") {
+        LoadingState.show()
         RetrofitInstance.apiService.apiLogout(
             id = sharedAccount.getString("userid", null).toString(),
             alertToken = sharedAlert.getString("alert_token", null).toString()
         ).enqueue(object : Callback<Void> {
             override fun onResponse(p0: Call<Void>, p1: Response<Void>) {
+                LoadingState.hide()
                 showAlertDialog.value = false
                 Toast.makeText(
                     navController.context,

@@ -116,6 +116,7 @@ fun WorkList(navController: NavController) {
 
     LaunchedEffect(showWorkDataInputDialog) {
         if (userId != "null") {
+            LoadingState.show()
             RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
                 override fun onResponse(
                     call: Call<WorkShopList>,
@@ -131,6 +132,7 @@ fun WorkList(navController: NavController) {
                             workshopEndDate = it.endDate
                         }
                     }
+                    LoadingState.hide()
                 }
 
                 override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
@@ -213,6 +215,7 @@ fun WorkCreateDialog(
     val builder: AlertDialog.Builder = AlertDialog.Builder(context)
 
     LaunchedEffect(Unit) {
+        LoadingState.show()
         RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
             override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
                 if (response.isSuccessful) {
@@ -221,6 +224,7 @@ fun WorkCreateDialog(
                         selectableCompany = it.companies
                     }
                 }
+                LoadingState.hide()
             }
 
             override fun onFailure(call: Call<CompanyList>, t: Throwable) {

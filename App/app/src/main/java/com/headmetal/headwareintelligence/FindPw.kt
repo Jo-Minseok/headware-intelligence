@@ -61,7 +61,8 @@ fun FindPw(navController: NavController) {
                     LabelAndInputComposable(
                         labelText = "전화번호",
                         inputText = phone,
-                        textFieldmodifier = Modifier.alpha(0.6f)
+                        textFieldmodifier = Modifier.alpha(0.6f),
+                        placeholder = "XXX-XXXX-XXXX"
                     )
                     LabelAndInputComposable(
                         labelText = "새 비밀번호",
@@ -87,7 +88,7 @@ fun FindPw(navController: NavController) {
                 LoginFunctionButton(
                     buttonText = "비밀번호 변경",
                     onClick = {
-                        changePassword(
+                        changePasswordVerify(
                             pw = pw.value,
                             rePw = rePw.value,
                             id = id.value,
@@ -103,6 +104,48 @@ fun FindPw(navController: NavController) {
     )
 }
 
+fun changePasswordVerify(
+    pw: String,
+    rePw: String,
+    id: String,
+    phone: String,
+    isManager: Boolean,
+    navController: NavController
+) {
+    when {
+        !isPhoneValid(phone) -> showAlertDialog(
+            context = navController.context,
+            title = "전화번호 형식 불일치",
+            message = "전화번호 형식이 일치하지 않습니다.\nex)XXX-XXXX-XXXX",
+            buttonText = "확인"
+        )
+
+        !isPasswordValid(pw) -> showAlertDialog(
+            context = navController.context,
+            title = "비밀번호 형식 불일치",
+            message = "비밀번호는 최소 1개의 알파벳, 1개의 숫자, 1개의 특수문자가 포함되어야 하며, 6자리 이상 16자리 이하이어야 합니다.\n" +
+                    "사용가능 특수 문자: @\$!%*?&",
+            buttonText = "확인"
+        )
+
+        !arePasswordsMatching(pw, rePw) -> showAlertDialog(
+            context = navController.context,
+            title = "비밀번호 불일치",
+            message = "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
+            buttonText = "확인"
+        )
+
+        else -> changePassword(
+            pw = pw,
+            rePw = rePw,
+            id = id,
+            phone = phone,
+            isManager = isManager,
+            navController = navController
+        )
+    }
+}
+
 fun changePassword(
     pw: String,
     rePw: String,
@@ -111,7 +154,7 @@ fun changePassword(
     isManager: Boolean,
     navController: NavController
 ) {
-    if (pw == rePw && pw.isNotEmpty()) {
+    if (pw != rePw && pw.isEmpty()) {
         LoadingState.show()
         RetrofitInstance.apiService.apiChangePw(
             ForgotPw(

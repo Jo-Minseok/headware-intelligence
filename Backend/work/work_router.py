@@ -63,7 +63,7 @@ def update_work(workId: int, inputData: WorkInputCreate, service: WorkService = 
             status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
 
-@router.put('/delete/{workId}', status_code=status.HTTP_200_OK)
+@router.delete('/delete/{workId}', status_code=status.HTTP_200_OK)
 def delete_work(workId: int, service: WorkService = Depends(get_work_service)):
     service.remove_work(workId)
 
@@ -83,3 +83,11 @@ def create_employee_work(workId: int, employeeId: str, service: WorkService = De
     if updateFailed:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail='존재하지 않는 근로자거나 이미 할당된 작업임')
+
+
+@router.delete('/unassign/{workId}/{employeeId}', status_code=status.HTTP_200_OK)
+def unassign_employee_work(workId: int, employeeId: str, service: WorkService = Depends(get_work_service)):
+    success = service.unassign_employee_work(workId, employeeId)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='작업 할당을 찾을 수 없거나 할당되지 않은 작업입니다')

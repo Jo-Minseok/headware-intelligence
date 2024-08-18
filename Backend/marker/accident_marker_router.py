@@ -25,7 +25,7 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
             no.append(accident.no)
             latitude.append(accident.latitude)
             longitude.append(accident.longitude)
-            workId.append(accident.work_id)
+            workId.append(accident.workId)
         for accident in accidents:
             if accident.situation != None:
                 situationCode.append(ReverseSituationCode[accident.situation])

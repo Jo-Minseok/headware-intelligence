@@ -39,9 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 data class WorkShopInputData(
     val name: String,
@@ -125,8 +122,7 @@ fun WorkList(navController: NavController) {
 
     LaunchedEffect(Unit) {
         if (userId != "null") {
-            LoadingState.show()
-            loadWorkshopList(
+            workshopListGET(
                 workshopId = workshopId,
                 userId = userId,
                 workshopName = workshopName,
@@ -221,8 +217,8 @@ fun WorkCreateDialog(
     val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        loadCompanyList(
-            selectableCompany = selectableCompany,
+        companyListGET(
+            companyList = selectableCompany,
             navController = navController,
             onDismissRequest = onDismissRequest
         )
@@ -272,7 +268,7 @@ fun WorkCreateDialog(
                 navController = navController,
                 onDismissRequest = {
                     onDismissRequest()
-                    loadWorkshopList(
+                    workshopListGET(
                         userId = userId,
                         navController = navController,
                         workshopId = workshopId,
@@ -399,7 +395,7 @@ fun enrollWorkshopVerify(
             onButtonClick = {}
         )
     } else {
-        enrollAction(
+        workshopPOST(
             userId = userId,
             inputWorkName = inputWorkName,
             inputWorkCompany = inputWorkCompany,
@@ -409,109 +405,4 @@ fun enrollWorkshopVerify(
             onDismissRequest = onDismissRequest
         )
     }
-}
-
-/**
- * 작업장 생성 등록 버튼 기능
- */
-fun enrollAction(
-    userId: String,
-    inputWorkName: String,
-    inputWorkCompany: String,
-    inputWorkStartDate: String,
-    inputWorkEndDate: String,
-    navController: NavController,
-    onDismissRequest: () -> Unit
-) {
-    LoadingState.show()
-    RetrofitInstance.apiService.createWork(
-        userId,
-        WorkShopInputData(
-            inputWorkName,
-            inputWorkCompany,
-            inputWorkStartDate,
-            inputWorkEndDate
-        )
-    ).enqueue(object : Callback<WorkShopInputData> {
-        override fun onResponse(
-            call: Call<WorkShopInputData>,
-            response: Response<WorkShopInputData>
-        ) {
-            if (response.isSuccessful) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업장 생성 성공",
-                    message = "작성장 생성에 성공하였습니다.",
-                    buttonText = "확인",
-                    onButtonClick = {
-                        onDismissRequest()
-                    }
-                )
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업장 생성 실패",
-                    message = "입력한 내용을 다시 한 번 확인해주세요.",
-                    buttonText = "확인",
-                    onButtonClick = {}
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "작업장 등록 오류",
-                message = "네트워크 오류로 작업장 등록을 못 했습니다.",
-                action = onDismissRequest
-            )
-        }
-    })
-}
-
-fun loadWorkshopList(
-    userId: String,
-    navController: NavController,
-    workshopId: MutableState<List<Int>>,
-    workshopName: MutableState<List<String>>,
-    workshopStartDate: MutableState<List<String>>,
-    workshopEndDate: MutableState<List<String>>,
-    workshopCompany: MutableState<List<String>>
-) {
-    RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
-        override fun onResponse(
-            call: Call<WorkShopList>,
-            response: Response<WorkShopList>
-        ) {
-            if (response.isSuccessful) {
-                val workShopList: WorkShopList? = response.body()
-                workShopList?.let {
-                    workshopId.value = it.workId
-                    workshopName.value = it.name
-                    workshopCompany.value = it.company
-                    workshopStartDate.value = it.startDate
-                    workshopEndDate.value = it.endDate
-                }
-            } else {
-                errorBackApp(
-                    navController = navController,
-                    error = response.message(),
-                    title = "작업장 목록 오류",
-                    message = "작업장 목록을 불러올 수 없습니다.",
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "작업장 목록 오류",
-                message = "네트워크 문제로 인해 작업장 목록을 불러올 수 없습니다.",
-            )
-        }
-    })
 }

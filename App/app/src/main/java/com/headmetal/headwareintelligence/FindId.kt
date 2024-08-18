@@ -15,9 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 data class ForgotIdRequest(
     val name: String,
@@ -143,49 +140,6 @@ fun idSearchVerify(name: String, email: String, isManager: Boolean, navControlle
             buttonText = "확인"
         )
 
-        else -> idSearch(name, email, isManager, navController)
+        else -> idSearchPOST(name, email, isManager, navController)
     }
-}
-
-fun idSearch(name: String, email: String, isManager: Boolean, navController: NavController) {
-    LoadingState.show()
-    RetrofitInstance.apiService.apiFindId(
-        ForgotIdRequest(
-            name,
-            email,
-            if (isManager) "manager" else "employee"
-        )
-    ).enqueue(object : Callback<ForgotIdResult> {
-        override fun onResponse(
-            call: Call<ForgotIdResult>,
-            response: Response<ForgotIdResult>
-        ) {
-            if (response.isSuccessful) {
-                val id = response.body()?.id
-                showAlertDialog(
-                    context = navController.context,
-                    title = "아이디 찾기 성공",
-                    message = "ID: $id",
-                    buttonText = "확인"
-                )
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "아이디 찾기 실패",
-                    message = "일치하는 계정을 찾을 수 없습니다.",
-                    buttonText = "확인"
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "네트워크 오류",
-                message = "네트워크 문제로 ID를 찾을 수 없습니다."
-            )
-        }
-    })
 }

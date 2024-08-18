@@ -66,24 +66,14 @@ fun CompanyInfo(navController: NavController = rememberNavController()) {
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
         content = {
-            var companies by remember { mutableStateOf(listOf<String>()) }
+            val companies = remember { mutableStateOf(listOf<String>()) }
 
             LaunchedEffect(Unit) {
-                RetrofitInstance.apiService.getCompanyList()
-                    .enqueue(object : Callback<CompanyList> {
-                        override fun onResponse(
-                            call: Call<CompanyList>,
-                            response: Response<CompanyList>
-                        ) {
-                            if (response.isSuccessful) {
-                                response.body()?.let { companies = it.companies }
-                            }
-                        }
-
-                        override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                            networkErrorFinishApp(navController = navController, error = t)
-                        }
-                    })
+                companyListGET(
+                    companyList = companies,
+                    navController = navController,
+                    onDismissRequest = { navController.navigateUp() }
+                )
             }
 
             ScreenTitleText(text = "참여 건설 업체")
@@ -91,7 +81,7 @@ fun CompanyInfo(navController: NavController = rememberNavController()) {
                 modifier = Modifier.padding(top = 10.dp).fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(companies) { company ->
+                items(companies.value) { company ->
                     CompanyCard(company)
                 }
             }

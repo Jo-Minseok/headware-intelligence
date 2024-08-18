@@ -16,9 +16,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 data class ForgotPw(
     val id: String,
@@ -134,7 +131,7 @@ fun changePasswordVerify(
             buttonText = "확인"
         )
 
-        else -> changePassword(
+        else -> changePasswordPUT(
             pw = pw,
             rePw = rePw,
             id = id,
@@ -143,56 +140,4 @@ fun changePasswordVerify(
             navController = navController
         )
     }
-}
-
-fun changePassword(
-    pw: String,
-    rePw: String,
-    id: String,
-    phone: String,
-    isManager: Boolean,
-    navController: NavController
-) {
-    LoadingState.show()
-    RetrofitInstance.apiService.apiChangePw(
-        ForgotPw(
-            id,
-            phone,
-            pw,
-            rePw,
-            if (isManager) "manager" else "employee"
-        )
-    ).enqueue(object : Callback<ForgotPw> {
-        override fun onResponse(
-            call: Call<ForgotPw>,
-            response: Response<ForgotPw>
-        ) {
-            if (response.isSuccessful) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "비밀번호 변경 성공",
-                    message = "로그인 화면으로 이동합니다.",
-                    buttonText = "확인",
-                    onButtonClick = { navController.navigate("LoginScreen") }
-                )
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "비밀번호 변경 실패",
-                    message = "존재하지 않는 계정입니다.",
-                    buttonText = "확인"
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<ForgotPw>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "네트워크 오류",
-                message = "네트워크 문제로 비밀번호를 찾을 수 없습니다."
-            )
-        }
-    })
 }

@@ -1,8 +1,5 @@
 package com.headmetal.headwareintelligence
 
-import android.app.Activity
-import android.content.SharedPreferences
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,8 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import retrofit2.Call
-import retrofit2.Callback
 
 data class LoginResponse(
     val id: String,
@@ -104,7 +99,7 @@ fun Login(navController: NavController) {
                         modifier = Modifier.weight(1f),
                         buttonText = "로그인",
                         onClick = {
-                            loginAction(
+                            loginPOST(
                                 inputId = id.value,
                                 inputPw = pw,
                                 isManager = isManager.value,
@@ -127,76 +122,4 @@ fun Login(navController: NavController) {
             AppNameText()
         }
     }
-}
-
-fun loginAction(
-    inputId: String,
-    inputPw: MutableState<String>,
-    isManager: Boolean,
-    navController: NavController
-) {
-    val sharedAlert: SharedPreferences =
-        navController.context.getSharedPreferences(
-            "Alert",
-            Activity.MODE_PRIVATE
-        )
-    val sharedAccount: SharedPreferences =
-        navController.context.getSharedPreferences(
-            "Account",
-            Activity.MODE_PRIVATE
-        )
-    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-
-    LoadingState.show()
-    RetrofitInstance.apiService.apiLogin(
-        alertToken = sharedAlert.getString("alert_token", null).toString(),
-        type = if (isManager) "manager" else "employee",
-        id = inputId,
-        pw = inputPw.value
-    ).enqueue(object : Callback<LoginResponse> {
-        override fun onResponse(
-            call: Call<LoginResponse>,
-            response: retrofit2.Response<LoginResponse>
-        ) {
-            if (response.isSuccessful) {
-                sharedAccountEdit.putString("userid", response.body()?.id)
-                sharedAccountEdit.putString("password", inputPw.value)
-                sharedAccountEdit.putString("name", response.body()?.name)
-                sharedAccountEdit.putString("phone", response.body()?.phoneNo)
-                sharedAccountEdit.putString("email", response.body()?.email)
-                sharedAccountEdit.putString(
-                    "token",
-                    response.body()?.accessToken
-                )
-                sharedAccountEdit.putString(
-                    "token_type",
-                    response.body()?.tokenType
-                )
-                sharedAccountEdit.putString(
-                    "type",
-                    if (isManager) "manager" else "employee"
-                )
-                sharedAccountEdit.apply()
-                navController.navigate("MainScreen")
-                Toast.makeText(
-                    navController.context,
-                    response.body()?.name + "님 반갑습니다",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "로그인 실패",
-                    message = "아이디 및 비밀번호를 확인하세요.",
-                    buttonText = "확인",
-                    onButtonClick = { inputPw.value = "" }
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
-        }
-    })
 }

@@ -14,10 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,9 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 data class RegisterInputModel(
     val id: String,
@@ -83,34 +78,15 @@ fun SignUpComposable(navController: NavController) {
     val isEmployee: MutableState<Boolean> = remember { mutableStateOf(true) }
     val isManager: MutableState<Boolean> = remember { mutableStateOf(false) }
 
-    var selectableCompany by remember { mutableStateOf(listOf<String>()) }
+    val selectableCompany = remember { mutableStateOf(listOf<String>()) }
 
     LaunchedEffect(Unit) {
-        LoadingState.show()
-        RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
-            override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
-                if (response.isSuccessful) {
-                    response.body()?.let { selectableCompany = listOf("없음") + it.companies }
-                } else {
-                    errorBackApp(
-                        navController = navController,
-                        error = response.message(),
-                        title = "회사 목록 로드 오류",
-                        message = "회사 목록을 로드 할 수 없습니다."
-                    )
-                }
-                LoadingState.hide()
-            }
-
-            override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                errorBackApp(
-                    navController = navController,
-                    error = t.toString(),
-                    title = "네트워크 오류",
-                    message = "네트워크 문제로 회사 목록 로드를 할 수 없습니다."
-                )
-            }
-        })
+        companyListGET(
+            companyList = selectableCompany,
+            navController = navController,
+            onDismissRequest = { navController.navigateUp() },
+            defaultValue = listOf("없음")
+        )
     }
     Surface(
         modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp),
@@ -162,7 +138,7 @@ fun SignUpComposable(navController: NavController) {
                 fieldText = "건설업체",
                 expanded = expanded,
                 selectedItem = selectCompany,
-                selectableItems = selectableCompany,
+                selectableItems = selectableCompany.value,
                 modifier = Modifier.alpha(0.6f)
             )
             LabelAndRadioButtonComposable(
@@ -192,66 +168,6 @@ fun SignUpComposable(navController: NavController) {
             )
         }
     }
-}
-
-fun register(
-    id: String,
-    pw: String,
-    rePw: String,
-    name: String,
-    email: String,
-    phone: String,
-    selectCompany: String,
-    isManager: Boolean,
-    navController: NavController
-) {
-    LoadingState.show()
-    RetrofitInstance.apiService.apiRegister(
-        RegisterInputModel(
-            id,
-            pw,
-            rePw,
-            name,
-            email,
-            phone,
-            if (selectCompany == "없음") null else selectCompany,
-            if (isManager) "manager" else "employee"
-        )
-    ).enqueue(object : Callback<RegisterInputModel> {
-        override fun onResponse(
-            call: Call<RegisterInputModel>,
-            response: Response<RegisterInputModel>
-        ) {
-            if (response.isSuccessful) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "회원가입 성공",
-                    message = "로그인 화면으로 이동합니다.",
-                    buttonText = "확인"
-                ) { navController.navigate("LoginScreen") }
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "회원가입 실패",
-                    message = "이미 존재하는 회원 또는 잘못된 정보입니다.",
-                    buttonText = "확인"
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(
-            call: Call<RegisterInputModel>,
-            t: Throwable
-        ) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "네트워크 오류",
-                message = "네트워크 문제로 회원 가입을 할 수 없습니다."
-            )
-        }
-    })
 }
 
 fun registerVerify(
@@ -309,7 +225,7 @@ fun registerVerify(
             buttonText = "확인"
         )
 
-        else -> register(
+        else -> registerPOST(
             id = id,
             pw = pw,
             rePw = rePw,

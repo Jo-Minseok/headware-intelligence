@@ -439,27 +439,14 @@ suspend fun getWeatherInformation(
     if (hasLocationPermissions(context)) {
         val location = fusedLocationClient.lastLocation.await()
         location?.let { pos ->
-            RetrofitInstance.retryApiService.getWeather(pos.latitude, pos.longitude)
-                .enqueue(object : Callback<WeatherResponse> {
-                    override fun onResponse(
-                        call: Call<WeatherResponse>,
-                        response: Response<WeatherResponse>
-                    ) {
-                        if (response.isSuccessful) {
-                            val weather: WeatherResponse? = response.body()
-                            weather?.let {
-                                temperature.value = it.temperature
-                                airVelocity.value = it.airVelocity
-                                precipitation.value = it.precipitation
-                                humidity.value = it.humidity
-                            }
-                        }
-                    }
-
-                    override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                        networkErrorFinishApp(navController = navController, error = t)
-                    }
-                })
+            weatherGET(
+                pos = pos,
+                temperature = temperature,
+                airVelocity = airVelocity,
+                precipitation = precipitation,
+                humidity = humidity,
+                navController = navController
+            )
         }
     } else {
         locationPermissionRequest.launch(

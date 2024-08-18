@@ -66,7 +66,7 @@ fun MenuFunctionsPreview() {
 @Composable
 fun MenuLogoutAlertDialogPreview() {
     LogoutAlertDialog(
-        showAlertDialog = remember { mutableStateOf(false) },
+        showLogoutDialog = remember { mutableStateOf(false) },
         dismissButton = {},
         navController = rememberNavController()
     )
@@ -160,7 +160,7 @@ fun MenuFunctions(
 
     if (showLogoutDialog.value) {
         LogoutAlertDialog(
-            showAlertDialog = showLogoutDialog,
+            showLogoutDialog = showLogoutDialog,
             dismissButton = { showLogoutDialog.value = false },
             navController = navController
         )
@@ -207,7 +207,7 @@ fun MenuFunctions(
 
 @Composable
 fun LogoutAlertDialog(
-    showAlertDialog: MutableState<Boolean>,
+    showLogoutDialog: MutableState<Boolean>,
     dismissButton: () -> Unit,
     navController: NavController
 ) {
@@ -227,7 +227,7 @@ fun LogoutAlertDialog(
                 sharedConfigure,
                 sharedAlert,
                 navController,
-                showAlertDialog
+                showLogoutDialog
             )
         },
         dismissButton = dismissButton,
@@ -241,33 +241,19 @@ fun logoutConfirm(
     sharedConfigure: SharedPreferences,
     sharedAlert: SharedPreferences,
     navController: NavController,
-    showAlertDialog: MutableState<Boolean>
+    showLogoutDialog: MutableState<Boolean>
 ) {
-    if (sharedAccount.getString("type", null) == "manager") {
-        LoadingState.show()
-        RetrofitInstance.apiService.apiLogout(
-            id = sharedAccount.getString("userid", null).toString(),
-            alertToken = sharedAlert.getString("alert_token", null).toString()
-        ).enqueue(object : Callback<Void> {
-            override fun onResponse(p0: Call<Void>, p1: Response<Void>) {
-                LoadingState.hide()
-                showAlertDialog.value = false
-                Toast.makeText(
-                    navController.context,
-                    "로그아웃을 성공하였습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                sharedAccount.edit().clear().apply()
-                sharedConfigure.edit().clear().apply()
-                navController.navigate("LoginScreen")
-            }
-
-            override fun onFailure(p0: Call<Void>, t: Throwable) {
-                networkErrorFinishApp(navController = navController, error = t)
-            }
-        })
+    val type: String = sharedAccount.getString("type", "") ?: ""
+    if (type == "manager") {
+        logoutPOST(
+            navController = navController,
+            sharedAccount = sharedAccount,
+            sharedConfigure = sharedConfigure,
+            sharedAlert = sharedAlert,
+            showLogoutDialog = showLogoutDialog
+        )
     } else {
-        showAlertDialog.value = false
+        showLogoutDialog.value = false
         Toast.makeText(
             navController.context,
             "로그아웃을 성공하였습니다.",

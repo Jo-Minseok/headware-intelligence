@@ -2,7 +2,6 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -75,36 +74,10 @@ import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import okhttp3.Interceptor
-import okhttp3.Response
-import java.io.IOException
-import java.net.SocketTimeoutException
+
 
 enum class SituationCode {
     COMPLETE, PROCESSING, MALFUNCTION, REPORT119
-}
-
-class RetryInterceptor(private val maxRetries: Int) : Interceptor {
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-        var response: Response?
-        var attempt = 0
-        val exception: IOException? = null
-
-        while (attempt < maxRetries) {
-            try {
-                response = chain.proceed(request)
-                if (response.isSuccessful) {
-                    return response
-                }
-            } catch (e: SocketTimeoutException) {
-                Log.e("HEAD METAL", "서버 통신 재시도 ${attempt + 1}회")
-                attempt++
-            }
-        }
-
-        throw exception ?: IOException("Unknown error")
-    }
 }
 
 fun showAlertDialog(

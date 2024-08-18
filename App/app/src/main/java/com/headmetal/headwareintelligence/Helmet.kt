@@ -83,7 +83,7 @@ fun HelmetScreenPreview() {
     val context = LocalContext.current
     val navController = rememberNavController() // NavController 설정
     val sharedPreferences = context.getSharedPreferences("HelmetPreferences", Context.MODE_PRIVATE)
-    val itemOptions = remember { mutableStateOf(listOf("작업장 A", "작업장 B", "작업장 C")) }
+    val companyList = remember { mutableStateOf(listOf("작업장 A", "작업장 B", "작업장 C")) }
     val enableRegister = remember { mutableStateOf(true) }
     val enableInternet = remember { mutableStateOf(true) }
     val enableReturn = remember { mutableStateOf(true) }
@@ -101,7 +101,7 @@ fun HelmetScreenPreview() {
     HelmetScreen(
         navController = navController,
         sharedAccount = sharedPreferences,
-        itemOptions = itemOptions,
+        companyList = companyList,
         enableRegister = enableRegister,
         enableInternet = enableInternet,
         enableReturn = enableReturn,
@@ -175,8 +175,9 @@ fun Helmet(navController: NavController) {
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val sharedAccountEdit = sharedAccount.edit()
 
+    val userId: String = sharedAccount.getString("userid", null).toString()
     // 작업장 선택 변수들
-    val itemOptions = remember { mutableStateOf(listOf<String>()) }
+    val companyList = remember { mutableStateOf(listOf<String>()) }
 
     // 권한 요청
     val requestPermissionLauncher = rememberLauncherForActivityResult(
@@ -563,23 +564,11 @@ fun Helmet(navController: NavController) {
     // 컴포저블 내에서 가장 먼저 실행
     LaunchedEffect(Unit) {
         // 회사 목록 불러오기
-        RetrofitInstance.apiService.apiWorkList(sharedAccount.getString("userid", null).toString())
-            .enqueue(object : Callback<WorkListResponse> {
-                override fun onResponse(
-                    call: Call<WorkListResponse>,
-                    response: Response<WorkListResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { worklistResponse ->
-                            itemOptions.value = worklistResponse.workList
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<WorkListResponse>, t: Throwable) {
-                    networkErrorFinishApp(navController = navController, error = t)
-                }
-            })
+        userCompanyListGET(
+            companyList = companyList,
+            navController = navController,
+            userId = userId
+        )
         // 블루투스 기능 유무 체크
         // 기능이 없다면
         if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
@@ -644,7 +633,7 @@ fun Helmet(navController: NavController) {
     HelmetScreen(
         navController = navController,
         sharedAccount = sharedAccount,
-        itemOptions = itemOptions,
+        companyList = companyList,
         enableRegister = enableRegister,
         enableInternet = enableInternet,
         enableReturn = enableReturn,
@@ -675,7 +664,7 @@ fun Helmet(navController: NavController) {
 fun HelmetScreen(
     navController: NavController,
     sharedAccount: SharedPreferences,
-    itemOptions: MutableState<List<String>>,
+    companyList: MutableState<List<String>>,
     enableRegister: MutableState<Boolean>,
     enableInternet: MutableState<Boolean>,
     enableReturn: MutableState<Boolean>,
@@ -759,7 +748,7 @@ fun HelmetScreen(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            itemOptions.value.forEach { eachoption ->
+                            companyList.value.forEach { eachoption ->
                                 DropdownMenuItem(onClick = {
                                     selectedOption = eachoption
                                     expanded = false

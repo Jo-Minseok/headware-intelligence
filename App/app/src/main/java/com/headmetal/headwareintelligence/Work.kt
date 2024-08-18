@@ -182,8 +182,8 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var showWorkDeleteDialog by remember { mutableStateOf(false) }
     var showWorkerAddDialog by remember { mutableStateOf(false) }
-    var workerId by remember { mutableStateOf(listOf<String>()) }
-    var workerName by remember { mutableStateOf(listOf<String>()) }
+    val workerId = remember { mutableStateOf(listOf<String>()) }
+    val workerName = remember { mutableStateOf(listOf<String>()) }
     val selectedWorkerId: MutableState<String> = remember { mutableStateOf("") }
     val showWorkerManageDialog: MutableState<Boolean> = remember { mutableStateOf(false) }
 
@@ -224,38 +224,12 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
-        LoadingState.show()
-        RetrofitInstance.apiService.searchWorker(workId).enqueue(object : Callback<Worker> {
-            override fun onResponse(
-                call: Call<Worker>,
-                response: Response<Worker>
-            ) {
-                if (response.isSuccessful) {
-                    val worker: Worker? = response.body()
-                    worker?.let {
-                        workerId = it.workerId
-                        workerName = it.name
-                    }
-                } else {
-                    errorBackApp(
-                        navController = navController,
-                        error = response.message(),
-                        title = "작업장 검색 오류",
-                        message = "작업장에 대한 정보를 찾을 수 없습니다."
-                    )
-                }
-                LoadingState.hide()
-            }
-
-            override fun onFailure(call: Call<Worker>, t: Throwable) {
-                errorBackApp(
-                    navController = navController,
-                    error = t.toString(),
-                    title = "작업장 검색 오류",
-                    message = "네트워크 문제로 작업장에 대한 정보를 찾을 수 없습니다."
-                )
-            }
-        })
+        workerListGET(
+            workId = workId,
+            navController = navController,
+            workerId = workerId,
+            workerName = workerName
+        )
     }
 
     // 뒤로 가기 버튼 + 화면
@@ -300,10 +274,10 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // 작업자 카드 등록
-                items(workerId.size) { i ->
+                items(workerId.value.size) { i ->
                     WorkerCard(
-                        workerId = workerId[i],
-                        workerName = workerName[i],
+                        workerId = workerId.value[i],
+                        workerName = workerName.value[i],
                         selectedWorkerId = selectedWorkerId,
                         showWorkerManageDialog = showWorkerManageDialog
                     )
@@ -320,7 +294,7 @@ fun WorkUpdateDialog(
     navController: NavController
 ) {
     // UI 변수 초기화
-    var selectableCompanyList by remember { mutableStateOf(listOf<String>()) }
+    val selectableCompanyList = remember { mutableStateOf(listOf<String>()) }
     val inputWorkName: MutableState<String> = remember { mutableStateOf("") }
     val inputWorkCompany: MutableState<String> = remember { mutableStateOf("") }
     val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
@@ -329,37 +303,11 @@ fun WorkUpdateDialog(
 
     // 다이얼 로그 시작
     LaunchedEffect(Unit) {
-        LoadingState.show()
-        // 담당회사 API
-        RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
-            override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
-                if (response.isSuccessful) {
-                    val companyList: CompanyList? = response.body()
-                    companyList?.let {
-                        selectableCompanyList = it.companies
-                    }
-                } else {
-                    errorBackApp(
-                        navController = navController,
-                        error = response.message(),
-                        title = "회사 목록 로드 오류",
-                        message = "회사 목록을 로드 할 수 없습니다.",
-                        action = onDismissRequest
-                    )
-                }
-                LoadingState.hide()
-            }
-
-            override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                errorBackApp(
-                    navController = navController,
-                    error = t.toString(),
-                    title = "회사 목록 로드 오류",
-                    message = "회사 목록을 로드 할 수 없습니다.",
-                    action = onDismissRequest
-                )
-            }
-        })
+        companyListGET(
+            companyList = selectableCompanyList,
+            navController = navController,
+            onDismissRequest = onDismissRequest
+        )
     }
 
     // 다이얼 로그 띄우기
@@ -395,7 +343,7 @@ fun WorkUpdateDialog(
                     fieldText = "담당 회사",
                     expanded = expanded,
                     selectedItem = inputWorkCompany,
-                    selectableItems = selectableCompanyList,
+                    selectableItems = selectableCompanyList.value,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(255, 150, 0, 80),
                         unfocusedContainerColor = Color(255, 150, 0, 80),
@@ -424,7 +372,7 @@ fun WorkDeleteDialog(
         yesButton = "예",
         noButton = "아니오",
         confirmButton = {
-            removeWorkshop(
+            removeWorkshopPUT(
                 workId = workId,
                 navController = navController,
                 onDismissRequest = onDismissRequest
@@ -464,7 +412,7 @@ fun WorkerAddDialog(
             )
         },
         confirmButton = {
-            addWorker(
+            addWorkerPOST(
                 workId = workId,
                 workerId = workerId.value,
                 navController = navController,
@@ -485,40 +433,13 @@ fun WorkerManageDialog(
     val workerPhone: MutableState<String> = remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        LoadingState.show()
-        RetrofitInstance.apiService.searchWorkerStatus(workerId)
-            .enqueue(object : Callback<WorkerStatus> {
-                override fun onResponse(
-                    call: Call<WorkerStatus>,
-                    response: Response<WorkerStatus>
-                ) {
-                    if (response.isSuccessful) {
-                        val workerStatus: WorkerStatus? = response.body()
-                        workerStatus?.let {
-                            workerName.value = it.name
-                            workerPhone.value = it.phoneNo
-                        }
-                    } else {
-                        errorBackApp(
-                            navController = navController,
-                            error = response.message(),
-                            title = "작업자 검색 오류",
-                            message = "작업자에 대한 정보를 찾을 수 없습니다.",
-                            action = onDismissRequest
-                        )
-                    }
-                    LoadingState.hide()
-                }
-
-                override fun onFailure(call: Call<WorkerStatus>, t: Throwable) {
-                    errorBackApp(
-                        navController = navController,
-                        error = t.toString(),
-                        title = "작업자 검색 오류",
-                        message = "네트워크 문제로 인해 작업자에 대한 정보를 찾을 수 없습니다."
-                    )
-                }
-            })
+        workerGET(
+            workerId = workerId,
+            onDismissRequest = onDismissRequest,
+            navController = navController,
+            workerName = workerName,
+            workerPhone = workerPhone
+        )
     }
     YesNoAlertDialog(
         title = "작업자 관리",
@@ -679,7 +600,7 @@ fun updateWorkshopVerify(
             onButtonClick = {}
         )
     } else {
-        updateAction(
+        updateWorkshopPUT(
             workId = workId,
             inputWorkName = inputWorkName,
             inputWorkCompany = inputWorkCompany,
@@ -691,151 +612,3 @@ fun updateWorkshopVerify(
     }
 }
 
-fun updateAction(
-    workId: Int,
-    inputWorkName: String,
-    inputWorkCompany: String,
-    inputWorkStartDate: String,
-    inputWorkEndDate: String,
-    navController: NavController,
-    onDismissRequest: () -> Unit
-) {
-    LoadingState.show()
-    RetrofitInstance.apiService.updateWork(
-        workId,
-        WorkShopInputData(
-            inputWorkName,
-            inputWorkCompany,
-            inputWorkStartDate,
-            inputWorkEndDate
-        )
-    ).enqueue(object : Callback<WorkShopInputData> {
-        override fun onResponse(
-            call: Call<WorkShopInputData>,
-            response: Response<WorkShopInputData>
-        ) {
-            if (response.isSuccessful) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업장 수정 성공",
-                    message = "작업장 수정에 성공하였습니다.",
-                    buttonText = "확인",
-                    onButtonClick = onDismissRequest
-                )
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업장 수정 실패",
-                    message = "입력한 내용을 다시 한 번 확인해주세요.",
-                    buttonText = "확인",
-                    onButtonClick = {}
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<WorkShopInputData>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "작업장 수정 오류",
-                message = "네트워크 문제로 작업장 수정을 할 수 없습니다."
-            )
-        }
-    })
-}
-
-fun removeWorkshop(
-    workId: Int,
-    navController: NavController,
-    onDismissRequest: () -> Unit
-) {
-    LoadingState.show()
-    RetrofitInstance.apiService.deleteWork(
-        workId
-    ).enqueue(object : Callback<Void> {
-        override fun onResponse(
-            call: Call<Void>,
-            response: Response<Void>
-        ) {
-            if (response.isSuccessful) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업장 삭제 성공",
-                    message = "작업장 삭제에 성공하였습니다.",
-                    buttonText = "확인",
-                    onButtonClick = {
-                        onDismissRequest()
-                        navController.navigateUp()
-                    }
-                )
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업장 삭제 실패",
-                    message = "작업장 삭제를 실패했습니다",
-                    buttonText = "확인",
-                    onButtonClick = onDismissRequest
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<Void>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "작업장 삭제 오류",
-                message = "네트워크 문제로 인해 작업장에 대한 정보를 찾을 수 없습니다.",
-                action = onDismissRequest
-            )
-        }
-    })
-}
-
-fun addWorker(
-    workId: Int,
-    workerId: String,
-    navController: NavController,
-    onDismissRequest: () -> Unit
-) {
-    LoadingState.show()
-    RetrofitInstance.apiService.assignWork(
-        workId,
-        workerId
-    ).enqueue(object : Callback<Void> {
-        override fun onResponse(
-            call: Call<Void>,
-            response: Response<Void>
-        ) {
-            if (response.isSuccessful) {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업자 등록 성공",
-                    message = "작업자 등록에 성공하였습니다.",
-                    buttonText = "확인",
-                    onButtonClick = onDismissRequest
-                )
-            } else {
-                showAlertDialog(
-                    context = navController.context,
-                    title = "작업자 등록 실패",
-                    message = response.message(),
-                    buttonText = "확인",
-                    onButtonClick = {}
-                )
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<Void>, t: Throwable) {
-            errorBackApp(
-                navController = navController,
-                error = t.toString(),
-                title = "작업자 추가 오류",
-                message = "네트워크 오류로 인해 작업자를 추가할 수 없습니다.",
-                action = onDismissRequest
-            )
-        }
-    })
-}

@@ -253,7 +253,7 @@ fun addWorkerPOST(
                 showAlertDialog(
                     context = navController.context,
                     title = "작업자 등록 실패",
-                    message = response.message(),
+                    message = "존재하지 않는 근로자거나 이미 본 작업장에 할당된 근로자입니다.",
                     buttonText = "확인",
                     onButtonClick = {}
                 )
@@ -276,7 +276,7 @@ fun addWorkerPOST(
 /**
  * 작업장 삭제
  */
-fun removeWorkshopPUT(
+fun removeWorkshopDELETE(
     workId: Int,
     navController: NavController,
     onDismissRequest: () -> Unit
@@ -712,6 +712,54 @@ fun idSearchPOST(name: String, email: String, isManager: Boolean, navController:
         }
 
         override fun onFailure(call: Call<ForgotIdResult>, t: Throwable) {
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "네트워크 오류",
+                message = "네트워크 문제로 ID를 찾을 수 없습니다."
+            )
+        }
+    })
+}
+
+/**
+ * 작업자 삭제
+ */
+fun removeWorkerDELETE(
+    workId: Int,
+    employeeId: String,
+    navController: NavController,
+    onDismissRequest: () -> Unit
+) {
+    LoadingState.show()
+    RetrofitInstance.apiService.deleteWorker(
+        workId = workId,
+        employeeId = employeeId
+    ).enqueue(object : Callback<Void> {
+        override fun onResponse(
+            call: Call<Void>,
+            response: Response<Void>
+        ) {
+            if (response.isSuccessful) {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업자 삭제 성공",
+                    message = "$employeeId 작업자를 삭제했습니다.\n언제나 재등록할 수 있습니다.",
+                    buttonText = "확인"
+                )
+                onDismissRequest()
+            } else {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "작업자 삭제 실패",
+                    message = "$employeeId 작업자는 이미 삭제되거나 존재하지 않은 작업자입니다.",
+                    buttonText = "확인"
+                )
+                onDismissRequest()
+            }
+        }
+
+        override fun onFailure(call: Call<Void>, t: Throwable) {
             errorBackApp(
                 navController = navController,
                 error = t.toString(),

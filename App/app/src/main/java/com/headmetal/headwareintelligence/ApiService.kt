@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -114,7 +115,7 @@ interface ApiService {
         @Body requestBody: WorkShopInputData
     ): Call<WorkShopInputData>
 
-    @PUT("/work/delete/{workId}")
+    @DELETE("/work/delete/{workId}")
     fun deleteWork(
         @Path("workId") workId: Int
     ): Call<Void>
@@ -126,6 +127,12 @@ interface ApiService {
 
     @PUT("/work/assign/{workId}/{employeeId}")
     fun assignWork(
+        @Path("workId") workId: Int,
+        @Path("employeeId") employeeId: String
+    ): Call<Void>
+
+    @DELETE("/work/unassign/{workId}/{employeeId}")
+    fun deleteWorker(
         @Path("workId") workId: Int,
         @Path("employeeId") employeeId: String
     ): Call<Void>

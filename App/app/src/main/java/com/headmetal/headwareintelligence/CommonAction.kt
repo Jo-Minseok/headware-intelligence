@@ -7,8 +7,12 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 /**
  * 계정
@@ -127,4 +131,40 @@ fun errorBackApp(
         buttonText = "확인",
         onButtonClick = action
     )
+}
+
+fun loadCompanyList(
+    selectableCompany: MutableState<List<String>>,
+    navController: NavController,
+    onDismissRequest: () -> Unit
+){
+    RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
+        override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
+            if (response.isSuccessful) {
+                val companyList: CompanyList? = response.body()
+                companyList?.let {
+                    selectableCompany.value = it.companies
+                }
+            } else {
+                errorBackApp(
+                    navController = navController,
+                    error = response.message(),
+                    title = "회사 목록 로드 오류",
+                    message = "회사 목록을 불러오지 못 했습니다.",
+                    action = onDismissRequest
+                )
+            }
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<CompanyList>, t: Throwable) {
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "회사 목록 로드 오류",
+                message = "네트워크 문제로 인해 회사 목록을 불러오지 못 했습니다.",
+                action = onDismissRequest
+            )
+        }
+    })
 }

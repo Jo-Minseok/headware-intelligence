@@ -55,7 +55,7 @@ data class WorkShopList(
     val name: List<String>,
     val company: List<String>,
     val startDate: List<String>,
-    val endDate: List<String?>
+    val endDate: List<String>
 )
 
 /**
@@ -73,7 +73,22 @@ fun WorkListPreview() {
 @Preview(showBackground = true)
 @Composable
 fun WorkCreateDialogPreview() {
-    WorkCreateDialog(onDismissRequest = {}, navController = rememberNavController())
+    WorkCreateDialog(
+        onDismissRequest = {},
+        navController = rememberNavController(),
+        workshopId = remember { mutableStateOf(listOf()) },
+        workshopName = remember { mutableStateOf(listOf()) },
+        userId = "",
+        workshopCompany = remember {
+            mutableStateOf(listOf())
+        },
+        workshopStartDate = remember {
+            mutableStateOf(listOf())
+        },
+        workshopEndDate = remember {
+            mutableStateOf(listOf())
+        }
+    )
 }
 
 /**
@@ -102,49 +117,24 @@ fun WorkList(navController: NavController) {
     val userId: String = sharedAccount.getString("userid", "null") ?: "null"
 
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
-    var workshopId by remember { mutableStateOf(listOf<Int>()) }
-    var workshopCompany by remember { mutableStateOf(listOf<String>()) }
-    var workshopName by remember { mutableStateOf(listOf<String>()) }
-    var workshopStartDate by remember { mutableStateOf(listOf<String>()) }
-    var workshopEndDate by remember { mutableStateOf(listOf<String?>()) }
+    val workshopId = remember { mutableStateOf(listOf<Int>()) }
+    val workshopCompany = remember { mutableStateOf(listOf<String>()) }
+    val workshopName = remember { mutableStateOf(listOf<String>()) }
+    val workshopStartDate = remember { mutableStateOf(listOf<String>()) }
+    val workshopEndDate = remember { mutableStateOf(listOf<String>()) }
 
     LaunchedEffect(Unit) {
         if (userId != "null") {
             LoadingState.show()
-            RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
-                override fun onResponse(
-                    call: Call<WorkShopList>,
-                    response: Response<WorkShopList>
-                ) {
-                    if (response.isSuccessful) {
-                        val workShopList: WorkShopList? = response.body()
-                        workShopList?.let {
-                            workshopId = it.workId
-                            workshopName = it.name
-                            workshopCompany = it.company
-                            workshopStartDate = it.startDate
-                            workshopEndDate = it.endDate
-                        }
-                    } else {
-                        errorBackApp(
-                            navController = navController,
-                            error = response.message(),
-                            title = "작업장 목록 오류",
-                            message = "작업장 목록을 불러올 수 없습니다.",
-                        )
-                    }
-                    LoadingState.hide()
-                }
-
-                override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
-                    errorBackApp(
-                        navController = navController,
-                        error = t.toString(),
-                        title = "작업장 목록 오류",
-                        message = "네트워크 문제로 인해 작업장 목록을 불러올 수 없습니다.",
-                    )
-                }
-            })
+            loadWorkshopList(
+                workshopId = workshopId,
+                userId = userId,
+                workshopName = workshopName,
+                navController = navController,
+                workshopCompany = workshopCompany,
+                workshopStartDate = workshopStartDate,
+                workshopEndDate = workshopEndDate
+            )
         } else {
             errorBackApp(
                 navController = navController,
@@ -161,7 +151,13 @@ fun WorkList(navController: NavController) {
     if (showWorkDataInputDialog) {
         WorkCreateDialog(
             onDismissRequest = { showWorkDataInputDialog = false },
-            navController = navController
+            navController = navController,
+            userId = userId,
+            workshopId = workshopId,
+            workshopName = workshopName,
+            workshopCompany = workshopCompany,
+            workshopStartDate = workshopStartDate,
+            workshopEndDate = workshopEndDate
         )
     }
 
@@ -187,13 +183,13 @@ fun WorkList(navController: NavController) {
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(workshopId.size) { i ->
+                    items(workshopId.value.size) { i ->
                         WorkItem(
-                            workshopId = workshopId[i],
-                            workshopName = workshopName[i],
-                            workshopCompany = workshopCompany[i],
-                            workshopStartDate = workshopStartDate[i],
-                            workshopEndDate = workshopEndDate[i],
+                            workshopId = workshopId.value[i],
+                            workshopName = workshopName.value[i],
+                            workshopCompany = workshopCompany.value[i],
+                            workshopStartDate = workshopStartDate.value[i],
+                            workshopEndDate = workshopEndDate.value[i],
                             navController = navController
                         )
                     }
@@ -209,13 +205,15 @@ fun WorkList(navController: NavController) {
 @Composable
 fun WorkCreateDialog(
     onDismissRequest: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    userId: String,
+    workshopId: MutableState<List<Int>>,
+    workshopName: MutableState<List<String>>,
+    workshopCompany: MutableState<List<String>>,
+    workshopStartDate: MutableState<List<String>>,
+    workshopEndDate: MutableState<List<String>>
 ) {
-    val sharedAccount: SharedPreferences =
-        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userId: String = sharedAccount.getString("userid", "") ?: ""
-
-    var selectableCompany by remember { mutableStateOf(listOf<String>()) }
+    val selectableCompany = remember { mutableStateOf(listOf<String>()) }
     val inputWorkName: MutableState<String> = remember { mutableStateOf("") }
     val inputWorkCompany: MutableState<String> = remember { mutableStateOf("") }
     val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
@@ -223,36 +221,11 @@ fun WorkCreateDialog(
     val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        LoadingState.show()
-        RetrofitInstance.apiService.getCompanyList().enqueue(object : Callback<CompanyList> {
-            override fun onResponse(call: Call<CompanyList>, response: Response<CompanyList>) {
-                if (response.isSuccessful) {
-                    val companyList: CompanyList? = response.body()
-                    companyList?.let {
-                        selectableCompany = it.companies
-                    }
-                } else {
-                    errorBackApp(
-                        navController = navController,
-                        error = response.message(),
-                        title = "회사 목록 로드 오류",
-                        message = "회사 목록을 불러오지 못 했습니다.",
-                        action = onDismissRequest
-                    )
-                }
-                LoadingState.hide()
-            }
-
-            override fun onFailure(call: Call<CompanyList>, t: Throwable) {
-                errorBackApp(
-                    navController = navController,
-                    error = t.toString(),
-                    title = "회사 목록 로드 오류",
-                    message = "네트워크 문제로 인해 회사 목록을 불러오지 못 했습니다.",
-                    action = onDismissRequest
-                )
-            }
-        })
+        loadCompanyList(
+            selectableCompany = selectableCompany,
+            navController = navController,
+            onDismissRequest = onDismissRequest
+        )
     }
     YesNoAlertDialog(
         title = "작업장 생성", yesButton = "등록", noButton = "취소", textComposable = {
@@ -275,7 +248,7 @@ fun WorkCreateDialog(
                     fieldText = "담당 회사",
                     expanded = expanded,
                     selectedItem = inputWorkCompany,
-                    selectableItems = selectableCompany,
+                    selectableItems = selectableCompany.value,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(255, 150, 0, 80),
                         unfocusedContainerColor = Color(255, 150, 0, 80),
@@ -297,7 +270,18 @@ fun WorkCreateDialog(
                 inputWorkStartDate = inputWorkStartDate.value,
                 inputWorkEndDate = inputWorkEndDate.value,
                 navController = navController,
-                onDismissRequest = onDismissRequest
+                onDismissRequest = {
+                    onDismissRequest()
+                    loadWorkshopList(
+                        userId = userId,
+                        navController = navController,
+                        workshopId = workshopId,
+                        workshopName = workshopName,
+                        workshopCompany = workshopCompany,
+                        workshopStartDate = workshopStartDate,
+                        workshopEndDate = workshopEndDate
+                    )
+                }
             )
         },
         dismissButton = onDismissRequest
@@ -482,6 +466,51 @@ fun enrollAction(
                 title = "작업장 등록 오류",
                 message = "네트워크 오류로 작업장 등록을 못 했습니다.",
                 action = onDismissRequest
+            )
+        }
+    })
+}
+
+fun loadWorkshopList(
+    userId: String,
+    navController: NavController,
+    workshopId: MutableState<List<Int>>,
+    workshopName: MutableState<List<String>>,
+    workshopStartDate: MutableState<List<String>>,
+    workshopEndDate: MutableState<List<String>>,
+    workshopCompany: MutableState<List<String>>
+) {
+    RetrofitInstance.apiService.searchWork(userId).enqueue(object : Callback<WorkShopList> {
+        override fun onResponse(
+            call: Call<WorkShopList>,
+            response: Response<WorkShopList>
+        ) {
+            if (response.isSuccessful) {
+                val workShopList: WorkShopList? = response.body()
+                workShopList?.let {
+                    workshopId.value = it.workId
+                    workshopName.value = it.name
+                    workshopCompany.value = it.company
+                    workshopStartDate.value = it.startDate
+                    workshopEndDate.value = it.endDate
+                }
+            } else {
+                errorBackApp(
+                    navController = navController,
+                    error = response.message(),
+                    title = "작업장 목록 오류",
+                    message = "작업장 목록을 불러올 수 없습니다.",
+                )
+            }
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<WorkShopList>, t: Throwable) {
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "작업장 목록 오류",
+                message = "네트워크 문제로 인해 작업장 목록을 불러올 수 없습니다.",
             )
         }
     })

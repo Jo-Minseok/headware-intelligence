@@ -62,7 +62,12 @@ fun updateAccidentSituation(
         }
 
         override fun onFailure(call: Call<AccidentProcessingUpdateRequest>, t: Throwable) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "사고 상황 업데이트 오류",
+                message = "네트워크 문제로 인해 사고 상황 업데이트가 되지 않았습니다.",
+            )
         }
     })
 }

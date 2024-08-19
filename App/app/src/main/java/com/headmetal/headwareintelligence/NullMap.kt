@@ -185,7 +185,12 @@ fun NullMap(
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            networkErrorFinishApp(navController = navController, error = t)
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "피해자 행동 요청 실패",
+                message = "네트워크 문제로 인해 피해자에 대한 행동 요청이 되지 않았습니다.",
+            )
         }
     }
 

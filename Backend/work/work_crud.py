@@ -1,6 +1,6 @@
 from sqlalchemy import exists
 from sqlalchemy.orm import Session
-from db.models import UserEmployee, WorkList, Work
+from db.models import UserEmployee, WorkList, Work, Accident
 from typing import List, Tuple, Optional
 from db.db_connection import get_db
 from fastapi import Depends
@@ -53,10 +53,18 @@ class WorkRepository:
         self.db.commit()
 
     def delete_work(self, workId: int):
+        accidents = self.db.query(Accident).filter(
+            Accident.workId == workId).all()
+        for accident in accidents:
+            accident.workId = None
+
+        self.db.commit()
+        # Delete work record
         deleteWorkList = self.db.query(WorkList).filter(
             WorkList.workId == workId).first()
-        self.db.delete(deleteWorkList)
-        self.db.commit()
+        if deleteWorkList:
+            self.db.delete(deleteWorkList)
+            self.db.commit()
 
     def get_employee(self, employeeId: str) -> UserEmployee:
         return self.db.query(UserEmployee).filter(UserEmployee.id == employeeId).first()
@@ -83,6 +91,17 @@ class WorkRepository:
             self.db.commit()
             return True
         return False
+
+    def unassign_work_in_accidents(self, workId: int, employeeId: str):
+        # Find all accidents with the specified workId and victimId (employeeId)
+        accidents = self.db.query(Accident).filter(
+            Accident.workId == workId, Accident.victimId == employeeId).all()
+
+        # Update each found accident to set workId to NULL
+        for accident in accidents:
+            accident.workId = None
+
+        self.db.commit()
 
 
 class WorkService:
@@ -111,7 +130,14 @@ class WorkService:
         return self.repository.create_employee_work(workId, employeeId)
 
     def unassign_employee_work(self, workId: int, employeeId: str):
-        return self.repository.remove_employee_work(workId, employeeId)
+        # Remove the work assignment
+        success = self.repository.remove_employee_work(workId, employeeId)
+
+        if success:
+            # Update accidents to set workId to NULL
+            self.repository.unassign_work_in_accidents(workId, employeeId)
+
+        return success
 
 
 def get_work_service(db: Session = Depends(get_db)) -> WorkService:

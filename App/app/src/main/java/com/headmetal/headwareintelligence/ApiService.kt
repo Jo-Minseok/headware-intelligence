@@ -40,7 +40,7 @@ interface ApiService {
 
     @POST("/register")
     fun apiRegister(
-        @Body requestBody: RegisterInputModel
+        @Body request: RegisterInputModel
     ): Call<RegisterInputModel>
 
     @POST("/forgot/id")
@@ -50,8 +50,13 @@ interface ApiService {
 
     @PUT("/forgot/pw")
     fun apiChangePw(
-        @Body userEmployee: ForgotPw
+        @Body request: ForgotPw
     ): Call<ForgotPw>
+
+    @PUT("/account/update")
+    fun apiChangePrivacy(
+        @Body request: PrivacyRequest
+    ): Call<Void>
 
     @GET("/weather/{latitude}/{longitude}")
     fun getWeather(

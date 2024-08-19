@@ -29,7 +29,7 @@ sealed class Destinations(val route: String) {
     data object License : Destinations("LicenseScreen")
     data object Privacy : Destinations("PrivacyScreen")
     data object WorkList : Destinations("WorkListScreen")
-    data object Work : Destinations("WorkScreen/{workId}/{workshopName}")
+    data object Work : Destinations("WorkScreen/{workId}/{workshopName}/{workshopCompany}/{workshopStartDate}/{workshopEndDate}")
 }
 
 fun NavGraphBuilder.authNavGraph(navController: NavHostController) {
@@ -83,11 +83,17 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
         route = Destinations.Work.route,
         arguments = listOf(
             navArgument("workId") { type = NavType.IntType },
-            navArgument("workshopName") { type = NavType.StringType })
+            navArgument("workshopName") { type = NavType.StringType },
+            navArgument("workshopCompany") { type = NavType.StringType },
+            navArgument("workshopStartDate") { type = NavType.StringType },
+            navArgument("workshopEndDate") { type = NavType.StringType })
     ) { backStackEntry ->
         Work(
             workId = backStackEntry.arguments?.getInt("workId") ?: 0,
             workshopName = backStackEntry.arguments?.getString("workshopName") ?: "없음",
+            workshopCompany = backStackEntry.arguments?.getString("workshopCompany") ?: "없음",
+            workshopStartDate = backStackEntry.arguments?.getString("workshopStartDate") ?: "없음",
+            workshopEndDate = backStackEntry.arguments?.getString("workshopEndDate") ?: "없음",
             navController = navController
         )
     }

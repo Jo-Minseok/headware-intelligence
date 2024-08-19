@@ -1,10 +1,17 @@
 package com.headmetal.headwareintelligence
 
+import android.app.Activity
+import android.content.SharedPreferences
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoCameraFront
@@ -31,16 +39,31 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
 data class Worker(
     val workerId: List<String>,
@@ -58,7 +81,14 @@ data class WorkerStatus(
 @Preview(showBackground = true)
 @Composable
 fun WorkPreview() {
-    Work(navController = rememberNavController(), workshopName = "작업장 이름", workId = 1)
+    Work(
+        workId = 1,
+        workshopName = "작업장 이름",
+        workshopCompany = "",
+        workshopStartDate = "",
+        workshopEndDate = "",
+        navController = rememberNavController()
+    )
 }
 
 /**
@@ -127,6 +157,10 @@ fun WorkUpdateDialogPreview() {
     WorkUpdateDialog(
         onDismissRequest = {},
         workId = 0,
+        workshopName = "",
+        workshopCompany = "",
+        workshopStartDate = "",
+        workshopEndDate = "",
         navController = rememberNavController()
     )
 }
@@ -187,7 +221,14 @@ fun WorkerManageDialogPreview() {
  * 작업장 메인 화면
  */
 @Composable
-fun Work(workId: Int, workshopName: String, navController: NavController) {
+fun Work(
+    workId: Int,
+    workshopName: String,
+    workshopCompany: String,
+    workshopStartDate: String,
+    workshopEndDate: String,
+    navController: NavController
+) {
     // UI 변수 초기화
     var showWorkDataInputDialog by remember { mutableStateOf(false) }
     var showWorkDeleteDialog by remember { mutableStateOf(false) }
@@ -202,6 +243,10 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
         WorkUpdateDialog(
             onDismissRequest = { showWorkDataInputDialog = false },
             workId = workId,
+            workshopName = workshopName,
+            workshopCompany = workshopCompany,
+            workshopStartDate = workshopStartDate,
+            workshopEndDate = workshopEndDate,
             navController = navController
         )
     }
@@ -308,14 +353,18 @@ fun Work(workId: Int, workshopName: String, navController: NavController) {
 fun WorkUpdateDialog(
     onDismissRequest: () -> Unit,
     workId: Int,
+    workshopName: String,
+    workshopCompany: String,
+    workshopStartDate: String,
+    workshopEndDate: String,
     navController: NavController
 ) {
     // UI 변수 초기화
     val selectableCompanyList = remember { mutableStateOf(listOf<String>()) }
-    val inputWorkName: MutableState<String> = remember { mutableStateOf("") }
-    val inputWorkCompany: MutableState<String> = remember { mutableStateOf("") }
-    val inputWorkStartDate: MutableState<String> = remember { mutableStateOf("") }
-    val inputWorkEndDate: MutableState<String> = remember { mutableStateOf("") }
+    val inputWorkName: MutableState<String> = remember { mutableStateOf(workshopName) }
+    val inputWorkCompany: MutableState<String> = remember { mutableStateOf(workshopCompany) }
+    val inputWorkStartDate: MutableState<String> = remember { mutableStateOf(workshopStartDate) }
+    val inputWorkEndDate: MutableState<String> = remember { mutableStateOf(workshopEndDate) }
     val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     // 다이얼 로그 시작
@@ -461,6 +510,75 @@ fun WorkerManageDialog(
     val workerName: MutableState<String> = remember { mutableStateOf("") }
     val workerPhone: MutableState<String> = remember { mutableStateOf("") }
 
+    val sharedAccount: SharedPreferences =
+        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val imageUrl: MutableState<String?> = remember { mutableStateOf(null) }
+    val webSocketSendData: MutableState<String?> = remember { mutableStateOf(null) }
+    val imageDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val soundDataReception: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val isWebSocketDialogVisible: MutableState<Boolean> = remember { mutableStateOf(false) }
+    val webSocketMessage: MutableState<String> = remember { mutableStateOf("") }
+    val client = remember { OkHttpClient() }
+    val webSocketListener = object : WebSocketListener() {
+        override fun onMessage(webSocket: WebSocket, text: String) {
+            Log.d("HEAD METAL", text)
+
+            val messages = text.split(":")
+            val manager = sharedAccount.getString("userid", null).toString()
+
+            if (webSocketSendData.value == "카메라" && messages[1] == manager && messages[2] == "카메라완료") {
+                imageUrl.value =
+                    "http://minseok821lab.kro.kr:8000/accident/get_image/${workId}/${manager}"
+                imageDataReception.value = true
+            } else if (webSocketSendData.value == "소리" && messages[1] == manager && messages[2] == "소리완료") {
+                LoadingState.hide()
+                webSocketMessage.value = "소리 출력이 완료되었습니다."
+                isWebSocketDialogVisible.value = true
+                soundDataReception.value = true
+            }
+        }
+
+        override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "사고 상황 업데이트 오류",
+                message = "네트워크 문제로 인해 사고 상황 업데이트가 되지 않았습니다.",
+            )
+        }
+    }
+
+    imageUrl.value?.let { url ->
+        Box(contentAlignment = Alignment.Center) {
+            val painter =
+                rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
+                    .data(url).build(),
+                    onSuccess = { LoadingState.hide() })
+            Image(
+                painter = painter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(0.6f)
+            )
+            Button(
+                onClick = { imageUrl.value = null },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopEnd)
+                    .zIndex(1f),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFFA500))
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
+            }
+        }
+    }
+
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(Unit) {
         workerGET(
             workerId = workerId,
@@ -527,6 +645,39 @@ fun WorkerManageDialog(
                         modifier = Modifier
                             .size(50.dp)
                             .padding(start = 8.dp, end = 5.dp)
+                            .clickable {
+                                scope.launch(Dispatchers.IO) {
+                                    LoadingState.show()
+                                    val request = Request.Builder().url(
+                                        "ws://minseok821lab.kro.kr:8000/accident/ws/${workId}/${
+                                            sharedAccount.getString(
+                                                "userid", null
+                                            ).toString()
+                                        }"
+                                    ).build()
+                                    val webSocket = client.newWebSocket(request, webSocketListener)
+                                    val timeOut = withTimeoutOrNull(10000) {
+                                        CoroutineScope(Dispatchers.IO).async {
+                                            webSocketSendData.value = "카메라"
+                                            webSocket.send("${workerId}:${webSocketSendData.value}")
+                                            while (!imageDataReception.value) {
+                                                //
+                                            }
+                                        }.await()
+                                    }
+                                    LoadingState.hide()
+
+                                    if (timeOut == null) {
+                                        Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                        webSocketMessage.value = "서버에서 데이터를 불러오지 못하였습니다."
+                                        isWebSocketDialogVisible.value = true
+                                    } else {
+                                        imageDataReception.value = false
+                                    }
+
+                                    webSocket.close(1000, "WebSocket Close")
+                                }
+                            }
                     )
                     Icon(
                         imageVector = Icons.Default.Campaign,
@@ -535,6 +686,39 @@ fun WorkerManageDialog(
                         modifier = Modifier
                             .size(50.dp)
                             .padding(start = 8.dp, end = 5.dp)
+                            .clickable {
+                                scope.launch(Dispatchers.IO) {
+                                    LoadingState.show()
+                                    val request = Request.Builder().url(
+                                        "ws://minseok821lab.kro.kr:8000/accident/ws/${workId}/${
+                                            sharedAccount.getString(
+                                                "userid", null
+                                            ).toString()
+                                        }"
+                                    ).build()
+                                    val webSocket = client.newWebSocket(request, webSocketListener)
+                                    val timeOut = withTimeoutOrNull(10000) {
+                                        CoroutineScope(Dispatchers.IO).async {
+                                            webSocketSendData.value = "소리"
+                                            webSocket.send("${workerId}:${webSocketSendData.value}")
+                                            while (!soundDataReception.value) {
+                                                //
+                                            }
+                                        }.await()
+                                    }
+                                    LoadingState.hide()
+
+                                    if (timeOut == null) {
+                                        Log.e("HEAD METAL", "서버에서 데이터를 불러오지 못함")
+                                        webSocketMessage.value = "서버에서 데이터를 불러오지 못하였습니다."
+                                        isWebSocketDialogVisible.value = true
+                                    } else {
+                                        soundDataReception.value = false
+                                    }
+
+                                    webSocket.close(1000, "WebSocket Close")
+                                }
+                            }
                     )
                 }
             }

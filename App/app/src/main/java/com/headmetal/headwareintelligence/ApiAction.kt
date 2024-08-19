@@ -576,6 +576,7 @@ fun loginPOST(
                     "type",
                     if (isManager) "manager" else "employee"
                 )
+                sharedAccountEdit.putString("company", response.body()?.company)
                 sharedAccountEdit.apply()
                 navController.navigate("MainScreen")
                 Toast.makeText(
@@ -635,6 +636,13 @@ fun changePasswordPUT(
     isManager: Boolean,
     navController: NavController
 ) {
+    val sharedAccount: SharedPreferences =
+        navController.context.getSharedPreferences(
+            "Account",
+            Activity.MODE_PRIVATE
+        )
+    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
+
     LoadingState.show()
     RetrofitInstance.apiService.apiChangePw(
         ForgotPw(
@@ -650,6 +658,8 @@ fun changePasswordPUT(
             response: Response<ForgotPw>
         ) {
             if (response.isSuccessful) {
+                sharedAccountEdit.putString("password", pw)
+                sharedAccountEdit.apply()
                 showAlertDialog(
                     context = navController.context,
                     title = "비밀번호 변경 성공",
@@ -765,6 +775,83 @@ fun removeWorkerDELETE(
                 error = t.toString(),
                 title = "네트워크 오류",
                 message = "네트워크 문제로 ID를 찾을 수 없습니다."
+            )
+        }
+    })
+}
+
+/**
+ * 개인정보 변경
+ */
+fun updatePrivacy(
+    userId: String,
+    userPassword: String,
+    userRePassword: String,
+    userName: String,
+    userEmail: String,
+    userPhone: String,
+    userCompany: String,
+    userType: String,
+    navController: NavController
+) {
+    val sharedAccount: SharedPreferences =
+        navController.context.getSharedPreferences(
+            "Account",
+            Activity.MODE_PRIVATE
+        )
+    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
+
+    LoadingState.show()
+    RetrofitInstance.apiService.apiChangePrivacy(
+        PrivacyRequest(
+            FindAccount(
+                userId
+            ),
+            UpdateAccount(
+                userPassword,
+                userRePassword,
+                userName,
+                userEmail,
+                userPhone,
+                userCompany,
+                userType
+            )
+        )
+    ).enqueue(object : Callback<Void> {
+        override fun onResponse(
+            call: Call<Void>,
+            response: Response<Void>
+        ) {
+            if (response.isSuccessful) {
+                sharedAccountEdit.putString("password", userPassword)
+                sharedAccountEdit.putString("name", userName)
+                sharedAccountEdit.putString("email", userEmail)
+                sharedAccountEdit.putString("phone", userPhone)
+                sharedAccountEdit.putString("company", userCompany)
+                sharedAccountEdit.apply()
+                showAlertDialog(
+                    context = navController.context,
+                    title = "개인정보 변경 성공",
+                    message = "개인정보 변경에 성공하였습니다.",
+                    buttonText = "확인"
+                )
+            } else {
+                showAlertDialog(
+                    context = navController.context,
+                    title = "개인정보 변경 실패",
+                    message = "개인정보 변경에 실패하였습니다.",
+                    buttonText = "확인"
+                )
+            }
+            LoadingState.hide()
+        }
+
+        override fun onFailure(call: Call<Void>, t: Throwable) {
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "네트워크 오류",
+                message = "네트워크 문제로 개인정보를 변경할 수 없습니다."
             )
         }
     })

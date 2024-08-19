@@ -2,10 +2,13 @@ package com.headmetal.headwareintelligence
 
 import android.app.Activity
 import android.content.SharedPreferences
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Business
@@ -16,6 +19,10 @@ import androidx.compose.material.icons.outlined.PermContactCalendar
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,17 +36,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+
+data class FindAccount(
+    val id: String
+)
+
+data class UpdateAccount(
+    val password: String,
+    val rePassword: String,
+    val name: String,
+    val email: String,
+    val phoneNo: String,
+    val company: String?,
+    val type: String
+)
+
+data class PrivacyRequest(
+    val findKey: FindAccount,
+    val inputData: UpdateAccount
+)
 
 @Preview(showBackground = true)
 @Composable
@@ -55,10 +82,13 @@ fun PrivacyUserPreview() {
     }, imageVector = Icons.Outlined.Person)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Privacy(navController: NavController) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+    val userType: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("type", "") ?: "") }
     val userId: MutableState<String> =
         remember { mutableStateOf(sharedAccount.getString("userid", "") ?: "") }
     val userName: MutableState<String> =
@@ -67,19 +97,27 @@ fun Privacy(navController: NavController) {
         remember { mutableStateOf(sharedAccount.getString("phone", "") ?: "") }
     val userEmail: MutableState<String> =
         remember { mutableStateOf(sharedAccount.getString("email", "") ?: "") }
-    val password: MutableState<String> =
-        remember { mutableStateOf(sharedAccount.getString("password", "") ?: "") }
+    val password: MutableState<String> = remember { mutableStateOf("") }
     val rePassword: MutableState<String> = remember { mutableStateOf("") }
-    val company: MutableState<String> = remember { mutableStateOf("") }
+    val selectedCompany: MutableState<String> =
+        remember { mutableStateOf(sharedAccount.getString("company", "없음") ?: "없음") }
+    val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
+
+    val selectableCompany = remember { mutableStateOf(listOf<String>()) }
 
     LaunchedEffect(Unit) {
-        /**TODO*/ // 회사 리스트, 유저 회사 이름 받아오기
+        companyListGET(
+            companyList = selectableCompany,
+            navController = navController,
+            onDismissRequest = { navController.navigateUp() },
+            defaultValue = listOf("없음")
+        )
     }
     IconScreen(
         imageVector = Icons.Default.ArrowBackIosNew,
         onClick = { navController.navigateUp() },
         content = {
-            Column {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 ScreenTitleText(text = "사용자 정보")
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -117,20 +155,63 @@ fun Privacy(navController: NavController) {
                     PrivacyUser(
                         text = "새 비밀번호",
                         userInfo = password,
-                        placeholder = "****",
-                        imageVector = Icons.Outlined.Lock
+                        imageVector = Icons.Outlined.Lock,
+                        visualTransformation = PasswordVisualTransformation()
                     )
                     PrivacyUser(
                         text = "새 비밀번호 확인",
                         userInfo = rePassword,
-                        placeholder = "****",
-                        imageVector = Icons.Outlined.Lock
+                        imageVector = Icons.Outlined.Lock,
+                        visualTransformation = PasswordVisualTransformation()
                     )
-                    PrivacyUser(
-                        text = "건설업체",
-                        userInfo = remember { mutableStateOf("없음") }, // 선택한 건설 회사 이름이 들어와야함.
-                        imageVector = Icons.Outlined.Business
-                    )
+                    Column {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Outlined.Business,
+                                contentDescription = null
+                            )
+                            LabelText(text = "건설업체")
+                        }
+                        ExposedDropdownMenuBox(
+                            expanded = expanded.value,
+                            onExpandedChange = { expanded.value = !expanded.value }
+                        ) {
+                            TextField(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(),
+                                value = selectedCompany.value,
+                                onValueChange = { selectedCompany.value = it },
+                                textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
+                                shape = MaterialTheme.shapes.medium,
+                                singleLine = true,
+                                readOnly = true,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color(255, 236, 186, 255),
+                                    unfocusedContainerColor = Color(255, 236, 186, 255),
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                )
+                            )
+                            ExposedDropdownMenu(
+                                modifier = Modifier.background(Color.White),
+                                expanded = expanded.value,
+                                onDismissRequest = { expanded.value = false }
+                            ) {
+                                selectableCompany.value.forEach { item ->
+                                    DropdownMenuItem(
+                                        text = { Text(item) },
+                                        onClick = {
+                                            expanded.value = false
+                                            selectedCompany.value = item
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
                     Button(
                         onClick = {
                             updatePrivacyVerify(
@@ -140,7 +221,8 @@ fun Privacy(navController: NavController) {
                                 userEmail = userEmail.value,
                                 userPassword = password.value,
                                 userRePassword = rePassword.value,
-                                company = company.value,
+                                userCompany = selectedCompany.value,
+                                userType = userType.value,
                                 navController = navController
                             )
                         },
@@ -161,19 +243,17 @@ fun PrivacyUser(
     text: String,
     userInfo: MutableState<String>,
     imageVector: ImageVector,
-    placeholder: String = "",
     readOnly: Boolean = false,
     textFieldColor: TextFieldColors = TextFieldDefaults.colors(
-        focusedContainerColor = Color(255, 190, 0, 150),
-        unfocusedContainerColor = Color(255, 190, 0, 150),
+        focusedContainerColor = Color(255, 236, 186, 255),
+        unfocusedContainerColor = Color(255, 236, 186, 255),
         focusedIndicatorColor = Color.Transparent,
         unfocusedIndicatorColor = Color.Transparent,
         disabledIndicatorColor = Color.Transparent
-    )
+    ),
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
-    Column(
-        modifier = Modifier
-    ) {
+    Column {
         Row {
             Icon(
                 imageVector = imageVector,
@@ -183,8 +263,7 @@ fun PrivacyUser(
         }
         TextField(
             modifier = Modifier
-                .fillMaxWidth()
-                .alpha(0.6f),
+                .fillMaxWidth(),
             value = userInfo.value,
             onValueChange = { userInfo.value = it },
             textStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold),
@@ -192,7 +271,7 @@ fun PrivacyUser(
             singleLine = true,
             readOnly = readOnly,
             colors = textFieldColor,
-            placeholder = { Text(text = placeholder) }
+            visualTransformation = visualTransformation
         )
     }
 }
@@ -204,7 +283,8 @@ fun updatePrivacyVerify(
     userEmail: String,
     userPassword: String,
     userRePassword: String,
-    company: String,
+    userCompany: String,
+    userType: String,
     navController: NavController
 ) {
     when {
@@ -251,21 +331,9 @@ fun updatePrivacyVerify(
             userEmail = userEmail,
             userPassword = userPassword,
             userRePassword = userRePassword,
-            company = company,
+            userCompany = userCompany,
+            userType = userType,
             navController = navController
         )
     }
-}
-
-fun updatePrivacy(
-    userId: String,
-    userName: String,
-    userPhone: String,
-    userEmail: String,
-    userPassword: String,
-    userRePassword: String,
-    company: String,
-    navController: NavController
-) {
-    /** TODO*/ // API 호출
 }

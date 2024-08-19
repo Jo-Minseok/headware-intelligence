@@ -23,6 +23,7 @@ data class LoginResponse(
     val name: String,
     val phoneNo: String,
     val email: String,
+    val company: String,
     val accessToken: String,
     val tokenType: String
 )

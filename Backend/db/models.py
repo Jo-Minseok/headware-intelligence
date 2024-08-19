@@ -54,9 +54,9 @@ class UserEmployee(Base):
 class Work(Base):
     __tablename__ = 'work'
     workId = Column(Integer, ForeignKey('workList.workId',
-                    ondelete='CASCADE'), primary_key=True)
+                    ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
     workerId = Column(String(100), ForeignKey(
-        'userEmployee.id'), primary_key=True)
+        'userEmployee.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
 
 
 # 사고 발생 테이블
@@ -69,10 +69,8 @@ class Accident(Base):
         'latitude >= -90.000000 AND latitude <= 90.000000'), nullable=False, default=1.0)
     longitude = Column(Double, CheckConstraint(
         'longitude >= -180.000000 AND longitude <= 180.000000'), nullable=False, default=1.0)
-    workId = Column(Integer, ForeignKey('work.workId',
-                    ondelete='SET NULL'), nullable=True)
-    victimId = Column(String(100), ForeignKey(
-        'work.workerId', ondelete='SET NULL'), nullable=True)
+    workId = Column(Integer, nullable=True)
+    victimId = Column(String(100), nullable=True)
     category = Column(String(8), nullable=False)
 
 
@@ -80,7 +78,7 @@ class Accident(Base):
 class AccidentProcessing(Base):
     __tablename__ = 'accidentProcessing'
     no = Column(Integer, ForeignKey('accident.no'),
-                primary_key=True, autoincrement=True)
+                primary_key=True, autoincrement=False)
     situation = Column(String(100), nullable=True)
     date = Column(Date, nullable=True)
     time = Column(Time, nullable=True)

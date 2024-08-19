@@ -12,8 +12,8 @@ def get_update_account_service(db: Session = Depends(get_db)) -> UpdateAccountSe
     return UpdateAccountService(repository)
 
 
-@router.post("/update", status_code=status.HTTP_200_OK)
-def post_account_update(findKey: FindAccount, inputData: AccountInputUpdate, service: UpdateAccountService = Depends(get_update_account_service)):
+@router.put("/update", status_code=status.HTTP_200_OK)
+def put_account_update(findKey: FindAccount, inputData: AccountInputUpdate, service: UpdateAccountService = Depends(get_update_account_service)):
     try:
         service.update_account(findKey, inputData)
     except ValueError as e:

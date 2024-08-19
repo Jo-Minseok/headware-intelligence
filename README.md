@@ -62,6 +62,8 @@
                 <li>DB 구축</li>
                 <li>행위 웹 소켓 통신</li>
                 <li>accident, account SOLID Refactor</li>
+                <li>WAS, DB 서버 관리</li>
+                <li>버그 수정</li>
             </ul>
         APP
             <ul>
@@ -70,11 +72,21 @@
                 <li>헬멧 등록</li>
                 <li>BLE 통신, GPS, FCM 알림</li>
                 <li>API 통신</li>
+                <li>입력 값 검증</li>
+                <li>전체 코드 리팩토링</li>
+                <li>서브 기능(작업장 CRUD, 작업자 CRUD)</li>
+                <li>버그 수정</li>
             </ul>
         HW
             <ul>
                 <li>전체 기능 제작</li>
                 <li>시제품 제작</li>
+            </ul>
+        ETC
+            <ul>
+                <li>공모전 대회 준비 및 일정 관리</li>
+                <li>계정 테스트</li>
+                <li>메인 기능 테스트(지도, 헬멧)</li>
             </ul>
         </td>
     </tr>
@@ -103,7 +115,15 @@
             <li>계정 찾기</li>
             <li>메인 화면 기능</li>
             <li>계정 정보 보기</li>
+            <li>계정 정보 변경</li>
+            <li>전체 코드 리팩토링</li>
+            <li>이미지 출력</li>
+            <li>서브 기능(작업장 CRUD, 작업자 CRUD)</li>
         </ul>
+        ETC
+            <ul>
+                <li>서브 기능 테스트(작업장 CRUD)</li>
+            </ul>
         </td>
     </tr>
     <tr>
@@ -126,8 +146,10 @@
         </ul>
         ETC
         <ul>
-        <li>문서 작업</li>
-        <li>재정 관리</li>
+            <li>문서 작업</li>
+            <li>재정 관리</li>
+            <li>공모전 발표 자료, 일정 관리</li>
+            <li>서브 기능 테스트(작업장 CRUD)</li>
         </ul>
         </td>
     </tr>
@@ -136,7 +158,7 @@
 ## PROJECT INFORMATION
 
 > 동의대학교 2024학년도 캡스톤디자인(시스템설계) </br>
-> PERIOD: [정규 기간] 2024.03.01 - 2024.06.14 (3 Month) + ∞</br>
+> PERIOD: [정규 기간] 2024.03.01 - 2024.06.14 (3 Month) + [추가 기간]2024.07.20 - 2024.08.20 (1 Month)</br>
 
 ### Mean
 
@@ -240,9 +262,11 @@ BackEnd Server : Uvicorn
 │           └─ main
 │               └─ java
 │                   └─ com.headmetal.headwareintelligence
+│                       ├─ ApiAction.kt
 │                       ├─ ApiService.kt
 │                       ├─ BluetoothLeService.kt
-│                       ├─ Common.kt
+│                       ├─ CommonAction.kt
+│                       ├─ CommonComposable.kt
 │                       ├─ CommonMap.kt
 │                       ├─ CompanyInfo.kt
 │                       ├─ Countermeasures.kt
@@ -264,7 +288,9 @@ BackEnd Server : Uvicorn
 │                       ├─ Processing.kt
 │                       ├─ RetrofitInstance.kt
 │                       ├─ Signup.kt
-│                       └─ Trend.kt
+│                       ├─ Trend.kt
+│                       ├─ Work.kt
+│                       └─ WorkList.kt
 ├─ Arduino
 │   ├─ ESP32-S3-WROOM-CAM
 │   │   ├─ ESP32-S3-WROOM-CAM.ino
@@ -276,6 +302,7 @@ BackEnd Server : Uvicorn
 │       └─ module_pins.h
 ├─ Backend
 │   ├─ accident
+│   │   ├─ uploaded_images
 │   │   └─ accident_api.py
 │   ├─ account
 │   │   ├─ account_schema.py
@@ -286,7 +313,10 @@ BackEnd Server : Uvicorn
 │   │   ├─ login_router.py
 │   │   ├─ register_crud.py
 │   │   ├─ register_router.py
-│   │   └─ register_service.py
+│   │   ├─ register_service.py
+│   │   ├─ update_account_crud.py
+│   │   ├─ update_account_router_router.py
+│   │   └─ update_account_service.py
 │   ├─ db
 │   │   ├─ db_connection.py
 │   │   └─ models.py
@@ -308,6 +338,9 @@ BackEnd Server : Uvicorn
 |   |   ├─ processing data.xlsx
 |   |   ├─ weather_api_config.py
 |   |   └─ weather_api.py
+│   ├─ work
+│   │   ├─ work_crud.py
+│   │   └─ work_router.py
 │   ├─ common.py
 │   ├─ main.py
 │   ├─ setup.py

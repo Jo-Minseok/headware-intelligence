@@ -59,6 +59,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
@@ -430,7 +431,8 @@ fun NullBottomSheetScreen(
         Box(contentAlignment = Alignment.Center) {
             val painter =
                 rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
-                    .data(url).build(),
+                    .data(url).diskCachePolicy(CachePolicy.DISABLED) // 디스크 캐시 비활성화
+                    .memoryCachePolicy(CachePolicy.DISABLED).build(),
                     onSuccess = { LoadingState.hide() })
             Image(
                 painter = painter,

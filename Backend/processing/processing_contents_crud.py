@@ -42,6 +42,10 @@ def get_accident(db: Session, no: int):
 def get_victim_name(db: Session, no: int):
     victimId = db.execute(select(Accident.victimId).where(
         Accident.no == no)).fetchone()[0]
-    victimName = db.execute(select(UserEmployee.name).where(
-        UserEmployee.id == victimId)).fetchone()[0]
+    if (victimId != None):
+        victimName = db.execute(select(UserEmployee.name).where(
+            UserEmployee.id == victimId)).fetchone()[0]
+    else:
+        victimName = "제거된 작업자"
+
     return victimName

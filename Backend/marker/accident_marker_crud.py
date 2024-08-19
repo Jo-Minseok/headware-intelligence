@@ -14,7 +14,7 @@ def get_all_accident_processing(db: Session, manager: str):
         WorkList.managerId == manager)).all()
     for id in workId:
         accidentNo = db.execute(select(Accident.no).where(
-            Accident.workId == id[0])).all()
+            Accident.workId == id[0], Accident.victimId.isnot(None))).all()
         for no in accidentNo:
             res.append(db.query(AccidentProcessing).filter(
                 AccidentProcessing.situation != '오작동' and AccidentProcessing.no == no[0]).first())

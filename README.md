@@ -3,7 +3,34 @@
 <div align="center">
     <h3> Project Progress</h3>
     <a href="https://headware-intelligence.notion.site/5d05bd39b6f94036b9247e35d3040202?pvs=4"><img width = "30%" src = "https://img.shields.io/badge/Notion-000000?style=plastic&logo=notion&logoColor=ffffff"/></a><br>
-    <a href="https://hits.seeyoufarm.com"><img width="13%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FJo-Minseok%2Fheadware-intelligence&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>                        
+    <a href="https://hits.seeyoufarm.com"><img width="13%" src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FJo-Minseok%2Fheadware-intelligence&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a><br>
+    <p>관리자 UI</p>
+    <img width = "15%" src = "https://github.com/user-attachments/assets/3ccd12eb-dc18-4621-9139-075ae0943ad1" alt = "관리자 MAIN">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/0e8ba4a3-30f0-41b4-a9c9-42e257d63c41" alt = "관리자 사고 지도">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/c0ca988b-fb81-44f5-b305-81b3889ac5fd" alt = "관리자 사고 미처리 지도">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/975bf67a-dbb3-4894-aa92-9e652e1119d9" alt = "관리자 사고 미처리 지도 (2)">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/571900cb-d988-4928-b965-a126dc660905" alt = "관리자 사고 추세">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/17302d03-9414-4a76-b7c2-b926ee808878" alt = "관리자 사고 처리 내역">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/e3f0a573-756d-424f-b665-834a9bfc0855" alt = "관리자 사고 처리 내역 오동작">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/93aec975-516a-4cd0-9daf-8a18117e66b5" alt = "관리자 작업장 관리">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/2aee867c-17ed-489b-9c29-ad7cd8830583" alt = "관리자 작업장 수정 + 등록">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/5f89f4b8-c656-4434-8f30-235c938def66" alt = "관리자 작업자 관리">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/fcec077a-a129-4dd6-aea9-0cceeacc561e" alt = "관리자 작업자 컨트롤">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/180939ad-b754-4b9e-b873-ea5ece998072" alt = "관리자 알림">
+    <p>근로자 UI</p>
+    <img width = "15%" src = "https://github.com/user-attachments/assets/d2976633-dcb4-440f-a5ce-9009ea1890f3" alt = "근로자 MAIN">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/0cfa8f6d-7798-48de-a0b8-824ce23eef4e" alt = "근로자 헬멧 등록">
+    <p>계정 UI</p>
+    <img width = "15%" src = "https://github.com/user-attachments/assets/e068fefd-5559-4074-96e2-356e76b90bc5" alt = "공통 LOGIN">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/0ea706d4-b682-480d-8c11-dacc92e1ff02" alt = "공통 회원가입">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/e35777b9-772a-48df-938f-a9f28c0e8e32" alt = "공통 ID 찾기">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/268bc787-59be-4ee8-8fac-1a21bcaa48d0" alt = "공통 PW 변경">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/b69270e9-7e0b-4f70-82e4-334443a782c3" alt = "공통 개인 정보 변경">
+    <p>공통 기타 UI</p>
+    <img width = "15%" src = "https://github.com/user-attachments/assets/3fa9815d-daa0-4e6e-8bb4-3bf48a5d534d" alt = "공통 안전 행동 요령">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/f3ab46e5-5865-4cff-a8be-4c0c3384d4f4" alt = "메뉴">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/7100ab0f-c7d3-4575-ba08-abb669a66dc0" alt = "공통 기업 목록">
+    <img width = "15%" src = "https://github.com/user-attachments/assets/b6d80cb0-0123-4fd3-95fa-577cb309ab75" alt = "공통 기타">
 </div>
 
 ## CONTENTS

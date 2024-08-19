@@ -3,28 +3,24 @@ package com.headmetal.headwareintelligence
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Surface
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Menu
@@ -33,14 +29,14 @@ import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Water
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,476 +47,410 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 data class WeatherResponse(
-    val temperature: Float?,
-    val airVelocity: Float?,
-    val precipitation: Float?,
-    val humidity: Float?
+    val temperature: Float,
+    val airVelocity: Float,
+    val precipitation: Float,
+    val humidity: Float
 )
 
-class WeatherViewModel : ViewModel() {
-    private val apiService = RetrofitInstance.retryApiService
+// 프리뷰
+@Preview(showBackground = true)
+@Composable
+fun MainPreview() {
+    Main(navController = rememberNavController())
+}
 
-    private val _temperature = mutableStateOf<Float?>(null)
-    val temperature: State<Float?> = _temperature
+@Preview(showBackground = true)
+@Composable
+fun WelcomeUserComposablePreview() {
+    WelcomeUserComposable(userName = "사용자")
+}
 
-    private val _airVelocity = mutableStateOf<Float?>(null)
-    val airVelocity: State<Float?> = _airVelocity
+@Preview(showBackground = true)
+@Composable
+fun MainFieldLabelPreview() {
+    MainFieldLabel(text = "관리자 기능")
+}
 
-    private val _precipitation = mutableStateOf<Float?>(null)
-    val precipitation: State<Float?> = _precipitation
+@Preview(showBackground = true)
+@Composable
+fun MainFunctionButtonMenuPreview() {
+    MainFunctionButtonMenu(type = "manager", navController = rememberNavController())
+}
 
-    private val _humidity = mutableStateOf<Float?>(null)
-    val humidity: State<Float?> = _humidity
+@Preview(showBackground = true)
+@Composable
+fun MainContentsHeaderPreview() {
+    // Initialize state values with `remember` inside the body of the composable function
+    val temperature = remember { mutableFloatStateOf(0.0f) }
+    val airVelocity = remember { mutableFloatStateOf(0.0f) }
+    val precipitation = remember { mutableFloatStateOf(0.0f) }
+    val humidity = remember { mutableFloatStateOf(0.0f) }
 
-    fun getWeather(latitude: Double, longitude: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val response = apiService.getWeather(latitude, longitude)
-            _temperature.value = response.temperature
-            _airVelocity.value = response.airVelocity
-            _precipitation.value = response.precipitation
-            _humidity.value = response.humidity
+    val context = LocalContext.current
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    val locationPermissionRequest = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {}
+
+    // Pass the state values as parameters to MainContentsHeader
+    MainContentsHeader(
+        temperature = temperature,
+        airVelocity = airVelocity,
+        precipitation = precipitation,
+        humidity = humidity,
+        context = context,
+        fusedLocationClient = fusedLocationClient,
+        locationPermissionRequest = locationPermissionRequest,
+        navController = rememberNavController()
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainContentsPreview() {
+    MainContents(type = "manager", navController = rememberNavController())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainContentsBoxPreview() {
+    ContentsBox(
+        imageVector = Icons.Default.Report,
+        iconColor = Color(0xFFFFCC00),
+        contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
+    )
+}
+
+
+@Composable
+fun Main(navController: NavController) {
+    BackOnPressed()
+    IconScreen(
+        imageVector = Icons.Default.Menu,
+        onClick = { navController.navigate("MenuScreen") },
+        content = {
+            val sharedAccount: SharedPreferences =
+                LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
+            val type: String = sharedAccount.getString("type", "") ?: ""
+            val userName: String = sharedAccount.getString("name", "") ?: ""
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(30.dp)
+            ) {
+                WelcomeUserComposable(userName = userName)
+                MainFunctionButtonMenu(type = type, navController = navController)
+                MainContents(type = type, navController = navController)
+            }
+        }
+    )
+}
+
+@Composable
+fun WelcomeUserComposable(userName: String) {
+    Column {
+        Text(text = "반갑습니다,", fontSize = 16.sp)
+        Row {
+            Text(text = userName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(text = "님", fontSize = 24.sp)
         }
     }
 }
 
-@SuppressLint("CoroutineCreationDuringComposition")
+/**
+ * MainFunction
+ */
 @Composable
-fun Main(
-    navController: NavController,
-    weatherViewModel: WeatherViewModel = remember { WeatherViewModel() }
-) {
-    val sharedAccount: SharedPreferences =
-        LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val userRank = sharedAccount.getString("type", null)
-    val userName = sharedAccount.getString("name", null)
-    val coroutineScope = rememberCoroutineScope()
+fun MainFieldLabel(text: String) {
+    BoldTextField(
+        text = text,
+        fontSize = 18.sp
+    )
+}
 
-    val context = LocalContext.current
-    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    var hasLocationPermission by remember { mutableStateOf(false) }
+@Composable
+fun MainFunctionButtonMenu(type: String, navController: NavController) {
+    Column {
+        if (type == "manager") {
+            MainFieldLabel(text = "관리자 기능")
+            RoundedButton(
+                buttonText = "사고 추세 확인",
+                colors = Color(0xFF99CCFF),
+                onClick = { navController.navigate("TrendScreen") }
+            )
+            RoundedButton(
+                buttonText = "사고 발생지 확인",
+                colors = Color(0xFFFF6600),
+                onClick = { navController.navigate("MapScreen") }
+            )
+            RoundedButton(
+                buttonText = "미처리 사고 발생지 확인",
+                colors = Color(0xFFFF8000),
+                onClick = { navController.navigate("NullMapScreen") }
+            )
+            RoundedButton(
+                buttonText = "작업장 관리",
+                colors = Color(0xFFFF8000),
+                onClick = { navController.navigate("WorkListScreen") }
+            )
+        } else {
+            MainFieldLabel(text = "근로자 기능")
+            RoundedButton(
+                buttonText = "안전모 등록",
+                colors = Color(0xFFFFB266),
+                onClick = { navController.navigate("HelmetScreen") }
+            )
+        }
+    }
+}
 
+/**
+ * MainContents
+ */
+@Composable
+fun MainContents(type: String, navController: NavController) {
+    val context: Context = LocalContext.current
+    val fusedLocationClient: FusedLocationProviderClient =
+        remember { LocationServices.getFusedLocationProviderClient(context) }
+    val temperature: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val airVelocity: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val precipitation: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
+    val humidity: MutableState<Float> = remember { mutableFloatStateOf(0.0f) }
     val locationPermissionRequest = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        hasLocationPermission =
-            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true || permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-    }
-
-    val temperature by weatherViewModel.temperature
-    val airVelocity by weatherViewModel.airVelocity
-    val precipitation by weatherViewModel.precipitation
-    val humidity by weatherViewModel.humidity
-    var refreshState by remember { mutableStateOf(false) }
-    var isRefreshClickable by remember { mutableStateOf(true) }
+    ) {}
 
     LaunchedEffect(Unit) {
-        when {
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                hasLocationPermission = true
-            }
-
-            else -> {
-                locationPermissionRequest.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-            }
-        }
-
-        if (hasLocationPermission) {
-            val location = fusedLocationClient.lastLocation.await()
-            location?.let {
-                weatherViewModel.getWeather(it.latitude, it.longitude)
-            }
-        } else {
-            Log.e("HEAD METAL", "위치 권한이 필요함")
-        }
+        getWeatherInformation(
+            temperature = temperature,
+            airVelocity = airVelocity,
+            precipitation = precipitation,
+            humidity = humidity,
+            context = context,
+            fusedLocationClient = fusedLocationClient,
+            locationPermissionRequest = locationPermissionRequest,
+            navController = navController
+        )
     }
 
-    if (refreshState) {
-        LaunchedEffect(Unit) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    context, Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    hasLocationPermission = true
-                }
+    val (weatherInfo: String, weatherIcon: ImageVector, weatherColor: Color) = getWeatherStatus(
+        precipitation.value
+    )
 
-                else -> {
-                    locationPermissionRequest.launch(
-                        arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        )
-                    )
-                }
-            }
-
-            if (hasLocationPermission) {
-                val location = fusedLocationClient.lastLocation.await()
-                location?.let {
-                    weatherViewModel.getWeather(it.latitude, it.longitude)
-                    refreshState = false
-                }
-            } else {
-                Log.e("HEAD METAL", "위치 권한이 필요함")
-            }
-
-            Toast
-                .makeText(
-                    navController.context,
-                    "새로고침 되었습니다.",
-                    Toast.LENGTH_SHORT
-                )
-                .show()
-        }
-    }
-
-    BackOnPressed()
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9F9F9)
-    ) {
+    Column {
+        MainContentsHeader(
+            temperature = temperature,
+            airVelocity = airVelocity,
+            precipitation = precipitation,
+            humidity = humidity,
+            context = context,
+            fusedLocationClient = fusedLocationClient,
+            locationPermissionRequest = locationPermissionRequest,
+            navController = navController
+        )
         Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 10.dp)
-                .verticalScroll(rememberScrollState())
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            ContentsBox(
+                imageVector = weatherIcon,
+                iconColor = weatherColor,
+                contentsTexts = arrayOf(
+                    { MainContentsBoxText(text = "기상 정보 : $weatherInfo") },
+                    { MainContentsBoxText(text = "1시간 강수량 : ${precipitation.value}mm") },
+                    {
+                        MainContentsBoxText(
+                            text = "기온 : ${temperature.value}ºC" + if (temperature.value > 35) {
+                                "(폭염 경보)"
+                            } else if (temperature.value > 33) {
+                                "(폭염 주의보)"
+                            } else {
+                                ""
+                            }
+                        )
+                    },
+                    {
+                        MainContentsBoxText(
+                            text = "풍속 : ${airVelocity.value}m/s" + if (airVelocity.value > 21) {
+                                "(강풍 경보)"
+                            } else if (airVelocity.value > 14) {
+                                "(강풍 주의보)"
+                            } else {
+                                ""
+                            }
+                        )
+                    },
+                    { MainContentsBoxText(text = "습도 : ${humidity.value}%") }
+                )
+            )
+            ContentsBox(
+                modifier = Modifier.clickable { navController.navigate("CountermeasureScreen") },
+                imageVector = Icons.Default.Report,
+                iconColor = Color(0xFFFFCC00),
+                contentsTexts = arrayOf({ MainContentsBoxText(text = "주의 행동 요령") })
+            )
+            if (type == "manager") {
+                ContentsBox(
+                    modifier = Modifier.clickable { navController.navigate("ProcessingScreen") },
+                    imageVector = Icons.Default.Inventory,
+                    iconColor = Color.Gray,
+                    contentsTexts = arrayOf({ MainContentsBoxText(text = "사고 처리 내역") })
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MainContentsHeader(
+    temperature: MutableState<Float>,
+    airVelocity: MutableState<Float>,
+    precipitation: MutableState<Float>,
+    humidity: MutableState<Float>,
+    context: Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    locationPermissionRequest: ActivityResultLauncher<Array<String>>,
+    navController: NavController
+) {
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    var isRefreshClickable by remember { mutableStateOf(true) }
+    var iconColor by remember { mutableStateOf(Color.Black) }
+    Row {
+        BoldTextField(text = "정보", fontSize = 18.sp)
+        Spacer(modifier = Modifier.weight(1f))
+        Icon(
+            modifier = Modifier.clickable(enabled = isRefreshClickable) {
+                if (isRefreshClickable) {
+                    isRefreshClickable = false
+                    coroutineScope.launch {
+                        getWeatherInformation(
+                            temperature = temperature,
+                            airVelocity = airVelocity,
+                            precipitation = precipitation,
+                            humidity = humidity,
+                            context = context,
+                            fusedLocationClient = fusedLocationClient,
+                            locationPermissionRequest = locationPermissionRequest,
+                            navController = navController
+                        )
+                        iconColor = Color(121, 121, 121, 80)
+                        delay(3000)
+                        iconColor = Color.Black
+                        isRefreshClickable = true
+                    }
+                }
+            },
+            imageVector = Icons.Default.Update,
+            contentDescription = null,
+            tint = iconColor
+        )
+    }
+}
+
+/**
+ * ContentBox
+ */
+@Composable
+fun ContentsBox(
+    modifier: Modifier = Modifier,
+    imageVector: ImageVector,
+    iconColor: Color = Color.Black,
+    vararg contentsTexts: @Composable () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .background(color = Color.White)
+            .border(
+                width = 1.dp,
+                color = Color(0xFFE0E0E0),
+                shape = MaterialTheme.shapes.medium
+            )
+            .fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "메뉴",
-                modifier = Modifier
-                    .padding(start = 4.dp, top = 20.dp, bottom = 20.dp)
-                    .clickable { navController.navigate("menuScreen") }
+                modifier = modifier
+                    .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
+                    .size(40.dp),
+                imageVector = imageVector,
+                contentDescription = null,
+                tint = iconColor
             )
-            Box(modifier = Modifier
-                .padding(top = 8.dp)
-                .background(color = Color.White)
-                .border(
-                    width = 1.dp,
-                    color = Color(0xFFE0E0E0),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .fillMaxWidth()
-                .clickable { navController.navigate("privacyScreen") }
-            ) {
-                Row(Modifier.padding(vertical = 5.dp)) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = "개인정보",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(start = 10.dp)
-                            .size(40.dp)
-                    )
-                    Column {
-                        userRank?.let { rank ->
-                            Text(
-                                text = if (rank == "manager") "관리자" else "근무자",
-                                modifier = Modifier.padding(start = 10.dp, top = 6.dp),
-                                color = Color.Gray,
-                                fontSize = 16.sp
-                            )
-                        }
-                        userName?.let { name ->
-                            Text(
-                                text = name,
-                                modifier = Modifier.padding(start = 10.dp),
-                                fontSize = 20.sp
-                            )
-                        }
-                        Text(
-                            text = "Today : " + SimpleDateFormat(
-                                "yyyy년 MM월 dd일, EEEE", Locale.getDefault()
-                            ).format(Calendar.getInstance().time),
-                            modifier = Modifier.padding(start = 10.dp, top = 10.dp),
-                            fontSize = 16.sp
-                        )
-                        Text(
-                            text = "오늘도 안전한 근무 되시길 바랍니다!",
-                            modifier = Modifier.padding(start = 10.dp, bottom = 6.dp),
-                            fontSize = 16.sp
-                        )
-                    }
-                }
-            }
-            Column(Modifier.padding(top = 30.dp)) {
-                if (userRank == "manager") {
-                    Text(
-                        text = "관리자 기능",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Button(
-                        onClick = { navController.navigate("trendScreen") },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF99CCFF)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "사고 추세 확인",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                    Button(
-                        onClick = { navController.navigate("mapScreen") },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF6600)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "사고 발생지 확인",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                    Button(
-                        onClick = { navController.navigate("nullmapScreen") },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "미처리 사고 발생지 확인",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                } else {
-                    Text(
-                        text = "근로자 기능",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Button(
-                        onClick = { navController.navigate("helmetScreen") },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFFB266)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f), contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "안전모 등록",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-            }
-            temperature?.let {
-                Row(modifier = Modifier.padding(top = 30.dp)) {
-                    Text(
-                        text = "정보",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        imageVector = Icons.Default.Update,
-                        contentDescription = "새로고침",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable(enabled = isRefreshClickable) {
-                                refreshState = true
-                                isRefreshClickable = false
-
-                                coroutineScope.launch {
-                                    delay(3000)
-                                    isRefreshClickable = true
-                                }
-                            }
-                    )
-                }
-
-                val weatherInfo: String
-                val weatherIcon: ImageVector
-                val weatherColor: Color
-
-                if (precipitation!! > 30) {
-                    weatherInfo = "호우 경보"
-                    weatherIcon = Icons.Default.Water
-                    weatherColor = Color(0xFF00BFFF)
-                } else if (precipitation!! > 20) {
-                    weatherInfo = "호우 주의보"
-                    weatherIcon = Icons.Default.Water
-                    weatherColor = Color(0xFF00BFFF)
-                } else if (precipitation!! > 0) {
-                    weatherInfo = "비"
-                    weatherIcon = Icons.Default.WaterDrop
-                    weatherColor = Color(0xFF00BFFF)
-                } else {
-                    weatherInfo = "맑음"
-                    weatherIcon = Icons.Default.WbSunny
-                    weatherColor = Color(0xFFFF7F00)
-                }
-                Box(
-                    modifier = Modifier
-                        .background(color = Color.White)
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFE0E0E0),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .fillMaxWidth()
-                ) {
-                    Row {
-                        Icon(
-                            imageVector = weatherIcon,
-                            contentDescription = "날씨",
-                            tint = weatherColor,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp)
-                                .size(40.dp)
-                        )
-                        Column {
-                            Text(
-                                text = "기상 정보 : $weatherInfo",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(
-                                    start = 10.dp, top = 10.dp, bottom = 10.dp
-                                )
-                            )
-                            Text(
-                                text = "1시간 강수량 : " + precipitation.toString() + "mm",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                            )
-                            Text(
-                                text = "기온 : " + temperature.toString() + "ºC" + if (temperature!! > 35) {
-                                    "(폭염 경보)"
-                                } else if (temperature!! > 33) {
-                                    "(폭염 주의보)"
-                                } else {
-                                    ""
-                                },
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                            )
-                            Text(
-                                text = "풍속 : " + airVelocity.toString() + "m/s" + if (airVelocity!! > 21) {
-                                    "(강풍 경보)"
-                                } else if (airVelocity!! > 14) {
-                                    "(강풍 주의보)"
-                                } else {
-                                    ""
-                                },
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                            )
-                            Text(
-                                text = "습도 : " + humidity.toString() + "%",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                            )
-                        }
-                    }
-                }
-                Box(modifier = Modifier
-                    .padding(top = 8.dp)
-                    .background(color = Color.White)
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE0E0E0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .fillMaxWidth()
-                    .clickable { navController.navigate("countermeasuresScreen") }
-                ) {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Default.Report,
-                            contentDescription = "주의 행동 요령",
-                            tint = Color(0xFFFFCC00),
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
-                                .size(40.dp)
-                        )
-                        Text(
-                            text = "주의 행동 요령",
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(start = 10.dp, top = 30.dp)
-                        )
-                    }
-                }
-                if (userRank == "manager") {
-                    Box(modifier = Modifier
-                        .padding(top = 8.dp)
-                        .background(color = Color.White)
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFE0E0E0),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .fillMaxWidth()
-                        .clickable { navController.navigate("processingScreen") }
-                    ) {
-                        Row {
-                            Icon(
-                                imageVector = Icons.Default.Inventory,
-                                contentDescription = null,
-                                tint = Color.Gray,
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 10.dp, top = 25.dp, bottom = 25.dp)
-                                    .size(40.dp)
-                            )
-                            Text(
-                                text = "사고 처리 내역",
-                                fontSize = 16.sp,
-                                modifier = Modifier.padding(start = 10.dp, top = 30.dp)
-                            )
-                        }
-                    }
+            Column {
+                contentsTexts.forEach { contentsText ->
+                    contentsText()
                 }
             }
         }
+    }
+}
+
+@Composable
+fun MainContentsBoxText(
+    text: String
+) {
+    Text(
+        text = text,
+        fontSize = 16.sp,
+        modifier = Modifier
+            .padding(start = 10.dp)
+            .padding(vertical = 8.dp)
+    )
+}
+
+fun getWeatherStatus(precipitation: Float): Triple<String, ImageVector, Color> {
+    return when {
+        precipitation > 30 -> Triple("호우 경보", Icons.Default.Water, Color(0xFF00BFFF))
+        precipitation > 20 -> Triple("호우 주의보", Icons.Default.Water, Color(0xFF00BFFF))
+        precipitation > 0 -> Triple("비", Icons.Default.WaterDrop, Color(0xFF00BFFF))
+        else -> Triple("맑음", Icons.Default.WbSunny, Color(0xFFFF7F00))
+    }
+}
+
+@SuppressLint("MissingPermission")
+suspend fun getWeatherInformation(
+    temperature: MutableState<Float>,
+    airVelocity: MutableState<Float>,
+    precipitation: MutableState<Float>,
+    humidity: MutableState<Float>,
+    context: Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    locationPermissionRequest: ActivityResultLauncher<Array<String>>,
+    navController: NavController
+) {
+    if (hasLocationPermissions(context)) {
+        val location = fusedLocationClient.lastLocation.await()
+        location?.let { pos ->
+            weatherGET(
+                pos = pos,
+                temperature = temperature,
+                airVelocity = airVelocity,
+                precipitation = precipitation,
+                humidity = humidity,
+                navController = navController
+            )
+        }
+    } else {
+        locationPermissionRequest.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
     }
 }

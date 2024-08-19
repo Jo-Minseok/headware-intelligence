@@ -9,7 +9,6 @@ from fcm_notification import fcm_function
 from account.login_crud import UserRepository
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from account.account_schema import LoginOutput
 from db.db_connection import get_db
 
@@ -25,6 +24,8 @@ class SecureSettings(BaseSettings):
 secureObject = SecureSettings(
     _env_file=r'./account/.env', _env_file_encoding='utf-8')
 
+expire = datetime.utcnow() + timedelta(minutes=secureObject.ACCESS_TOKEN_EXPIRE_MINUTES)
+
 
 class UserService:
     def __init__(self, repository: UserRepository):
@@ -38,11 +39,10 @@ class UserService:
         return None
 
     def create_access_token(self, data: dict) -> str:
-        toEnocde = data.copy()
-        expire = datetime.utcnow() + timedelta(minutes=secureObject.ACCESS_TOKEN_EXPIRE_MINUTES)
-        toEnocde.update({"exp": expire})
+        toEncode = data.copy()
+        toEncode.update({"exp": expire})
         encodedJwt = jwt.encode(
-            toEnocde, secureObject.SECRET_KEY, algorithm=secureObject.ALGORITHM)
+            toEncode, secureObject.SECRET_KEY, algorithm=secureObject.ALGORITHM)
         return encodedJwt
 
     def update_user_tokens(self, user, accessToken: str, alertToken: str):
@@ -84,6 +84,7 @@ def get_employee_login(alertToken: str, type: str, accountData: OAuth2PasswordRe
         "name": user.name,
         "phoneNo": user.phoneNo,
         "email": user.email,
+        "company": user.company,
         "accessToken": accessToken,
         "tokenType": "bearer",
     }

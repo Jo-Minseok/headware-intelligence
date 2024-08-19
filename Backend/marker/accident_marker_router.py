@@ -25,7 +25,7 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
             no.append(accident.no)
             latitude.append(accident.latitude)
             longitude.append(accident.longitude)
-            workId.append(accident.work_id)
+            workId.append(accident.workId)
         for accident in accidents:
             if accident.situation != None:
                 situationCode.append(ReverseSituationCode[accident.situation])
@@ -47,7 +47,6 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     # 사고 처리 데이터 조회
     accidents = accident_marker_crud.get_all_accident_processing(
         db=db, manager=manager)
-
     # 데이터 처리
     no = []
     latitude = []

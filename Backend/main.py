@@ -5,11 +5,13 @@ from account import register_router
 from account import login_router
 from account import logout_router
 from account import forgot_router
+from account import update_account_router
 from accident import accident_api
 from account import company_list
 from marker import accident_marker_router
 from trend import accident_trend_router
 from processing import processing_contents_router
+from work import work_router
 from db import models
 from db.db_connection import engine
 
@@ -29,15 +31,17 @@ app.include_router(register_router.router)
 app.include_router(login_router.router)
 app.include_router(logout_router.router)
 app.include_router(forgot_router.router)
+app.include_router(update_account_router.router)
 app.include_router(accident_marker_router.router)
 app.include_router(accident_trend_router.router)
 app.include_router(processing_contents_router.router)
 app.include_router(accident_api.router)
 app.include_router(company_list.router)
+app.include_router(work_router.router)
 
 # Main
 if __name__ == '__main__':
     # DB 테이블 없을 경우 생성
     models.Base.metadata.create_all(bind=engine)
     # uvicorn 서버 가동
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -9,7 +9,7 @@
 #include <HTTPClient.h>
 #include <NTPClient.h>
 #include <ArduinoWebsockets.h>
-//#include <MPU6050.h>
+//#include <MPU6050.h> I2C 인터페이스 개수 부족으로 구현 불가능
 
 #include "esp_camera.h"
 #include "camera_pins.h"
@@ -29,24 +29,24 @@ Adafruit_SSD1306 display(128,64,&Wire,-1);
 
 String user_id = "", work_id = "", bluetooth_data="",wifi_id = "", wifi_pw = "", server_address = "minseok821lab.kro.kr:8000";
 int melody[] = {262, 294, 330, 349, 392, 440, 494, 523};
+
 String latitude;
 String longitude;
 
+unsigned long currentTime = 0; // 최근 시간
+
+unsigned long lastPingTime = 0;
+const unsigned long pingInterval = 30000; // 30 seconds
+
+unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
 const int buttonDebounceDelay = 50;  // 디바운싱을 위한 지연 시간 (밀리초)
 int lastButtonState = LOW;     // 이전 버튼 상태
 int buttonState;               // 현재 버튼 상태
-unsigned long lastDebounceTime = 0;  // 마지막 디바운스 시간
 
-const int shockDebounceDelay = 1000;  // 디바운싱을 위한 지연 시간 (밀리초)
-unsigned long lastShockTime = 0; // 마지막 충격 감지 시간
-unsigned long lastReadTime = 0;  // 마지막 센서 읽기 시간
-const int readInterval = 50;     // 센서 읽기 간격 (밀리초)
-
-const int numReadings = 10;      // 평균값을 계산할 때 사용할 읽기 횟수
-int readings[numReadings];       // 읽은 값을 저장할 배열
-int readIndex = 0;               // 현재 읽기 인덱스
-int total = 0;                   // 읽은 값의 총합
-int average = 0;                 // 평균값
+unsigned long shockStartTime = 0;
+bool shockDetected = false;
+bool shockConfirmed = false;
+unsigned long lastShockTime = 0;
 
 /*
 ############################################################################
@@ -280,7 +280,7 @@ void HTTP_setup(){
 void Emergency(){
   if(WiFi.status() == WL_CONNECTED){
     HTTPClient http;
-    http.begin("http://" + server_address + "/accident/emergency?work_id=" + work_id + "&user_id="+user_id);
+    http.begin("http://" + server_address + "/accident/emergency?workId=" + work_id + "&userId="+user_id);
     int httpResponseCode = http.GET();
   }
   else{
@@ -310,8 +310,8 @@ void SendingData(String type)
     jsonPayload += "\"time\":[" + String(timeInfo->tm_hour) + "," + String(timeInfo->tm_min) + "," + String(timeInfo->tm_sec) + "],";
     jsonPayload += "\"latitude\":" + latitude + ",";
     jsonPayload += "\"longitude\":"+ longitude + ",";
-    jsonPayload += "\"work_id\":\"" + work_id + "\",";
-    jsonPayload += "\"victim_id\":\"" + user_id + "\"";
+    jsonPayload += "\"workId\":\"" + work_id + "\",";
+    jsonPayload += "\"victimId\":\"" + user_id + "\"";
     jsonPayload += "}";
 
     int httpResponseCode = http.POST(jsonPayload);
@@ -339,46 +339,49 @@ void SendingData(String type)
 ############################################################################
 */
 WebsocketsClient client;
+
 void WEBSOCKET_setup() {
-  client.close();
   Serial.println("[SETUP] WEBSOCKET: SETUP START");
-  client.onMessage(onMessageCallback);
-  client.onEvent(onEventsCallback);
-  client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
+  client.onMessage([&](WebsocketsMessage message){
+    String receiveData = message.data();
+    Serial.println("WEBSOCKET MESSAGE: " + receiveData);
+    int firstColonIndex = receiveData.indexOf(":");
+    int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
+    if (firstColonIndex == -1 || secondColonIndex == -1) {
+      Serial.println("[ERROR] WEBSOCKET: NOT FORMAT");
+      return;
+    }
+    String send_id = receiveData.substring(0, firstColonIndex);
+    String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
+    String action = receiveData.substring(secondColonIndex + 1);
+    if (user_id==receive_id) {
+      if (action == "카메라") {
+        client.send(send_id + ":" + action + "전달");
+        capture_and_send_image(send_id);
+      }
+      else if(action == "소리"){
+        client.send(send_id + ":" + action + "전달");
+        PLAY_SIREN();
+        client.send(send_id+":소리완료");
+      }
+    }
+  });
+  client.onEvent([&](WebsocketsEvent event, String data) {
+      if (event == WebsocketsEvent::ConnectionClosed) {
+          Serial.println("WebSocket connection closed, reconnecting...");
+          connectToWebSocket();
+      }
+  });
+  connectToWebSocket();
   Serial.println("[SETUP] WEBSOCKET: SETUP SUCCESS");
 }
 
-void onMessageCallback(WebsocketsMessage message) {
-  String receiveData = message.data();
-  int firstColonIndex = receiveData.indexOf(":");
-  int secondColonIndex = receiveData.indexOf(":", firstColonIndex + 1);
-  if (firstColonIndex == -1 || secondColonIndex == -1) {
-    Serial.println("[ERROR] WEBSOCKET: NOT FORMAT");
-    return;
-  }
-  String send_id = receiveData.substring(0, firstColonIndex);
-  String receive_id = receiveData.substring(firstColonIndex + 1, secondColonIndex);
-  String action = receiveData.substring(secondColonIndex + 1);
-  if (user_id==receive_id) {
-    if (action == "카메라") {
-      client.send(send_id + ":" + action + "전달");
-      capture_and_send_image(send_id);
+void connectToWebSocket() {
+    while (!client.connect("ws://" + server_address + "/accident/ws/"+work_id+"/" +user_id)) {
+        Serial.println("Trying to connect to WebSocket server...");
+        delay(1000);
     }
-    else if(action == "소리"){
-      client.send(send_id + ":" + action + "전달");
-      PLAY_SIREN();
-      client.send(send_id+":소리완료");
-    }
-  }
-}
-
-void onEventsCallback(WebsocketsEvent event, String data) {
-  if (event == WebsocketsEvent::ConnectionOpened) {
-    Serial.println("[SYSTEM] WEBSOCKET: CONNECT");
-  } else if (event == WebsocketsEvent::ConnectionClosed) {
-    Serial.println("[SYSTEM] WEBSOCKET: CLOSE");
-    client.connect("ws://"+server_address+"/accident/ws/"+work_id + "/" + user_id);
-  }
+    Serial.println("Connected to WebSocket server");
 }
 
 /*
@@ -428,9 +431,6 @@ void PIN_setup(){
   pinMode(LED,OUTPUT);
   digitalWrite(RESET,HIGH);
   pinMode(RESET,OUTPUT);
-  for (int i = 0; i < numReadings; i++) {
-    readings[i] = 0;
-  }
   Serial.println("[SETUP] PIN: SETUP SUCCESS");
 }
 
@@ -463,8 +463,7 @@ void CAMERA_setup(){
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.frame_size = FRAMESIZE_HVGA;
-  config.pixel_format = PIXFORMAT_JPEG; // for streaming
-  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.pixel_format = PIXFORMAT_JPEG;
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
   config.fb_location = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
@@ -475,7 +474,6 @@ void CAMERA_setup(){
       config.fb_count = 2;
       config.grab_mode = CAMERA_GRAB_LATEST;
   } else {
-      // Limit the frame size when PSRAM is not available
       config.frame_size = FRAMESIZE_SVGA;
       config.fb_location = CAMERA_FB_IN_DRAM;
   }
@@ -488,7 +486,6 @@ void CAMERA_setup(){
 }  
 
 void capture_and_send_image(String send_id) {
-//  client.close();
   HTTPClient http;
   camera_fb_t * fb = esp_camera_fb_get();
   if (fb != NULL && fb->format == PIXFORMAT_JPEG) {
@@ -519,12 +516,10 @@ void capture_and_send_image(String send_id) {
   }
   else {
     Serial.println("[ERROR] CAMERA: TAKE ERROR");
-    WEBSOCKET_setup();
     return;
   }
   Serial.println("[SYSTEM] CAMERA: TAKE SUCCESS");
 
-//  WEBSOCKET_setup();
   client.send(send_id+":카메라완료");
 }
 
@@ -537,7 +532,7 @@ void capture_and_send_image(String send_id) {
 const int OLED_addr = 0x3C;
 void OLED_setup(){
   Serial.println("[SETUP] OLED: SETUP START");
-  //Wire.begin(0,9);
+  Wire.begin(2,1);
   display.begin(SSD1306_SWITCHCAPVCC,OLED_addr);
   display.clearDisplay();
   HELMETNUM_display();
@@ -559,16 +554,16 @@ void HELMETNUM_display(){
 
 /*
 ############################################################################
-                                  GYRO
+                                  GYRO I2C 인터페이스 부족
 ############################################################################
 */
 /*
-MPU6050 mpu;
 const int MPU_addr=0x68;
+MPU6050 mpu(MPU_addr,&Wire1);
 int16_t ax,ay,az,gx,gy,gz;
 void GYRO_setup() {
   Serial.println("[SETUP] MPU6050: SETUP START");
-  //Wire.begin(GYRO_SDA,GYRO_SCL);
+  Wire1.begin(45,0);
   mpu.initialize();
   while (!mpu.testConnection())
   {
@@ -603,7 +598,6 @@ void GYRO_check(){
   Serial.println(gz / 1310);
 }
 */
-
 /*
 ############################################################################
                                   Main
@@ -612,8 +606,7 @@ void GYRO_check(){
 
 void setup(){
   Serial.begin(115200);
-  Wire.begin();
-
+  CAMERA_setup(); // 카메라
   OLED_setup(); // OLED
   delay(1000);
   PIN_setup(); // 핀 셋업
@@ -632,31 +625,40 @@ void setup(){
   delay(1000);
   WEBSOCKET_setup(); // WEBSOCKET
   delay(1000);
-  /*
-  GYRO_setup(); // 자이로스코프
-  delay(1000);
-  */
+
+  //GYRO_setup(); // 자이로스코프 I2C 인터페이스 부족으로 구현 불가능
+  //delay(1000);
+
   SUCCESS_setup(); // 셋업 완료
   delay(1000);
-  CAMERA_setup(); // 카메라
 }
 
 void loop(){
+  currentTime = millis(); // 최근 시간 대입
+
   //mpu.getMotion6(&ax,&ay,&az,&gx,&gy,&gz);
-// BLE 연결 여부
-  if(!deviceConnected){
-    digitalWrite(RESET,LOW);
+
+  if(!deviceConnected){  // BLE 연결 여부
+    digitalWrite(RESET,LOW); // BLE 연결 해제 시, 초기화 재실행
   }
 
-// 긴급 버튼
-  int reading = digitalRead(BUTTON);
-
-  // 버튼 상태가 바뀌었는지 확인
-  if (reading != lastButtonState) {
-    // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
-    lastDebounceTime = millis();
+  if(WiFi.status()!=WL_CONNECTED){ // 인터넷 접속 확인
+    WIFI_setup();
+  }
+  if(!client.available()){ // 웹소켓이 연결이 안 될 경우
+    connectToWebSocket(); // 웹소켓 재 연결
+  }
+  client.poll(); // 웹소켓 값 불러오기
+  if(currentTime - lastPingTime >= pingInterval){ // 웹 소켓 핑 시간 30초
+    client.ping(); // 웹 소켓 핑 전송
+    lastPingTime = currentTime; // 웹 소켓 마지막 핑 시간 저장
+    Serial.println("Sent Ping to server"); // 핑 서버 전송 메세지 출력
   }
 
+  int reading = digitalRead(BUTTON); // 긴급 버튼
+  if (reading != lastButtonState) { // 버튼 상태가 바뀌었는지 확인
+    lastDebounceTime = millis(); // 상태가 바뀌었으므로 디바운싱 타이머를 리셋
+  }
   // 디바운싱 지연 시간을 넘었으면 상태를 업데이트
   if ((millis() - lastDebounceTime) > buttonDebounceDelay) {
     // 상태가 변하고 일정 시간 유지된 경우에만 버튼 상태 업데이트
@@ -671,52 +673,32 @@ void loop(){
       }
     }
   }
-
   lastButtonState = reading; // 이전 버튼 상태 업데이트
 
-// CDS 조명 설정
-  if(analogRead(CDS)>=3800){
+  if(analogRead(CDS)>=3800){// CDS 조명 설정 3800값 이상일 경우 LED ON
     digitalWrite(LED,1);
   }
-  else{
+  else{ // 아닐경우 LED 끔
     digitalWrite(LED,0);
   }
 
-// WIFI 상태 확인 및 낙하 데이터 전송
-  unsigned long currentTime = millis();
-  if (currentTime - lastReadTime >= readInterval) {
-    lastReadTime = currentTime;
-
-    // 현재 읽기에서 이전 총합에서 해당 읽기 값을 뺌
-    total = total - readings[readIndex];
-
-    // 새로운 센서 값을 읽고 배열에 저장
-    readings[readIndex] = analogRead(SHOCK);
-
-    // 새로운 읽기 값을 총합에 추가
-    total = total + readings[readIndex];
-
-    // 다음 읽기 인덱스로 이동
-    readIndex = readIndex + 1;
-
-    // 배열의 끝에 도달하면 다시 시작
-    if (readIndex >= numReadings) {
-      readIndex = 0;
+  currentTime = millis();
+  int shockState = digitalRead(SHOCK);
+  Serial.println(shockState);
+  if (shockState == 1 && currentTime - lastShockTime > 300) {
+    if (!shockDetected) {
+      shockDetected = true;
+      shockStartTime = currentTime;
+    } else if (currentTime - shockStartTime >= 50 && !shockConfirmed) {
+      tone(PIEZO,melody[4],500);
+      Serial.println("[SYSTEM] 낙하 감지");
+      SendingData("낙하");
+      shockConfirmed = true;  // Mark the shock as confirmed
+      lastShockTime = currentTime;  // Update the last shock time
+      shockDetected = false;  // Reset the detection state
     }
-
-    // 평균값 계산
-    average = total / numReadings;
-
-    if(WiFi.status() == WL_CONNECTED){
-      client.poll();
-      if (average > 1500 && (currentTime - lastShockTime) > shockDebounceDelay) { // 충격 감지 값과 디바운스 시간 조정
-        SendingData("낙하");
-        lastShockTime = currentTime; // 마지막 충격 감지 시간 업데이트
-        average = 0;
-      }
-    }
-    else{
-      WIFI_setup();
-    }
+  } else if (shockState == 0) {
+    shockDetected = false;  // Reset the detection state if no shock is detected
+    shockConfirmed = false;  // Allow new shocks to be detected after cooldown
   }
 }

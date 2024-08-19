@@ -59,6 +59,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.naver.maps.geometry.LatLng
 import com.naver.maps.map.CameraUpdate
@@ -185,7 +186,12 @@ fun NullMap(
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            Log.e("HEAD METAL", "Error: ${t.message}")
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "피해자 행동 요청 실패",
+                message = "네트워크 문제로 인해 피해자에 대한 행동 요청이 되지 않았습니다.",
+            )
         }
     }
 
@@ -386,7 +392,7 @@ fun NullBottomSheetScreen(
     imageUrl: MutableState<String?>,
     webSocketSendData: MutableState<String?>,
     imageDataReception: MutableState<Boolean>,
-    soundDataReception: MutableState<Boolean>
+    soundDataReception: MutableState<Boolean>,
 ) {
     val isDetailInputDialogVisible: MutableState<Boolean> =
         remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
@@ -402,7 +408,8 @@ fun NullBottomSheetScreen(
             accidentNoList = accidentNoList,
             markerList = markerList,
             markerListIdx = markerListIdx,
-            selectedMarker = selectedMarker
+            selectedMarker = selectedMarker,
+            navController = navController
         )
     }
 
@@ -424,7 +431,8 @@ fun NullBottomSheetScreen(
         Box(contentAlignment = Alignment.Center) {
             val painter =
                 rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
-                    .data(url).build(),
+                    .data(url).diskCachePolicy(CachePolicy.DISABLED) // 디스크 캐시 비활성화
+                    .memoryCachePolicy(CachePolicy.DISABLED).build(),
                     onSuccess = { LoadingState.hide() })
             Image(
                 painter = painter,
@@ -644,7 +652,8 @@ fun NullBottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.PROCESSING.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
@@ -674,7 +683,8 @@ fun NullBottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.MALFUNCTION.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
@@ -702,7 +712,8 @@ fun NullBottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.REPORT119.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off
@@ -764,7 +775,8 @@ fun NullDetailInputDialog(
     accidentNoList: MutableList<Int>,
     markerList: MutableList<Marker>,
     markerListIdx: MutableState<Int>,
-    selectedMarker: MutableState<Marker?>
+    selectedMarker: MutableState<Marker?>,
+    navController: NavController
 ) {
     val detail = remember { mutableStateOf("") } // 사고 처리 세부 내역(입력)
 
@@ -811,7 +823,8 @@ fun NullDetailInputDialog(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.COMPLETE.ordinal.toString(),
-                                    detail.value
+                                    detail.value,
+                                    navController = navController
                                 ) // 처리 상황을 '처리 완료'로 갱신(DB 반영)
                                 selectedMarker.value?.map = null // 지도에서 단말 마커를 삭제
                                 isBottomSheetVisible.value = false // 바텀 시트 off

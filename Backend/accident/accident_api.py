@@ -7,7 +7,7 @@ from starlette.websockets import WebSocketDisconnect
 from sqlalchemy.orm import Session
 import datetime
 from db.db_connection import get_db
-from db.models import Accident, UserEmployee
+from db.models import Accident, UserEmployee, AccidentProcessing, Work
 from fcm_notification import fcm_function
 
 router = APIRouter(prefix="/accident")
@@ -30,6 +30,15 @@ class AccidentService:
         self.dbSession = dbSession
 
     def create_accident(self, accident: Accident_Json):
+        work_exists = self.dbSession.query(Work).filter(
+            Work.workId == accident.workId,
+            Work.workerId == accident.victimId
+        ).first()
+
+        if not work_exists:
+            raise HTTPException(
+                status_code=400, detail="Work record not found for the given workId and victimId.")
+
         db_accident = Accident(
             date=datetime.date(
                 year=accident.date[0], month=accident.date[1], day=accident.date[2]),
@@ -41,7 +50,20 @@ class AccidentService:
             victimId=accident.victimId,
             category=accident.category
         )
+
         self.dbSession.add(db_accident)
+        self.dbSession.commit()
+        new_accident_no = db_accident.no
+
+        db_accidentProcessing = AccidentProcessing(
+            no=new_accident_no,
+            situation=None,
+            date=None,
+            time=None,
+            detail=None
+        )
+
+        self.dbSession.add(db_accidentProcessing)
         self.dbSession.commit()
         user = self.dbSession.query(UserEmployee).filter(
             UserEmployee.id == accident.victimId).first()
@@ -95,8 +117,11 @@ def get_image_service() -> ImageService:
     return ImageService()
 
 
+websocket_manager = WebSocketManager()
+
+
 def get_websocket_manager() -> WebSocketManager:
-    return WebSocketManager()
+    return websocket_manager
 
 
 # 사고 발생시 데이터를 받아오고, 이를 DB에 저장하는 방식
@@ -110,7 +135,7 @@ async def upload_image(file: UploadFile = File(...), service: ImageService = Dep
     return await service.upload_image(file)
 
 
-@router.websocket("/ws/{work_id}/{user_id}")
+@router.websocket("/ws/{workId}/{userId}")
 async def websocket_endpoint(websocket: WebSocket, workId: str, userId: str, manager: WebSocketManager = Depends(get_websocket_manager)):
     await manager.connect(workId, websocket)
     try:

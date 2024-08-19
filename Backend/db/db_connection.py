@@ -29,7 +29,7 @@ dbEnv = DBSettings(_env_file=r'./db/.env', _env_file_encoding='utf-8')
 
 # 데이터베이스 커넥션 풀 생성
 engine = create_engine('mariadb+pymysql://{username}:{password}@{host}:{port}/{dbName}'.format(
-    username=dbEnv.dbUsername, password=dbEnv.dbPassword, host=dbEnv.dbHost, port=dbEnv.dbPort, dbName=dbEnv.dbName))
+    username=dbEnv.dbUsername, password=dbEnv.dbPassword, host=dbEnv.dbHost, port=dbEnv.dbPort, dbName=dbEnv.dbName), pool_pre_ping=True)
 
 
 # 데이터베이스에 접속하기 위한 객체

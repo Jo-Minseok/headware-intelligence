@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -17,7 +18,7 @@ interface ApiService {
     @FormUrlEncoded
     @POST("/login")
     fun apiLogin(
-        @Query("alert_token") alertToken: String,
+        @Query("alertToken") alertToken: String,
         @Query("type") type: String,
         @Field("username") id: String?,
         @Field("password") pw: String?
@@ -26,20 +27,20 @@ interface ApiService {
     @POST("/logout")
     fun apiLogout(
         @Query("id") id: String,
-        @Query("alert_token") alertToken: String
+        @Query("alertToken") alertToken: String
     ): Call<Void>
 
     @GET("/company/work_list")
-    fun apiWorklist(
-        @Query("user_id") id: String
-    ): Call<WorklistResponse>
+    fun apiWorkList(
+        @Query("userId") id: String
+    ): Call<WorkListResponse>
 
     @GET("/company/list")
     fun getCompanyList(): Call<CompanyList>
 
     @POST("/register")
     fun apiRegister(
-        @Body requestBody: RegisterInputModel
+        @Body request: RegisterInputModel
     ): Call<RegisterInputModel>
 
     @POST("/forgot/id")
@@ -49,14 +50,19 @@ interface ApiService {
 
     @PUT("/forgot/pw")
     fun apiChangePw(
-        @Body userEmployee: ForgotPw
+        @Body request: ForgotPw
     ): Call<ForgotPw>
 
+    @PUT("/account/update")
+    fun apiChangePrivacy(
+        @Body request: PrivacyRequest
+    ): Call<Void>
+
     @GET("/weather/{latitude}/{longitude}")
-    suspend fun getWeather(
-        @Path("latitude") city: Double,
-        @Path("longitude") district: Double
-    ): WeatherResponse
+    fun getWeather(
+        @Path("latitude") latitude: Double,
+        @Path("longitude") longitude: Double
+    ): Call<WeatherResponse>
 
     @GET("/trend/{start}/{end}")
     suspend fun getTrendData(
@@ -91,4 +97,48 @@ interface ApiService {
         @Path("situationCode") situationCode: String,
         @Body requestBody: AccidentProcessingUpdateRequest
     ): Call<AccidentProcessingUpdateRequest>
+
+    @GET("/work/search/{managerId}")
+    fun searchWork(
+        @Path("managerId") managerId: String
+    ): Call<WorkShopList>
+
+    @POST("/work/create/{managerId}")
+    fun createWork(
+        @Path("managerId") managerId: String,
+        @Body requestBody: WorkShopInputData
+    ): Call<WorkShopInputData>
+
+    @GET("/work/search/detail/{workId}")
+    fun searchWorker(
+        @Path("workId") workId: Int
+    ): Call<Worker>
+
+    @POST("/work/update/{workId}")
+    fun updateWork(
+        @Path("workId") workId: Int,
+        @Body requestBody: WorkShopInputData
+    ): Call<WorkShopInputData>
+
+    @DELETE("/work/delete/{workId}")
+    fun deleteWork(
+        @Path("workId") workId: Int
+    ): Call<Void>
+
+    @GET("/work/user/{employeeId}")
+    fun searchWorkerStatus(
+        @Path("employeeId") employeeId: String
+    ): Call<WorkerStatus>
+
+    @PUT("/work/assign/{workId}/{employeeId}")
+    fun assignWork(
+        @Path("workId") workId: Int,
+        @Path("employeeId") employeeId: String
+    ): Call<Void>
+
+    @DELETE("/work/unassign/{workId}/{employeeId}")
+    fun deleteWorker(
+        @Path("workId") workId: Int,
+        @Path("employeeId") employeeId: String
+    ): Call<Void>
 }

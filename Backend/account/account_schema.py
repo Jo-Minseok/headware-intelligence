@@ -25,6 +25,7 @@ class LoginOutput(BaseModel):
     name: str
     phoneNo: str
     email: EmailStr
+    company: str
     accessToken: str
     tokenType: str
 
@@ -82,3 +83,27 @@ class ForgotPw(BaseModel):
 
 class ForgotIdResult(BaseModel):
     id: str
+
+# 개인정보 변경 스키마
+
+
+class FindAccount(BaseModel):
+    id: str
+
+
+class AccountInputUpdate(BaseModel):
+    password: str
+    rePassword: str
+    name: str
+    email: EmailStr
+    phoneNo: str
+    company: Optional[str] = None
+    type: str
+
+    @validator('password', 'name', 'email', 'phoneNo', 'type', pre=True, always=True)
+    def not_empty(cls, v):
+        return Validators.not_empty(v)
+
+    @validator('rePassword')
+    def passwords_match(cls, v, values, **kwargs):
+        return Validators.passwords_match(v, values)

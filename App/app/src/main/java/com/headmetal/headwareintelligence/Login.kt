@@ -1,291 +1,126 @@
 package com.headmetal.headwareintelligence
 
-import android.app.Activity
-import android.app.AlertDialog
-import android.content.SharedPreferences
-import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.navigation.compose.rememberNavController
 
 data class LoginResponse(
     val id: String,
     val name: String,
     val phoneNo: String,
     val email: String,
-    val access_token: String,
-    val token_type: String
+    val company: String,
+    val accessToken: String,
+    val tokenType: String
 )
 
-fun performLogin(
-    username: String?,
-    password: String?,
-    isManager: Boolean,
-    navController: NavController,
-    pwState: MutableState<String>
-) {
-    val sharedAccount: SharedPreferences =
-        navController.context.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val sharedAlert: SharedPreferences =
-        navController.context.getSharedPreferences("Alert", Activity.MODE_PRIVATE)
-    val sharedAccountEdit: SharedPreferences.Editor = sharedAccount.edit()
-    val builder = AlertDialog.Builder(navController.context)
+// 프리뷰
+@Preview(showBackground = true)
+@Composable
+fun LoginPreview() {
+    Login(navController = rememberNavController())
+}
 
-    LoadingState.show()
-    RetrofitInstance.apiService.apiLogin(
-        alertToken = sharedAlert.getString("alert_token", null).toString(),
-        type = if (isManager) "manager" else "employee",
-        id = username,
-        pw = password
-    ).enqueue(object : Callback<LoginResponse> {
-        override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-            if (response.isSuccessful) {
-                sharedAccountEdit.putString("userid", response.body()?.id)
-                sharedAccountEdit.putString("password", password)
-                sharedAccountEdit.putString("name", response.body()?.name)
-                sharedAccountEdit.putString("phone", response.body()?.phoneNo)
-                sharedAccountEdit.putString("email", response.body()?.email)
-                sharedAccountEdit.putString("token", response.body()?.access_token)
-                sharedAccountEdit.putString("token_type", response.body()?.token_type)
-                sharedAccountEdit.putString("type", if (isManager) "manager" else "employee")
-                sharedAccountEdit.apply()
-                navController.navigate("mainScreen")
-                Toast.makeText(
-                    navController.context,
-                    response.body()?.name + "님 반갑습니다",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                builder.setTitle("로그인 실패")
-                builder.setMessage("아이디 및 비밀번호를 확인하세요.")
-                builder.setPositiveButton("확인") { dialog, _ ->
-                    dialog.dismiss()
-                    pwState.value = ""
-                }
-                val dialog = builder.create()
-                dialog.show()
-            }
-            LoadingState.hide()
-        }
-
-        override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-            builder.setTitle("로그인 실패")
-            builder.setMessage("서버 상태 및 네트워크 접속 불안정")
-            builder.setPositiveButton("확인") { _, _ ->
-                (navController.context as Activity).finish()
-            }
-            val dialog = builder.create()
-            dialog.show()
-            LoadingState.hide()
-        }
-    })
+@Preview(showBackground = true)
+@Composable
+fun LoginFunctionButtonComposablePreview() {
+    Row {
+        LoginFunctionButton(
+            modifier = Modifier.weight(1f),
+            buttonText = "로그인"
+        ) {}
+        LoginFunctionButton(
+            modifier = Modifier.weight(1f),
+            buttonText = "회원가입"
+        ) {}
+        LoginFunctionButton(
+            modifier = Modifier.weight(1f),
+            buttonText = "계정 찾기"
+        ) {}
+    }
 }
 
 @Composable
 fun Login(navController: NavController) {
-    val idState = remember {
-        mutableStateOf("")
-    }
-    val pwState = remember {
-        mutableStateOf("")
-    }
-    var isManager by remember {
-        mutableStateOf(false)
-    }
+    val id: MutableState<String> = remember { mutableStateOf("") }
+    val pw: MutableState<String> = remember { mutableStateOf("") }
+    val isEmployee: MutableState<Boolean> = remember { mutableStateOf(true) }
+    val isManager: MutableState<Boolean> = remember { mutableStateOf(false) }
 
     BackOnPressed()
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFF9C94C)
-    ) {
-        LoadingScreen()
+    LoginScreen {
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.helmet),
-                contentDescription = null
-            )
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                Text(
-                    text = "ID",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                TextField(
-                    value = idState.value,
-                    onValueChange = { idState.value = it },
-                    shape = RoundedCornerShape(8.dp),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(0.6f),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+            HelmetImage()
+            Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    LabelAndInputComposable(
+                        labelText = "ID",
+                        inputText = id,
+                        labelFontWeight = FontWeight.Bold,
+                        labelFontSize = 18.sp,
+                        textFieldmodifier = Modifier.alpha(0.6f)
                     )
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                Text(
-                    text = "PW",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                TextField(
-                    value = pwState.value,
-                    onValueChange = { pwState.value = it },
-                    shape = RoundedCornerShape(8.dp),
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(0.6f),
-                    visualTransformation = PasswordVisualTransformation(),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
-                )
-            }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                Text(
-                    text = "Part",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-                Row {
-                    Button(
-                        onClick = { isManager = false },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        content = { Text(text = "일반직", color = Color.Black) },
-                        colors = ButtonDefaults.buttonColors(
-                            if (!isManager) Color(0xDFFFFFFF) else Color(
-                                0x5FFFFFFF
-                            )
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Button(
-                        onClick = { isManager = true },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        content = { Text(text = "관리직", color = Color.Black) },
-                        colors = ButtonDefaults.buttonColors(
-                            if (isManager) Color(0xDFFFFFFF) else Color(
-                                0x5FFFFFFF
-                            )
-                        )
+                    LabelAndInputComposable(
+                        labelText = "PW",
+                        inputText = pw,
+                        labelFontWeight = FontWeight.Bold,
+                        labelFontSize = 18.sp,
+                        visualTransformation = PasswordVisualTransformation(),
+                        textFieldmodifier = Modifier.alpha(0.6f)
                     )
                 }
-            }
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .padding(bottom = 16.dp)
-            ) {
-                Row {
-                    Button(
+                LabelAndRadioButtonComposable(
+                    labelText = "Part",
+                    labelFontWeight = FontWeight.Bold,
+                    labelFontSize = 18.sp,
+                    firstButtonText = "일반직",
+                    secondButtonText = "관리직",
+                    firstButtonSwitch = isEmployee,
+                    secondButtonSwitch = isManager
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                    LoginFunctionButton(
+                        modifier = Modifier.weight(1f),
+                        buttonText = "로그인",
                         onClick = {
-                            performLogin(
-                                idState.value,
-                                pwState.value,
-                                isManager,
-                                navController,
-                                pwState
+                            loginPOST(
+                                inputId = id.value,
+                                inputPw = pw,
+                                isManager = isManager.value,
+                                navController = navController
                             )
-                        },
-                        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+                        }
+                    )
+                    LoginFunctionButton(
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "로그인",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Button(
-                        onClick = { navController.navigate("signupScreen") },
-                        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 4.dp),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "회원가입",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Button(
-                        onClick = { navController.navigate("findidScreen") },
-                        colors = ButtonDefaults.buttonColors(Color(0x59000000)),
+                        buttonText = "회원가입",
+                        onClick = { navController.navigate("SignUpScreen") }
+                    )
+                    LoginFunctionButton(
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "계정 찾기",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                        buttonText = "계정 찾기",
+                        onClick = { navController.navigate("FindIdScreen") }
+                    )
                 }
             }
-            Text(
-                text = stringResource(id = R.string.app_name),
-                modifier = Modifier.padding(top = 20.dp),
-                fontWeight = FontWeight.Bold
-            )
+            AppNameText()
         }
     }
 }

@@ -18,7 +18,7 @@ class UpdateAccountRepository:
             employee.password = pwdContext.hash(inputData.password)
             employee.name = inputData.name
             employee.email = inputData.email
-            employee.phoneNo = inputData.phoneNo,
+            employee.phoneNo = inputData.phoneNo
             employee.company = inputData.company
             self.db.add(employee)
         elif inputData.type == "manager":
@@ -28,7 +28,7 @@ class UpdateAccountRepository:
             manager.password = pwdContext.hash(inputData.password)
             manager.name = inputData.name
             manager.email = inputData.email
-            manager.phoneNo = inputData.phoneNo,
+            manager.phoneNo = inputData.phoneNo
             manager.company = inputData.company
             self.db.add(manager)
         self.db.commit()

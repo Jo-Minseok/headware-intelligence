@@ -18,4 +18,4 @@ def post_account_update(findKey: FindAccount, inputData: AccountInputUpdate, ser
         service.update_account(findKey, inputData)
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=str(e))
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

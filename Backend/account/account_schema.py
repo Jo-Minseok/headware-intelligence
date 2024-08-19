@@ -25,6 +25,7 @@ class LoginOutput(BaseModel):
     name: str
     phoneNo: str
     email: EmailStr
+    company: str
     accessToken: str
     tokenType: str
 

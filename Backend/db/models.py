@@ -80,7 +80,7 @@ class Accident(Base):
 class AccidentProcessing(Base):
     __tablename__ = 'accidentProcessing'
     no = Column(Integer, ForeignKey('accident.no'),
-                primary_key=True, autoincrement=True)
+                primary_key=True, autoincrement=False)
     situation = Column(String(100), nullable=True)
     date = Column(Date, nullable=True)
     time = Column(Time, nullable=True)

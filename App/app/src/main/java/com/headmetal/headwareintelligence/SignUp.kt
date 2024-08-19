@@ -73,7 +73,7 @@ fun SignUpComposable(navController: NavController) {
     val name: MutableState<String> = remember { mutableStateOf("") }
     val phone: MutableState<String> = remember { mutableStateOf("") }
     val email: MutableState<String> = remember { mutableStateOf("") }
-    val selectCompany: MutableState<String> = remember { mutableStateOf("없음") }
+    val selectedCompany: MutableState<String> = remember { mutableStateOf("없음") }
     val expanded: MutableState<Boolean> = remember { mutableStateOf(false) }
     val isEmployee: MutableState<Boolean> = remember { mutableStateOf(true) }
     val isManager: MutableState<Boolean> = remember { mutableStateOf(false) }
@@ -137,7 +137,7 @@ fun SignUpComposable(navController: NavController) {
             LabelAndDropdownMenu(
                 fieldText = "건설업체",
                 expanded = expanded,
-                selectedItem = selectCompany,
+                selectedItem = selectedCompany,
                 selectableItems = selectableCompany.value,
                 modifier = Modifier.alpha(0.6f)
             )
@@ -157,7 +157,7 @@ fun SignUpComposable(navController: NavController) {
                         name = name.value,
                         email = email.value,
                         phone = phone.value,
-                        selectCompany = selectCompany.value,
+                        selectCompany = selectedCompany.value,
                         isManager = isManager.value,
                         navController = navController
                     )

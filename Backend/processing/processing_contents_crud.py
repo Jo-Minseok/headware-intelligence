@@ -34,7 +34,7 @@ def get_accident_processings(db: Session, manager: str, situationCode: str):
 
 
 def get_accident(db: Session, no: int):
-    return db.query(Accident).filter(Accident.no == no).first()
+    return db.query(Accident).filter(Accident.no == no, Accident.victimId.isnot(None)).first()
 
 # 사고자 이름 조회
 
@@ -42,10 +42,7 @@ def get_accident(db: Session, no: int):
 def get_victim_name(db: Session, no: int):
     victimId = db.execute(select(Accident.victimId).where(
         Accident.no == no)).fetchone()[0]
-    if (victimId != None):
-        victimName = db.execute(select(UserEmployee.name).where(
-            UserEmployee.id == victimId)).fetchone()[0]
-    else:
-        victimName = "제거된 작업자"
+    victimName = db.execute(select(UserEmployee.name).where(
+        UserEmployee.id == victimId)).fetchone()[0]
 
     return victimName

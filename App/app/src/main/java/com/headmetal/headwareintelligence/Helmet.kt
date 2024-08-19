@@ -610,11 +610,16 @@ fun Helmet(navController: NavController) {
                 }
             }
         }
-        if (sharedAccount.getString("workid", "").toString() == "") {
+
+        val workId: String = sharedAccount.getString("workid", "") ?: ""
+        if (!companyList.value.contains(workId)) {
+            // companyList에 workId가 없으면 sharedAccount에서 workId를 삭제
+            sharedAccount.edit().remove("workid").apply()
             enableRegister.value = false
             enableInternet.value = false
             enableReturn.value = false
         } else {
+            // workId가 companyList에 있으면 helmetid를 체크
             if (sharedAccount.getString("helmetid", "") == "") {
                 enableRegister.value = true
                 enableInternet.value = false

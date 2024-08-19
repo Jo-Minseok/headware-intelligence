@@ -98,7 +98,7 @@ class AccountInputUpdate(BaseModel):
     company: Optional[str] = None
     type: str
 
-    @validator('id', 'password', 'name', 'email', 'phoneNo', 'type', pre=True, always=True)
+    @validator('password', 'name', 'email', 'phoneNo', 'type', pre=True, always=True)
     def not_empty(cls, v):
         return Validators.not_empty(v)
 

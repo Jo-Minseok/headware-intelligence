@@ -48,6 +48,13 @@ def accident_data(db: Session = Depends(get_db), manager: str = Path(...)):
     accidents = accident_marker_crud.get_all_accident_processing(
         db=db, manager=manager)
 
+    for accident in accidents:
+        if accident is None:
+            print("None")
+        else:
+            print(
+                f"AccidentProcessing: no={accident.no}, situation={accident.situation}, date={accident.date}, time={accident.time}, detail={accident.detail}")
+    print(accidents)
     # 데이터 처리
     no = []
     latitude = []

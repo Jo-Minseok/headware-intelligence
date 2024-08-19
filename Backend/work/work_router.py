@@ -8,9 +8,6 @@ router = APIRouter(prefix='/work')
 @router.get('/search/{managerId}', status_code=status.HTTP_200_OK)
 def get_work_list(managerId: str, service: WorkService = Depends(get_work_service)):
     searchResult = service.search_work_list(managerId)
-    # if not searchResult:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED, detail='관리자에게 할당된 작업이 존재하지 않음')
     workId = []
     name = []
     company = []

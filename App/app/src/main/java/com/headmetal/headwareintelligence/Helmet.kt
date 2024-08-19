@@ -3,7 +3,6 @@ package com.headmetal.headwareintelligence
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -26,58 +25,46 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Surface
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.navigation.compose.rememberNavController
 import java.util.UUID
 
-data class WorklistResponse(
+data class WorkListResponse(
     val workList: List<String>
 )
 
@@ -87,8 +74,96 @@ data class DeviceData(
     val address: String
 )
 
-@SuppressLint("MutableCollectionMutableState")
-@OptIn(ExperimentalMaterialApi::class)
+@Preview(showBackground = true)
+@Composable
+fun HelmetScreenPreview() {
+    val context = LocalContext.current
+    val navController = rememberNavController() // NavController 설정
+    val sharedPreferences = context.getSharedPreferences("HelmetPreferences", Context.MODE_PRIVATE)
+    val companyList = remember { mutableStateOf(listOf("작업장 A", "작업장 B", "작업장 C")) }
+    val enableRegister = remember { mutableStateOf(true) }
+    val enableInternet = remember { mutableStateOf(true) }
+    val enableReturn = remember { mutableStateOf(true) }
+    val showScanDialog = remember { mutableStateOf(false) }
+    val showWIFIDialog = remember { mutableStateOf(false) }
+    val showReturnDialog = remember { mutableStateOf(false) }
+    val helmetID = remember { mutableStateOf("12345") }
+
+    // 임시 Bluetooth 설정 - 미리보기에서는 null을 사용
+    val bluetoothAdapter: BluetoothAdapter? = null
+    val service: BluetoothGattService? = null
+    val writeUUID: UUID? = null
+    val connectedGatt: BluetoothGatt? = null
+
+    HelmetScreen(
+        navController = navController,
+        sharedAccount = sharedPreferences,
+        companyList = companyList,
+        enableRegister = enableRegister,
+        enableInternet = enableInternet,
+        enableReturn = enableReturn,
+        showScanDialog = showScanDialog,
+        showWIFIDialog = showWIFIDialog,
+        showReturnDialog = showReturnDialog,
+        context = context,
+        helmetID = helmetID,
+        bluetoothAdapter = bluetoothAdapter,
+        service = service,
+        writeUUID = writeUUID,
+        connectedGatt = connectedGatt
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HelmetScanDialog() {
+    OnlyYesAlertDialog(
+        title = "헬멧 스캔 중",
+        textComposable = {
+            Column {
+                Text("스캔된 디바이스가 없습니다.")
+            }
+        },
+        yesButton = "닫기",
+        confirmButton = {},
+        dismissButton = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WifiInputDialog() {
+    YesNoAlertDialog(
+        title = "WIFI 설정",
+        textComposable = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                LabelAndInputComposable(
+                    labelText = "WIFI ID",
+                    inputText = remember { mutableStateOf("") }
+                )
+                LabelAndInputComposable(
+                    labelText = "WIFI 비밀번호",
+                    inputText = remember { mutableStateOf("") }
+                )
+            }
+        },
+        confirmButton = {},
+        dismissButton = {},
+        yesButton = "설정",
+        noButton = "취소"
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ReturnDialogPreview() {
+    YesNoAlertDialog(
+        title = "반납하시겠습니까?",
+        yesButton = "반납하기",
+        noButton = "취소"
+    )
+}
+
 @Composable
 fun Helmet(navController: NavController) {
     // UI 관련 유틸 변수들
@@ -97,60 +172,31 @@ fun Helmet(navController: NavController) {
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
     val sharedAccountEdit = sharedAccount.edit()
 
+    val userId: String = sharedAccount.getString("userid", null).toString()
     // 작업장 선택 변수들
-    var expanded by remember { mutableStateOf(false) }
-    var itemOptions by remember { mutableStateOf(listOf<String>()) }
-    var selectedOption by remember { mutableStateOf("") }
-    val apiServiceWorklist =
-        RetrofitInstance.apiService.apiWorklist(
-            id = sharedAccount.getString("userid", null).toString()
-        )
-    apiServiceWorklist.enqueue(object : Callback<WorklistResponse> {
-        override fun onResponse(
-            call: Call<WorklistResponse>,
-            response: Response<WorklistResponse>
-        ) {
-            if (response.isSuccessful) {
-                response.body()?.let { workListResponse ->
-                    itemOptions = workListResponse.workList
-                }
-            }
-        }
-
-        override fun onFailure(call: Call<WorklistResponse>, t: Throwable) {
-            Log.e("HEAD METAL", "Failed to fetch work list")
-        }
-    })
+    val companyList = remember { mutableStateOf(listOf<String>()) }
 
     // 권한 요청
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // Permission is granted. Proceed with BLE operations.
-        } else {
-            // Permission is denied. Handle accordingly.
-        }
-    }
+    ) {}
 
     // BLE
     val bluetoothManager =
         context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager // 블루투스 서비스를 가져옴
-    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter // 블루투스 서비스로부터 어댑터를 받아옴
-    val isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter?.isEnabled == true) } // 블루투스 어댑터가 있다면 최초 설정 값을 true로 설정함. 아닐 경우 false로 설정
-    val bluetoothLeScanner =
-        bluetoothAdapter!!.bluetoothLeScanner // 블루투스 LE 스캐너를 만듦. 어댑터를 통해서 만드는 것
+    val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter // 블루투스 서비스로부터 어댑터를 받아옴
+    val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner // 블루투스 LE 스캐너를 만듦. 어댑터를 통해서 만드는 것
     // 탐색 설정 - 로우 레이턴시
     val scanSettings =
         ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
     val scanList = remember { mutableStateListOf<DeviceData>() }
     // 블루투스 다이얼로그 변수
-    var showScanDialog by remember { mutableStateOf(false) }
-    var showWIFIDialog by remember { mutableStateOf(false) }
-    var showReturnDialog by remember { mutableStateOf(false) }
-    var enableRegister by remember { mutableStateOf(false) }
-    var enableInternet by remember { mutableStateOf(false) }
-    var enableReturn by remember { mutableStateOf(false) }
+    val showScanDialog = remember { mutableStateOf(false) }
+    val showWIFIDialog = remember { mutableStateOf(false) }
+    val showReturnDialog = remember { mutableStateOf(false) }
+    val enableRegister = remember { mutableStateOf(false) }
+    val enableInternet = remember { mutableStateOf(false) }
+    val enableReturn = remember { mutableStateOf(false) }
     // wifi ID/PW 변수
     val wifiID = remember { mutableStateOf("") }
     val wifiPW = remember { mutableStateOf("") }
@@ -171,7 +217,7 @@ fun Helmet(navController: NavController) {
     }
 
     // UI 변수
-    var helmetid by remember { mutableStateOf(sharedAccount.getString("helmetid", "")) }
+    val helmetID = remember { mutableStateOf(sharedAccount.getString("helmetid", "") ?: "") }
 
     // BLE 스캔 콜백
     val scanCallback: ScanCallback = object : ScanCallback() {
@@ -218,9 +264,9 @@ fun Helmet(navController: NavController) {
                 newState
             ) // 상위 클래스 onConnectionStateChange 호출
             if (newState == BluetoothProfile.STATE_CONNECTED) { // BLE 장치의 새로운 상태가 연결 상태이면
-                enableRegister = false
-                enableInternet = true
-                enableReturn = true
+                enableRegister.value = false
+                enableInternet.value = true
+                enableReturn.value = true
                 if (ActivityCompat.checkSelfPermission( // 만약 권한이 없으면
                         context,
                         Manifest.permission.BLUETOOTH_CONNECT
@@ -236,12 +282,12 @@ fun Helmet(navController: NavController) {
                 connectedGatt = gatt // 변경된 장치의 BLE GATT을 받아옴 -> UI 자체 변수에 저장
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) { // BLE 장치의 새로운 상태가 연결 해제됐다면
                 Log.d("HEAD METAL", "BLE DISCONNECT")
-                enableRegister = true
-                enableInternet = false
-                enableReturn = false
+                enableRegister.value = true
+                enableInternet.value = false
+                enableReturn.value = false
                 sharedAccountEdit.putString("helmetid", null)
                 sharedAccountEdit.apply()
-                helmetid = ""
+                helmetID.value = ""
                 wifiID.value = ""
                 wifiPW.value = ""
                 wifisendID = ""
@@ -353,8 +399,8 @@ fun Helmet(navController: NavController) {
                     }
 
                     "wifi" -> {
-                        if (!showWIFIDialog) {
-                            showWIFIDialog = true
+                        if (!showWIFIDialog.value) {
+                            showWIFIDialog.value = true
                         }
                     }
 
@@ -428,7 +474,7 @@ fun Helmet(navController: NavController) {
                             sharedAccountEdit.putString("helmetid", receiveValue.split(" ")[1])
                                 .apply()
                             sharedAccountEdit.apply()
-                            helmetid = receiveValue.split(" ")[1]
+                            helmetID.value = receiveValue.split(" ")[1]
                         }
                     }
                 }
@@ -438,13 +484,10 @@ fun Helmet(navController: NavController) {
 
     // AlertDialog
     // Device Scan Dialog
-    if (showScanDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showScanDialog = false
-            },
-            title = { Text(text = "헬멧 스캔 중") },
-            text = {
+    if (showScanDialog.value) {
+        OnlyYesAlertDialog(
+            title = "헬멧 스캔 중",
+            textComposable = {
                 Column {
                     if (scanList.isEmpty()) {
                         Text("스캔된 디바이스가 없습니다.")
@@ -453,7 +496,7 @@ fun Helmet(navController: NavController) {
                             TextButton(onClick = {
                                 bluetoothAdapter.getRemoteDevice(device.address)
                                     .connectGatt(context, false, gattCallback)
-                                showScanDialog = false
+                                showScanDialog.value = false
                             }) {
                                 Text(text = device.name)
                             }
@@ -461,119 +504,81 @@ fun Helmet(navController: NavController) {
                     }
                 }
             },
+            yesButton = "닫기",
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        bluetoothLeScanner.stopScan(scanCallback)
-                        showScanDialog = false
-                    }
-                ) {
-                    Text(text = "닫기")
-                }
-            }
+                bluetoothLeScanner.stopScan(scanCallback)
+                showScanDialog.value = false
+            },
+            dismissButton = { showScanDialog.value = false }
         )
         // WIFI Input Dialog
-    } else if (showWIFIDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showWIFIDialog = false
-            },
-            title = { Text(text = "WIFI 설정") },
-            text = {
-                Column() {
-                    Text(text = "WIFI ID")
-                    TextField(
-                        value = wifiID.value,
-                        onValueChange = {
-                            wifiID.value = it
-                        }
-                    )
-                    Text(text = "WIFI 비밀번호")
-                    TextField(
-                        value = wifiPW.value,
-                        onValueChange = {
-                            wifiPW.value = it
-                        }
-                    )
+    } else if (showWIFIDialog.value) {
+        YesNoAlertDialog(
+            title = "WIFI 설정",
+            textComposable = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    LabelAndInputComposable(labelText = "WIFI ID", inputText = wifiID)
+                    LabelAndInputComposable(labelText = "WIFI 비밀번호", inputText = wifiPW)
                 }
             },
-            buttons = {
-                Row() {
-                    TextButton(
-                        onClick = {
-                            wifisendID = "wi " + wifiID.value
-                            wifisendPW = "wp " + wifiPW.value
-                            showWIFIDialog = false
-                            val characteristicWrite = service?.getCharacteristic(writeUUID)
-                            characteristicWrite?.value = wifisendID.toByteArray()
-                            connectedGatt?.writeCharacteristic(characteristicWrite)
-                            characteristicWrite?.value = wifisendPW.toByteArray()
-                        }
-                    ) {
-                        Text(text = "설정")
-                    }
-                    TextButton(onClick = {
-                        showWIFIDialog = false
-                    }) {
-                        Text(text = "취소")
-                    }
-                }
-            }
+            confirmButton = {
+                wifisendID = "wi " + wifiID.value
+                wifisendPW = "wp " + wifiPW.value
+                showWIFIDialog.value = false
+                val characteristicWrite = service?.getCharacteristic(writeUUID)
+                characteristicWrite?.value = wifisendID.toByteArray()
+                connectedGatt?.writeCharacteristic(characteristicWrite)
+                characteristicWrite?.value = wifisendPW.toByteArray()
+            },
+            dismissButton = {
+                showWIFIDialog.value = false
+            },
+            yesButton = "설정",
+            noButton = "취소"
         )
-    } else if (showReturnDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showReturnDialog = false
-            },
-            title = { Text("반납하시겠습니까?") },
-            buttons = {
-                Row(
-                    modifier = Modifier.padding(all = 8.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = {
-                            connectedGatt?.disconnect()
-                            connectedGatt?.close()
-                            connectedGatt = null
-                            showReturnDialog = false
-                            Toast.makeText(context, "성공적으로 반납되었습니다", Toast.LENGTH_SHORT).show()
-                            helmetid = ""
-                            enableRegister = true
-                            enableInternet = false
-                            enableReturn = false
-                            sharedAccountEdit.putString("helmetid", "")
-                            sharedAccountEdit.apply()
-                        }
-                    ) {
-                        Text("반납하기")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(
-                        onClick = {
-                            showReturnDialog = false
-                        }
-                    ) {
-                        Text("아니오")
-                    }
-                }
+    } else if (showReturnDialog.value) {
+        YesNoAlertDialog(
+            title = "반납하시겠습니까?",
+            yesButton = "반납하기",
+            noButton = "취소",
+            dismissButton = { showReturnDialog.value = false },
+            confirmButton = {
+                connectedGatt?.disconnect()
+                connectedGatt?.close()
+                connectedGatt = null
+                showReturnDialog.value = false
+                Toast.makeText(context, "성공적으로 반납되었습니다", Toast.LENGTH_SHORT).show()
+                helmetID.value = ""
+                enableRegister.value = true
+                enableInternet.value = false
+                enableReturn.value = false
+                sharedAccountEdit.putString("helmetid", "")
+                sharedAccountEdit.apply()
             }
         )
     }
 
     // 컴포저블 내에서 가장 먼저 실행
     LaunchedEffect(Unit) {
+        // 회사 목록 불러오기
+        userCompanyListGET(
+            companyList = companyList,
+            navController = navController,
+            userId = userId
+        )
         // 블루투스 기능 유무 체크
         // 기능이 없다면
         if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Log.e("HEAD METAL", "NO FEATURE_BLUETOOTH_LE")
-            AlertDialog.Builder(navController.context)
-                .setTitle("블루투스 연결 실패")
-                .setMessage("본 기기는 블루투스를 지원하지 않습니다.")
-                .setPositiveButton("확인") { dialog, which ->
-                    navController.navigate("mainScreen")
+            showAlertDialog(
+                context = navController.context,
+                title = "블루투스 연결 실패",
+                message = "본 기기는 블루투스를 지원하지 않습니다.",
+                buttonText = "확인",
+                onButtonClick = {
+                    navController.navigate("MainScreen")
                 }
-                .show()
+            )
             // 기능이 있다면
         } else {
             // 블루투스 권한 체크
@@ -606,379 +611,40 @@ fun Helmet(navController: NavController) {
             }
         }
         if (sharedAccount.getString("workid", "").toString() == "") {
-            enableRegister = false
-            enableInternet = false
-            enableReturn = false
+            enableRegister.value = false
+            enableInternet.value = false
+            enableReturn.value = false
         } else {
             if (sharedAccount.getString("helmetid", "") == "") {
-                enableRegister = true
-                enableInternet = false
-                enableReturn = false
+                enableRegister.value = true
+                enableInternet.value = false
+                enableReturn.value = false
             } else {
-                enableRegister = false
-                enableInternet = true
-                enableReturn = true
-                helmetid = sharedAccount.getString("helmetid", "")
+                enableRegister.value = false
+                enableInternet.value = true
+                enableReturn.value = true
+                helmetID.value = sharedAccount.getString("helmetid", "") ?: ""
             }
         }
     }
+    HelmetScreen(
+        navController = navController,
+        sharedAccount = sharedAccount,
+        companyList = companyList,
+        enableRegister = enableRegister,
+        enableInternet = enableInternet,
+        enableReturn = enableReturn,
+        showScanDialog = showScanDialog,
+        showWIFIDialog = showWIFIDialog,
+        showReturnDialog = showReturnDialog,
+        context = context,
+        helmetID = helmetID,
+        bluetoothAdapter = bluetoothAdapter,
+        service = service,
+        writeUUID = writeUUID,
+        connectedGatt = connectedGatt
+    )
 
-    // 메인 화면
-    Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFF9F9F9)) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // 뒤로가기
-            Icon(
-                imageVector = Icons.Default.ArrowBackIosNew,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(20.dp)
-                    .clickable {
-                        navController.navigate("mainScreen")
-                    }
-            )
-            // 제목
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "안전모 등록",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 34.sp,
-                    modifier = Modifier.padding(horizontal = 30.dp)
-                )
-                Spacer(modifier = Modifier.width(125.dp))
-            }
-
-            // 전체 컬럼
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 30.dp, vertical = 15.5.dp)
-            ) {
-
-
-                Row {
-                    Text(
-                        text = "작업자 정보",
-                        color = Color.Black,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                Spacer(
-                    modifier = Modifier.height(10.dp)
-                )
-
-                Row {
-
-                    Text(
-                        text = "작업자 ID : ",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-
-                    Text(// 로그인 정보 연동 작업자 ID 출력
-                        text = sharedAccount.getString("userid", null).toString(),
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-                Row {
-
-                    Text(
-                        text = "작업자 이름 : ",
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-
-                    Text(// 로그인 정보 연동 작업자 이름 출력
-                        text = sharedAccount.getString("name", null).toString(),
-                        color = Color.Black,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-
-                Spacer(
-                    modifier = Modifier.height(30.dp)
-                )
-
-                Text(
-                    text = "작업장 선택",
-                    color = Color.Black,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    TextField(
-                        value = sharedAccount.getString("workid", null)
-                            ?.let { if (it == "null") "선택되지 않음" else it } ?: "선택되지 않음",
-                        onValueChange = {},
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                        },
-                        readOnly = true,
-                        textStyle = TextStyle.Default.copy(fontSize = 15.sp)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        itemOptions.forEach { eachoption ->
-                            DropdownMenuItem(onClick = {
-                                selectedOption = eachoption
-                                expanded = false
-                                sharedAccountEdit.putString("workid", eachoption)
-                                sharedAccountEdit.apply()
-                                if (connectedGatt != null) {
-                                    val characteristicWrite = service?.getCharacteristic(writeUUID)
-                                    val workSendId =
-                                        "wc " + sharedAccount.getString("workid", null).toString()
-                                    if (service != null && characteristicWrite != null) {
-                                        characteristicWrite.value = workSendId.toByteArray()
-                                        connectedGatt?.writeCharacteristic(characteristicWrite)
-                                    } else {
-                                        Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
-                                    }
-                                } else {
-                                    enableRegister = true
-                                }
-                            }) {
-                                Text(text = eachoption, fontSize = 15.sp)
-                            }
-                        }
-                    }
-                }
-
-                Spacer(
-                    modifier = Modifier.height(30.dp)
-                )
-
-                Row(
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Text(
-                        text = "블루투스 상태 : ",
-                        color = Color.Black,
-                        fontSize = 20.sp
-                    )
-                    Text(
-                        text = if (isBluetoothEnabled) "켜짐" else "꺼짐",
-                        color = Color.Black,
-                        fontSize = 20.sp
-                    )
-                }
-
-                Row {
-                    Button(
-                        onClick = {
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                                if (!bluetoothAdapter.isEnabled) {
-                                    bluetoothAdapter.enable()
-                                } else {
-                                    Toast.makeText(
-                                        navController.context,
-                                        "이미 블루투스가 켜져있습니다",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            } else {
-                                context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                            }
-                        },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "켜기",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Row {
-                    Button(
-                        onClick = {
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                                if (bluetoothAdapter.isEnabled) {
-                                    bluetoothAdapter.disable()
-                                } else {
-                                    Toast.makeText(
-                                        navController.context,
-                                        "이미 블루투스가 꺼져있습니다",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            } else {
-                                context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                            }
-                        },
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Box(
-                                modifier = Modifier.weight(1f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "끄기",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                    }
-                }
-
-
-                Spacer(
-                    modifier = Modifier.height(20.dp)
-                )
-
-                Column(
-                    modifier = Modifier.padding(bottom = 16.dp)
-                ) {
-                    Text(
-                        text = "안전모 번호",
-                        color = Color.Black,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                Color(0xFFECD5E3),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = helmetid ?: "",
-                            color = Color.Black,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-                Button(
-                    onClick = {
-                        // 블루투스가 안 켜져 있을 경우
-                        if (!bluetoothAdapter.isEnabled) {
-                            context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
-                        } else {
-                            showScanDialog = true
-                        }
-                    },
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                    shape = RoundedCornerShape(8.dp),
-                    enabled = enableRegister
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "등록하기",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-                Button(
-                    onClick = {
-                        showWIFIDialog = true
-                    },
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                    shape = RoundedCornerShape(8.dp),
-                    enabled = enableInternet
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "인터넷 설정",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-                Button(
-                    onClick = {
-                        if (sharedAccount.getString("helmetid", "") != "") {
-                            showReturnDialog = true
-                        } else {
-                            Toast.makeText(context, "등록된 헬멧이 없습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFAA82B4)),
-                    shape = RoundedCornerShape(8.dp),
-                    enabled = enableReturn
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "반납하기",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     // UI 종료될 때
     DisposableEffect(Unit) {
@@ -987,4 +653,233 @@ fun Helmet(navController: NavController) {
             bluetoothLeScanner.stopScan(scanCallback)
         }
     }
+}
+
+@SuppressLint("MissingPermission")
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun HelmetScreen(
+    navController: NavController,
+    sharedAccount: SharedPreferences,
+    companyList: MutableState<List<String>>,
+    enableRegister: MutableState<Boolean>,
+    enableInternet: MutableState<Boolean>,
+    enableReturn: MutableState<Boolean>,
+    showScanDialog: MutableState<Boolean>,
+    showWIFIDialog: MutableState<Boolean>,
+    showReturnDialog: MutableState<Boolean>,
+    context: Context,
+    helmetID: MutableState<String>,
+    bluetoothAdapter: BluetoothAdapter?,
+    service: BluetoothGattService?,
+    writeUUID: UUID?,
+    connectedGatt: BluetoothGatt?
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOption by remember { mutableStateOf("") }
+    val isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter?.isEnabled == true) } // null 체크 추가
+
+    // 메인 화면
+    IconScreen(
+        imageVector = Icons.Default.ArrowBackIosNew,
+        onClick = { navController.navigateUp() },
+        content = {
+            ScreenTitleText(text = "안전모 등록")
+            // 전체 컬럼
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "작업자 정보",
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "작업자 ID : ${sharedAccount.getString("userid", "") ?: ""}",
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "작업자 이름 : ${sharedAccount.getString("name", "") ?: ""}",
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                }
+                Column {
+                    Text(
+                        text = "작업장 선택",
+                        color = Color.Black,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        TextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = sharedAccount.getString("workid", null)
+                                ?.let { if (it == "null") "선택되지 않음" else it } ?: "선택되지 않음",
+                            onValueChange = {},
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            shape = MaterialTheme.shapes.medium,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFFc8d6e5),
+                                unfocusedContainerColor = Color(0xFFc8d6e5),
+                                disabledContainerColor = Color(0xFFc8d6e5),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
+                            ),
+                            readOnly = true,
+                            textStyle = TextStyle.Default.copy(fontSize = 15.sp)
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            companyList.value.forEach { eachoption ->
+                                DropdownMenuItem(onClick = {
+                                    selectedOption = eachoption
+                                    expanded = false
+                                    sharedAccount.edit().putString("workid", eachoption).apply()
+                                    if (connectedGatt != null && service != null && writeUUID != null) {
+                                        val characteristicWrite =
+                                            service.getCharacteristic(writeUUID)
+                                        val workSendId =
+                                            "wc " + sharedAccount.getString("workid", null)
+                                                .toString()
+                                        if (characteristicWrite != null) {
+                                            characteristicWrite.value = workSendId.toByteArray()
+                                            connectedGatt.writeCharacteristic(characteristicWrite)
+                                        } else {
+                                            Log.e("HEAD METAL", "BLEGatt 또는 특성을 찾을 수 없음")
+                                        }
+                                    } else {
+                                        enableRegister.value = true
+                                    }
+                                }) {
+                                    Text(text = eachoption, fontSize = 15.sp)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Column {
+                    Text(
+                        text = "블루투스 상태 : ${if (isBluetoothEnabled) "켜짐" else "꺼짐"}",
+                        color = Color.Black,
+                        fontSize = 20.sp
+                    )
+
+                    RoundedButton(
+                        onClick = {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                                bluetoothAdapter?.let {
+                                    if (!it.isEnabled) {
+                                        it.enable()
+                                    } else {
+                                        Toast.makeText(
+                                            navController.context,
+                                            "이미 블루투스가 켜져있습니다",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            } else {
+                                context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                            }
+                        },
+                        buttonText = "켜기",
+                        colors = Color(0xFF2e86de)
+                    )
+
+                    RoundedButton(
+                        onClick = {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                                bluetoothAdapter?.let {
+                                    if (it.isEnabled) {
+                                        it.disable()
+                                    } else {
+                                        Toast.makeText(
+                                            navController.context,
+                                            "이미 블루투스가 꺼져있습니다",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            } else {
+                                context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                            }
+                        },
+                        buttonText = "끄기",
+                        colors = Color(0xFF2e86de)
+                    )
+                }
+
+                LabelAndInputComposable(
+                    labelText = "안전모 번호",
+                    inputText = helmetID,
+                    readOnly = true,
+                    labelFontSize = 20.sp,
+                    labelFontWeight = FontWeight.SemiBold,
+                    textStyle = TextStyle(
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFC8D6E5),
+                        unfocusedContainerColor = Color(0xFFC8D6E5),
+                        disabledContainerColor = Color(0xFFC8D6E5),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent
+                    )
+                )
+
+                Column {
+                    RoundedButton(
+                        buttonText = "등록하기",
+                        colors = Color(0xFF0abde3),
+                        onClick = {
+                            // 블루투스가 안 켜져 있을 경우
+                            if (bluetoothAdapter?.isEnabled == true) {
+                                showScanDialog.value = true
+                            } else {
+                                context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                            }
+                        },
+                        enabled = enableRegister.value
+                    )
+                    RoundedButton(
+                        buttonText = "인터넷 설정",
+                        colors = Color(0xFF0abde3),
+                        onClick = { showWIFIDialog.value = true },
+                        enabled = enableInternet.value
+                    )
+                    RoundedButton(
+                        buttonText = "반납하기",
+                        colors = Color(0xFF0abde3),
+                        onClick = {
+                            if (sharedAccount.getString("helmetid", "") != "") {
+                                showReturnDialog.value = true
+                            } else {
+                                Toast.makeText(context, "등록된 헬멧이 없습니다.", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        enabled = enableReturn.value
+                    )
+                }
+            }
+        }
+    )
 }

@@ -46,11 +46,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -142,6 +144,76 @@ class AllAccidentProcessingViewModel : ViewModel() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ProcessingPreview() {
+    Processing(
+        navController = rememberNavController(),
+        accidentProcessingViewModel = remember { AllAccidentProcessingViewModel() }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AccidentCardCompletePreview() {
+    AccidentCard(
+        color = Color(0xD0D9F7BE), item = Item(
+            no = 0,
+            date = "2024-01-01",
+            time = "12:00:00",
+            latitude = 0.0,
+            longitude = 0.0,
+            category = "category",
+            victim = "victimId",
+            situation = "처리 완료",
+            processingDate = "2024-01-01",
+            processingTime = "12:00:00",
+            detail = "detail"
+        )
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AccidentCardIngPreview() {
+    AccidentCard(
+        color = Color(0xD0FFC832), item = Item(
+            no = 0,
+            date = "2024-01-01",
+            time = "12:00:00",
+            latitude = 0.0,
+            longitude = 0.0,
+            category = "category",
+            victim = "victimId",
+            situation = "처리 중",
+            processingDate = "2024-01-01",
+            processingTime = "12:00:00",
+            detail = "detail"
+        )
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AccidentCard119Preview() {
+    AccidentCard(
+        color = Color(0xD0FFCCC7), item = Item(
+            no = 0,
+            date = "2024-01-01",
+            time = "12:00:00",
+            latitude = 0.0,
+            longitude = 0.0,
+            category = "처리 완료",
+            victim = "victimId",
+            situation = "119 신고",
+            processingDate = "2024-01-01",
+            processingTime = "12:00:00",
+            detail = "detail"
+        )
+    )
+    Color(0xD0FFCCC7)
+}
+
 @Composable
 fun Processing(
     navController: NavController,
@@ -149,7 +221,7 @@ fun Processing(
 ) {
     val sharedAccount: SharedPreferences =
         LocalContext.current.getSharedPreferences("Account", Activity.MODE_PRIVATE)
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val situationCode: MutableState<String> = remember { mutableStateOf("1") }
     var refreshState by remember { mutableStateOf(false) }
@@ -223,7 +295,7 @@ fun Processing(
             LaunchedEffect(selectedTabIndex) {
                 LoadingState.show()
                 CoroutineScope(Dispatchers.IO).async {
-                    val state = accidentProcessingViewModel.state
+                    val state: Boolean = accidentProcessingViewModel.state
                     accidentProcessingViewModel.getAllAccidentProcessingData(
                         sharedAccount.getString(
                             "userid", null
@@ -240,7 +312,7 @@ fun Processing(
                 LaunchedEffect(Unit) {
                     LoadingState.show()
                     CoroutineScope(Dispatchers.IO).async {
-                        val state = accidentProcessingViewModel.state
+                        val state: Boolean = accidentProcessingViewModel.state
                         accidentProcessingViewModel.getAllAccidentProcessingData(
                             sharedAccount.getString(
                                 "userid", null
@@ -253,13 +325,7 @@ fun Processing(
                     LoadingState.hide()
                     refreshState = false
 
-                    Toast
-                        .makeText(
-                            navController.context,
-                            "새로고침 되었습니다.",
-                            Toast.LENGTH_SHORT
-                        )
-                        .show()
+                    Toast.makeText(navController.context, "새로고침 되었습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -304,101 +370,109 @@ fun Processing(
                             "119 신고" -> Color(0xD0FFCCC7)
                             else -> Color.Gray
                         }
-                        Card(
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = color)
-                        ) {
-                            Column {
-                                Row {
-                                    Text(
-                                        text = "# 사고번호 ${item.no}",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 10.dp, top = 10.dp)
-                                    )
-                                    Text(
-                                        text = "처리내역 : ${item.situation}",
-                                        style = TextStyle(textAlign = TextAlign.End),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(end = 10.dp, top = 10.dp)
-                                    )
-                                }
-                                Divider(
-                                    color = Color.LightGray,
-                                    thickness = 1.dp,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                                Row {
-                                    Icon(
-                                        imageVector = Icons.Default.TripOrigin,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterVertically)
-                                            .padding(start = 10.dp)
-                                    )
-                                    Text(
-                                        text = "사고 위치",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                }
-                                Text(
-                                    text = "위도 : ${item.latitude}\n경도 : ${item.longitude}",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 38.dp)
-                                )
-                                Spacer(modifier = Modifier.height(30.dp))
-                                Row {
-                                    Icon(
-                                        imageVector = Icons.Default.TripOrigin,
-                                        contentDescription = null,
-                                        tint = Color(0xFFFF6600),
-                                        modifier = Modifier
-                                            .align(Alignment.CenterVertically)
-                                            .padding(start = 10.dp)
-                                    )
-                                    Text(
-                                        text = "사고 발생자",
-                                        fontSize = 16.sp,
-                                        modifier = Modifier.padding(start = 5.dp)
-                                    )
-                                }
-                                Text(
-                                    text = item.victim,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(
-                                        start = 38.dp,
-                                        bottom = 10.dp
-                                    )
-                                )
-                                Divider(
-                                    color = Color.LightGray,
-                                    thickness = 1.dp,
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                                Text(
-                                    text = "사고 내역 : ${item.category}",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                )
-                                Text(
-                                    text = "사고 발생 일시 : ${item.date} ${item.time}",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                )
-                                Text(
-                                    text = "사고 처리 일시 : ${item.processingDate} ${item.processingTime}",
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
-                                )
-                            }
-                        }
+                        AccidentCard(color = color, item = item)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AccidentCard(
+    color: Color,
+    item: Item
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        colors = CardDefaults.cardColors(containerColor = color)
+    ) {
+        Column {
+            Row {
+                Text(
+                    text = "# 사고번호 ${item.no}",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(start = 10.dp, top = 10.dp)
+                )
+                Text(
+                    text = "처리내역 : ${item.situation}",
+                    style = TextStyle(textAlign = TextAlign.End),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 10.dp, top = 10.dp)
+                )
+            }
+            Divider(
+                color = Color.LightGray,
+                thickness = 1.dp,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            Row {
+                Icon(
+                    imageVector = Icons.Default.TripOrigin,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 10.dp)
+                )
+                Text(
+                    text = "사고 위치",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
+            }
+            Text(
+                text = "위도 : ${item.latitude}\n경도 : ${item.longitude}",
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 38.dp)
+            )
+            Spacer(modifier = Modifier.height(30.dp))
+            Row {
+                Icon(
+                    imageVector = Icons.Default.TripOrigin,
+                    contentDescription = null,
+                    tint = Color(0xFFFF6600),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .padding(start = 10.dp)
+                )
+                Text(
+                    text = "사고 발생자",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(start = 5.dp)
+                )
+            }
+            Text(
+                text = item.victim,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(
+                    start = 38.dp,
+                    bottom = 10.dp
+                )
+            )
+            Divider(
+                color = Color.LightGray,
+                thickness = 1.dp,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            Text(
+                text = "사고 내역 : ${item.category}",
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+            )
+            Text(
+                text = "사고 발생 일시 : ${item.date} ${item.time}",
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+            )
+            Text(
+                text = "사고 처리 일시 : ${item.processingDate} ${item.processingTime}",
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+            )
         }
     }
 }

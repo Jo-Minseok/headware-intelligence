@@ -64,6 +64,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.google.android.gms.location.LocationServices
 import com.naver.maps.geometry.LatLng
@@ -222,7 +223,12 @@ fun Map(
         }
 
         override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
-            Log.e("HEAD METAL", "Error: ${t.message}")
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "사고 상황 업데이트 오류",
+                message = "네트워크 문제로 인해 사고 상황 업데이트가 되지 않았습니다.",
+            )
         }
     }
 
@@ -261,7 +267,8 @@ fun Map(
             imageUrl,
             webSocketSendData,
             imageDataReception,
-            soundDataReception
+            soundDataReception,
+            navController = navController
         )
     }
 }
@@ -506,7 +513,8 @@ fun BottomSheetScreen(
     imageUrl: MutableState<String?>,
     webSocketSendData: MutableState<String?>,
     imageDataReception: MutableState<Boolean>,
-    soundDataReception: MutableState<Boolean>
+    soundDataReception: MutableState<Boolean>,
+    navController: NavController
 ) {
     val isDetailInputDialogVisible: MutableState<Boolean> =
         remember { mutableStateOf(false) } // 사고 처리 세부 내역 입력창 스위치
@@ -518,7 +526,8 @@ fun BottomSheetScreen(
             accidentNo = accidentNo,
             selectedMarker = selectedMarker,
             situationCode = situationCode,
-            listIdx = listIdx
+            listIdx = listIdx,
+            navController = navController
         )
     }
 
@@ -533,7 +542,8 @@ fun BottomSheetScreen(
         Box(contentAlignment = Alignment.Center) {
             val painter =
                 rememberAsyncImagePainter(model = ImageRequest.Builder(LocalContext.current)
-                    .data(url).build(),
+                    .data(url).diskCachePolicy(CachePolicy.DISABLED) // 디스크 캐시 비활성화
+                    .memoryCachePolicy(CachePolicy.DISABLED).build(),
                     onSuccess = { LoadingState.hide() })
             Image(
                 painter = painter,
@@ -721,7 +731,8 @@ fun BottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.PROCESSING.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '처리 중'으로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.PROCESSING.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 PROCESSING으로 갱신
@@ -751,7 +762,8 @@ fun BottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.MALFUNCTION.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '오작동'으로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.MALFUNCTION.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 MALFUNCTION으로 갱신
@@ -780,7 +792,8 @@ fun BottomSheetScreen(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.REPORT119.ordinal.toString(),
-                                    null
+                                    null,
+                                    navController = navController
                                 ) // 처리 상황을 '119 신고'로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.REPORT119.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 REPORT119로 갱신
@@ -810,7 +823,6 @@ fun BottomSheetScreen(
 }
 
 // 사고 처리 세부 내역 입력창 Composable
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailInputDialog(
     onClose: () -> Unit,
@@ -818,7 +830,8 @@ fun DetailInputDialog(
     accidentNo: MutableState<Int>,
     selectedMarker: MutableState<Marker?>,
     situationCode: MutableList<Int>,
-    listIdx: MutableState<Int>
+    listIdx: MutableState<Int>,
+    navController: NavController
 ) {
     val detail = remember { mutableStateOf("") } // 사고 처리 세부 내역(입력)
 
@@ -865,7 +878,8 @@ fun DetailInputDialog(
                                 updateAccidentSituation(
                                     accidentNo.value,
                                     SituationCode.COMPLETE.ordinal.toString(),
-                                    detail.value
+                                    detail.value,
+                                    navController = navController
                                 ) // 처리 상황을 '처리 완료'로 갱신(DB 반영)
                                 situationCode[listIdx.value] =
                                     SituationCode.COMPLETE.ordinal // 마지막으로 선택한 마커의 처리 상황 코드 리스트 값을 COMPLETE로 갱신

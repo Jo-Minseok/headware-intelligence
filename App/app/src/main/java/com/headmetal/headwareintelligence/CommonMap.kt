@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -38,7 +40,12 @@ data class AccidentProcessingUpdateRequest(
 )
 
 // Accident_Processing 테이블의 사고 상황과 세부 처리 내역 데이터를 업데이트
-fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
+fun updateAccidentSituation(
+    no: Int,
+    situationCode: String,
+    detail: String?,
+    navController: NavController
+) {
     val call = RetrofitInstance.apiService.updateAccidentSituation(
         no, situationCode, AccidentProcessingUpdateRequest(detail)
     )
@@ -55,9 +62,20 @@ fun updateAccidentSituation(no: Int, situationCode: String, detail: String?) {
         }
 
         override fun onFailure(call: Call<AccidentProcessingUpdateRequest>, t: Throwable) {
-            Log.e("HEAD METAL", "네트워크 오류 또는 예외 발생: ${t.message}")
+            errorBackApp(
+                navController = navController,
+                error = t.toString(),
+                title = "사고 상황 업데이트 오류",
+                message = "네트워크 문제로 인해 사고 상황 업데이트가 되지 않았습니다.",
+            )
         }
     })
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AlertDialogPreview() {
+    AlertDialog(onClose = { /*TODO*/ }, content = "test")
 }
 
 // 알림창 Composable

@@ -12,7 +12,8 @@ class UpdateAccountRepository:
 
     def update_account(self, findKey: FindAccount, inputData: AccountInputUpdate):
         if inputData.type == "employee":
-            employee = self.db.query(UserEmployee).filter(UserEmployee.id == findKey.id).first()
+            employee = self.db.query(UserEmployee).filter(
+                UserEmployee.id == findKey.id).first()
             if not employee:
                 raise ValueError("존재하지 않는 계정")
             employee.password = pwdContext.hash(inputData.password)
@@ -22,7 +23,8 @@ class UpdateAccountRepository:
             employee.company = inputData.company
             self.db.add(employee)
         elif inputData.type == "manager":
-            manager = self.db.query(UserManager).filter(UserManager.id == findKey.id).first()
+            manager = self.db.query(UserManager).filter(
+                UserManager.id == findKey.id).first()
             if not manager:
                 raise ValueError("존재하지 않는 계정")
             manager.password = pwdContext.hash(inputData.password)

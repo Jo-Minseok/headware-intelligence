@@ -2,6 +2,7 @@ package com.headmetal.headwareintelligence
 
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -30,16 +31,16 @@ interface ApiService {
     ): Call<Void>
 
     @GET("/company/work_list")
-    fun apiWorklist(
+    fun apiWorkList(
         @Query("userId") id: String
-    ): Call<WorklistResponse>
+    ): Call<WorkListResponse>
 
     @GET("/company/list")
     fun getCompanyList(): Call<CompanyList>
 
     @POST("/register")
     fun apiRegister(
-        @Body requestBody: RegisterInputModel
+        @Body request: RegisterInputModel
     ): Call<RegisterInputModel>
 
     @POST("/forgot/id")
@@ -49,14 +50,19 @@ interface ApiService {
 
     @PUT("/forgot/pw")
     fun apiChangePw(
-        @Body userEmployee: ForgotPw
+        @Body request: ForgotPw
     ): Call<ForgotPw>
 
+    @PUT("/account/update")
+    fun apiChangePrivacy(
+        @Body request: PrivacyRequest
+    ): Call<Void>
+
     @GET("/weather/{latitude}/{longitude}")
-    suspend fun getWeather(
+    fun getWeather(
         @Path("latitude") latitude: Double,
         @Path("longitude") longitude: Double
-    ): WeatherResponse
+    ): Call<WeatherResponse>
 
     @GET("/trend/{start}/{end}")
     suspend fun getTrendData(
@@ -114,7 +120,7 @@ interface ApiService {
         @Body requestBody: WorkShopInputData
     ): Call<WorkShopInputData>
 
-    @PUT("/work/delete/{workId}")
+    @DELETE("/work/delete/{workId}")
     fun deleteWork(
         @Path("workId") workId: Int
     ): Call<Void>
@@ -126,6 +132,12 @@ interface ApiService {
 
     @PUT("/work/assign/{workId}/{employeeId}")
     fun assignWork(
+        @Path("workId") workId: Int,
+        @Path("employeeId") employeeId: String
+    ): Call<Void>
+
+    @DELETE("/work/unassign/{workId}/{employeeId}")
+    fun deleteWorker(
         @Path("workId") workId: Int,
         @Path("employeeId") employeeId: String
     ): Call<Void>

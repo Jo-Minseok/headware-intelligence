@@ -86,8 +86,10 @@ class ForgotIdResult(BaseModel):
 
 # 개인정보 변경 스키마
 
+
 class FindAccount(BaseModel):
     id: str
+
 
 class AccountInputUpdate(BaseModel):
     password: str
